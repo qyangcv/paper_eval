@@ -1,4 +1,4 @@
-# 论文评估系统 (Paper Evaluation System)
+# 论文评价系统 
 
 ## 项目简介
 
