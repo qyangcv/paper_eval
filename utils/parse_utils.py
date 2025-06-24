@@ -208,13 +208,13 @@ def match_chapter(text: str, next_text: str) -> bool:
     """章节匹配规则：
     第k章 xxx 下一个必须是 k.1 xxx"""
     map_dict = ['一', '二', '三', '四', '五', '六', '七', '八', '九', '十']
-    re_res = re.match('第\s*[一二三四五六七八九十]\s*章', text)
+    re_res = re.match(r'第\s*[一二三四五六七八九十]\s*章', text)
     if bool(re_res) == False:
         return False
     match_str = re_res.group(0)
     match_idx = match_str.replace('第', '').replace('章', '').replace(' ', '')
     text_next_num = map_dict.index(match_idx) + 1
-    re_res = re.match(f'^{text_next_num}\s*\.\s*[1,2]', next_text)
+    re_res = re.match(fr'^{text_next_num}\s*\.\s*[1,2]', next_text)
     if bool(re_res):
         return True
     return False

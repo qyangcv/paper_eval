@@ -1,6 +1,6 @@
 import re
 
-from utils.helper_utils import get_chapter_idx
+from .helper_utils import get_chapter_idx
 
 def fix_abs_toc(pattern_type: str, text: str):
     """修复摘要和目录部分的匹配问题"""
@@ -86,7 +86,7 @@ def fix_chapter(extract_info, error_idx: int, md_text: str):
     chapter_idx = get_chapter_idx(text[:100])
     target_idx = chapter_idx + 1
 
-    search_patterns = [f'#\s*第\s*{map_dict[target_idx - 1]}\s*章']
+    search_patterns = [fr'#\s*第\s*{map_dict[target_idx - 1]}\s*章']
     fix_success = False
     for pattern in search_patterns:
         re_res = re.search(pattern, text)
@@ -109,7 +109,7 @@ def fix_last_chapter(md_text: str, extract_info):
     chapter_idx = get_chapter_idx(text[:100])
     target_idx = chapter_idx + 1
 
-    search_patterns = [f'#\s*第\s*{map_dict[target_idx - 1]}\s*章']
+    search_patterns = [fr'#\s*第\s*{map_dict[target_idx - 1]}\s*章']
     fix_success = False
     for pattern in search_patterns:
         re_res = re.search(pattern, text)

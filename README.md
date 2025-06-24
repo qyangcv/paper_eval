@@ -29,10 +29,8 @@ paper_eval/
 ```
 
 ## 安装依赖
-
-```bash
-pip install -r requirements.txt
-```
+- `pip install -r requirements.txt`
+- 安装 pandoc: https://pandoc.org/installing.html
 
 ## 使用方法
 
@@ -43,8 +41,12 @@ export DEEPSEEK_API_KEY=...
 ```
 
 
-### 2. 添加源文件
-将 docx 文件复制到 `data/raw/docx` 目录下
+### 2. 处理docx文件
+文件转换过程：docx -> md -> pkl
+- 将 docx 文件复制到 `data/raw/docx` 目录
+- 执行 `pandoc data/raw/docx/<xxx>.docx -o data/raw/docx/<xxx>.md --extract-media=data/raw/docx/images`，将`<xxx>`修改为文件名，得到md文件
+- 执行 `utils/docx_tools/md2pkl.py`，将 `md2pkl.py`的`MD_PATH`和`PKL_PATH` 修改为源路径和目标路径，得到pkl文件
+- （可选）调试 `utils/docx_tools/pkl_analyse.py` 查看pkl内容
 
 
 ### 3. 开始评估
@@ -60,9 +62,9 @@ python infer.py
 
 
 ## 文件格式
-- 输出文件格式：DOCX
-- 输出文件格式：JSON
-- 格式转换工具（存在少量格式问题，待完善）：使用 `utils/json2md.py` 将 JSON 转换为易读的 Markdown
+- 输出文件格式：pkl
+- 输出文件格式：json
+- 格式转换工具（存在少量格式问题，待完善）：使用 `utils/json2md.py` 将 josn 转换为易读的 markdown
 
 ## 日志
 
