@@ -18,7 +18,7 @@
 paper_eval/
 ├── config/          # 配置文件
 ├── data/           # 数据目录
-│   ├── raw/        # 原始论文文件
+│   ├── raw/        # 原始论文数据
 │   ├── processed/  # 处理后的数据
 │   └── output/     # 评估结果
 ├── models/         # AI模型接口
@@ -62,8 +62,8 @@ python infer.py
 
 
 ## 文件格式
-- 输出文件格式：pkl
-- 输出文件格式：json
+- LLM 输入：pkl
+- LLM 输出：json
 - 格式转换工具（存在少量格式问题，待完善）：使用 `utils/json2md.py` 将 josn 转换为易读的 markdown
 
 ## 日志
