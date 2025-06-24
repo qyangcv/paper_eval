@@ -36,22 +36,15 @@ pip install -r requirements.txt
 
 ## 使用方法
 
-### 1. 添加 API Key
+### 1. 添加API Key
 在 `~/.bashrc` 或 `~/.zshrc` 中添加：
 ```bash
 export DEEPSEEK_API_KEY=...
 ```
 
-### 2. 修改配置
 
-在 `infer.py` 中修改配置参数，默认配置为：
-
-```python
-INPUT_ROOT = "data/processed/docx"    # 输入目录
-OUTPUT_ROOT = "data/output/docx"      # 输出目录
-PROCESSES = 16                        # 并行请求进程数
-MODEL_NAME = "deepseek-chat"          # 使用的模型
-```
+### 2. 添加源文件
+将 docx 文件复制到 `data/raw/docx` 目录下
 
 
 ### 3. 开始评估
