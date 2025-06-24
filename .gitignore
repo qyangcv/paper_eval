@@ -3,8 +3,8 @@
 
 # Python
 **/__pycache__/
-data/
-logs/
+# data/
+# logs/
 
 # VS Code
 .vscode/ 
