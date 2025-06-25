@@ -11,36 +11,43 @@ import time
 import warnings
 from pathlib import Path
 
-# Use lazy imports for transformers to avoid Streamlit watcher issues
-_transformers = None
-_tokenizer = None
+# 修改导入语句，使用torch_helper.py中的安全导入方法
+try:
+    from utils.eval.tools.torch_helper import get_transformers
+except ImportError as e:
+    print(f"Warning: 无法导入torch_helper模块，将使用备用导入方法: {e}")
+    # 仅在torch_helper导入失败时使用原有的延迟导入方法
+    _transformers = None
+    _tokenizer = None
 
-def _safe_import_transformers():
-    """Safely import transformers module without triggering Streamlit file watcher issues."""
-    global _transformers
-    if _transformers is None:
-        try:
-            import transformers
-            _transformers = transformers
-            return transformers
-        except ImportError:
-            warnings.warn("Failed to import transformers library. Tokenization functionality will be unavailable.")
-            return None
-    return _transformers
+    def _safe_import_transformers():
+        """Safely import transformers module without triggering Streamlit file watcher issues."""
+        global _transformers
+        if _transformers is None:
+            try:
+                import transformers
+                _transformers = transformers
+                return transformers
+            except ImportError:
+                warnings.warn("Failed to import transformers library. Tokenization functionality will be unavailable.")
+                return None
+        return _transformers
+else:
+    # 如果torch_helper导入成功，直接使用其方法
+    def _safe_import_transformers():
+        return get_transformers()
 
 def _get_tokenizer():
     """Safely get a tokenizer with deferred import."""
-    global _tokenizer
-    if _tokenizer is None:
-        transformers = _safe_import_transformers()
-        if transformers:
-            try:
-                _tokenizer = transformers.AutoTokenizer.from_pretrained('Qwen/Qwen3-0.6B')
-                return _tokenizer
-            except Exception as e:
-                warnings.warn(f"Failed to initialize tokenizer: {e}")
-                return None
-    return _tokenizer
+    transformers = _safe_import_transformers()
+    if not transformers:
+        return None
+        
+    try:
+        return transformers.AutoTokenizer.from_pretrained('Qwen/Qwen3-0.6B')
+    except Exception as e:
+        warnings.warn(f"Failed to initialize tokenizer: {e}")
+        return None
 
 # 确保能够导入项目模块
 current_dir = os.path.dirname(os.path.abspath(__file__))
@@ -48,11 +55,11 @@ parent_dir = os.path.dirname(current_dir)
 if parent_dir not in sys.path:
     sys.path.insert(0, parent_dir)
 
-# 修改导入语句，使用相对或绝对导入
-try:
-    from transformers import AutoTokenizer
-except ImportError:
-    print("Warning: transformers 库未安装，tokenizer 功能将不可用")
+# 移除直接导入，改用安全导入方式
+# try:
+#     from transformers import AutoTokenizer
+# except ImportError:
+#     print("Warning: transformers 库未安装，tokenizer 功能将不可用")
 
 # 修改导入路径
 try:
@@ -121,10 +128,7 @@ def load_prompts(pkl_path: str, model_name: str) -> list[str]:
     """
     tokenizer = None
     if not model_name.startswith("deepseek"):
-        try:
-            tokenizer = AutoTokenizer.from_pretrained('Qwen/Qwen3-0.6B')
-        except Exception as e:
-            print(f"Warning: 无法加载 tokenizer: {e}")
+        tokenizer = get_tokenizer()
     
     prompt_lst = []
     try:

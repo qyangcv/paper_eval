@@ -102,15 +102,6 @@ class Docx2HtmlConverter:
         # Write the HTML file
         with open(output_path, 'w', encoding='utf-8') as f:
             f.write(html_doc)
-            
-        # Print statistics
-        print(f"Converted document saved to: {output_path}")
-        if include_images:
-            print(f"Images saved to: {image_dir}")
-            print(f"Total images extracted: {self.stats['images']}")
-        print(f"Math formulas converted: {self.stats['inline_math'] + self.stats['display_math']}")
-        print(f"  - Inline formulas: {self.stats['inline_math']}")
-        print(f"  - Display formulas: {self.stats['display_math']}")
         
         return output_path
 
@@ -385,7 +376,8 @@ class Docx2HtmlConverter:
         # 修复无穷大符号
         latex = latex.replace('−\\infty', '-\\infty')
         latex = latex.replace('−∞', '-\\infty')
-        latex = latex.replace('−\infty', '-\\infty')
+        # 使用原始字符串r前缀避免转义序列问题
+        latex = latex.replace(r'−\infty', '-\\infty')
         
         # 4. 确保 \left 和 \right 配对
         left_count = latex.count('\\left')

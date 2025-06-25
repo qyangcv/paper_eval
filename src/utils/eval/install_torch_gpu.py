@@ -107,17 +107,40 @@ def install_torch_gpu():
     ]
     subprocess.check_call(req_cmd)
     
-    # Verify installation
+    # Verify installation - modified to use a safer approach to import torch
     print("\nVerifying PyTorch installation:")
     verify_script = """
-import torch
-print(f"PyTorch version: {torch.__version__}")
-print(f"CUDA available: {torch.cuda.is_available()}")
-if torch.cuda.is_available():
-    print(f"CUDA version: {torch.version.cuda}")
-    print(f"GPU device: {torch.cuda.get_device_name(0)}")
-else:
-    print("WARNING: CUDA is not available! Check your installation.")
+# Try to safely import torch through the helper first
+try:
+    import sys
+    import os
+    # 确保可以导入torch_helper
+    current_dir = os.path.dirname(os.path.abspath(__file__))
+    project_root = os.path.dirname(os.path.dirname(os.path.dirname(current_dir)))
+    sys.path.insert(0, project_root)
+    
+    from src.utils.eval.tools.torch_helper import get_torch, is_cuda_available
+    
+    # 使用安全导入函数
+    torch = get_torch()
+    print(f"PyTorch version: {torch.__version__}")
+    print(f"CUDA available: {is_cuda_available()}")
+    
+    if is_cuda_available():
+        print(f"CUDA version: {torch.version.cuda}")
+        print(f"GPU device: {torch.cuda.get_device_name(0)}")
+    else:
+        print("WARNING: CUDA is not available! Check your installation.")
+except ImportError:
+    # Fall back to direct import if helper is not available
+    import torch
+    print(f"PyTorch version: {torch.__version__}")
+    print(f"CUDA available: {torch.cuda.is_available()}")
+    if torch.cuda.is_available():
+        print(f"CUDA version: {torch.version.cuda}")
+        print(f"GPU device: {torch.cuda.get_device_name(0)}")
+    else:
+        print("WARNING: CUDA is not available! Check your installation.")
 """
     subprocess.run([sys.executable, "-c", verify_script])
     print("\nPyTorch GPU installation completed.")

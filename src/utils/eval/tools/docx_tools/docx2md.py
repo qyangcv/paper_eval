@@ -293,26 +293,10 @@ def docx_to_markdown_with_formulas(docx_path, output_md_path, image_dir="images"
     try:
         with open(output_md_path, 'w', encoding='utf-8') as f:
             f.write('\n\n'.join(md_content))
-        print(f"Markdown file saved to: {output_md_path}")
     except UnicodeEncodeError:
         # Fallback to write with explicit error handling
         with open(output_md_path, 'w', encoding='utf-8', errors='xmlcharrefreplace') as f:
             f.write('\n\n'.join(md_content))
-        print(f"Markdown file saved to: {output_md_path} (with character encoding workaround)")
-    
-    print(f"Images saved to: {image_dir}/")
-    print(f"Total images found: {image_id_counter[0] - 1}")
-    print(f"Formula conversion completed.")
-    print(f"Conversion Statistics:")
-    print(f"  - Inline formulas: {formula_count['inline']}")
-    print(f"  - Display formulas: {formula_count['display']}")
-    print(f"  - Total formulas: {formula_count['inline'] + formula_count['display']}")
-
-    # # Save a debug copy with BOM for troubleshooting encoding issues
-    # with open(output_md_path + '.debug', 'w', encoding='utf-8-sig') as f:
-    #     f.write('\n\n'.join(md_content))
-    # print(f"Debug copy with BOM saved to: {output_md_path}.debug")
-
 
 def main():
     parser = argparse.ArgumentParser(description='Convert DOCX file to Markdown with math formula support')

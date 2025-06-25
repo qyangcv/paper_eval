@@ -3,21 +3,28 @@
 import os
 import warnings
 
-# 延迟导入transformers以防止Streamlit尝试监视这些模块
-_transformers = None
-_tokenizer = None
+# 使用torch_helper中的安全导入方法
+try:
+    from utils.eval.tools.torch_helper import get_transformers
+    
+    def _safe_import_transformers():
+        return get_transformers()
+except ImportError:
+    # 如果torch_helper导入失败，继续使用原有的延迟导入方法
+    _transformers = None
+    _tokenizer = None
 
-def _safe_import_transformers():
-    """Safely import transformers module without triggering Streamlit file watcher issues."""
-    global _transformers, _tokenizer
-    if _transformers is None:
-        try:
-            import transformers
-            _transformers = transformers
-        except ImportError:
-            warnings.warn("Failed to import transformers library. Tokenization functionality will be unavailable.")
-            _transformers = None
-    return _transformers
+    def _safe_import_transformers():
+        """Safely import transformers module without triggering Streamlit file watcher issues."""
+        global _transformers, _tokenizer
+        if _transformers is None:
+            try:
+                import transformers
+                _transformers = transformers
+            except ImportError:
+                warnings.warn("Failed to import transformers library. Tokenization functionality will be unavailable.")
+                _transformers = None
+        return _transformers
 
 def get_tokenizer():
     """Safely get the tokenizer instance."""

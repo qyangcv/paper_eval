@@ -385,7 +385,7 @@ def create_complete_html_document(content_html, toc_items=None):
                 }} else {{
                     // 动态计算高度
                     const height = getDetailsHeight(detailsDiv);
-                    detailsDiv.style.height = `${{height}}px`;
+                    detailsDiv.style.height = height + 'px';
                     indicator.textContent = '▲';
                     card.classList.add('active');
                     
@@ -522,6 +522,54 @@ def create_complete_html_document(content_html, toc_items=None):
                     }}
                 }});
                 
+                // 为侧边栏添加调整手柄
+                const sidebar = document.querySelector('.sidebar');
+                if (sidebar) {{
+                    const resizer = document.createElement('div');
+                    resizer.className = 'sidebar-resizer';
+                    sidebar.appendChild(resizer);
+                    
+                    // 实现拖拽调整宽度功能
+                    let isResizing = false;
+                    let startX, startWidth;
+                    
+                    resizer.addEventListener('mousedown', function(e) {{
+                        isResizing = true;
+                        startX = e.clientX;
+                        startWidth = parseInt(getComputedStyle(sidebar).width, 10);
+                        resizer.classList.add('resizing');
+                        e.preventDefault(); // 防止选中文本
+                    }});
+                    
+                    document.addEventListener('mousemove', function(e) {{
+                        if (!isResizing) return;
+                        
+                        // 计算新宽度
+                        const newWidth = startWidth + (e.clientX - startX);
+                        
+                        // 设置最小和最大宽度限制
+                        if (newWidth >= 200 && newWidth <= 600) {{
+                            sidebar.style.width = newWidth + 'px';
+                            sidebar.style.flexBasis = newWidth + 'px';
+                        }}
+                    }});
+                    
+                    document.addEventListener('mouseup', function() {{
+                        if (isResizing) {{
+                            isResizing = false;
+                            resizer.classList.remove('resizing');
+                            
+                            // 重新计算已展开章节的高度
+                            document.querySelectorAll('.chapter-card.active .chapter-details').forEach(detail => {{
+                                // 获取实际内容高度
+                                detail.style.height = 'auto';
+                                const height = detail.scrollHeight;
+                                detail.style.height = height + 'px';
+                            }});
+                        }}
+                    }});
+                }}
+                
                 // 隐藏加载指示器
                 document.getElementById('loading-indicator').style.display = 'none';
             }});
@@ -533,7 +581,7 @@ def create_complete_html_document(content_html, toc_items=None):
                     // 获取实际内容高度
                     detail.style.height = 'auto';
                     const height = detail.scrollHeight;
-                    detail.style.height = `${{height}}px`;
+                    detail.style.height = height + 'px';
                 }});
             }});
             
@@ -559,8 +607,9 @@ def create_complete_html_document(content_html, toc_items=None):
             }}
             .sidebar {{
                 width: 280px;
-                min-width: 280px;
-                flex: 0 0 280px;
+                min-width: 200px;
+                max-width: 600px;
+                flex: 0 0 auto; /* 改为auto以支持宽度调整 */
                 height: 100%;
                 overflow-y: scroll; /* always show scrollbar to prevent width shift */
                 scrollbar-gutter: stable; /* reserve space for scrollbar in supporting browsers */
@@ -570,6 +619,7 @@ def create_complete_html_document(content_html, toc_items=None):
                 transform: translateX(0);
                 transition: transform 0.3s ease, opacity 0.3s ease;
                 padding: 0;
+                position: relative; /* 添加相对定位以支持调整手柄的绝对定位 */
             }}
             .content {{
                 flex: 1;
@@ -873,6 +923,24 @@ def create_complete_html_document(content_html, toc_items=None):
             .content p.center-text {{
                 text-indent: 0;
                 text-align: center;
+            }}
+
+            /* 添加侧边栏宽度调整手柄 */
+            .sidebar-resizer {{
+                position: absolute;
+                top: 0;
+                right: -5px;
+                width: 10px;
+                height: 100%;
+                background-color: transparent;
+                cursor: col-resize;
+                z-index: 10;
+            }}
+            
+            /* 拖拽时的视觉指示 */
+            .sidebar-resizer:hover,
+            .sidebar-resizer.resizing {{
+                background-color: rgba(67, 97, 238, 0.2);
             }}
         </style>
     </head>

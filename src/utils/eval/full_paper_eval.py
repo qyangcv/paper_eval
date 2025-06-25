@@ -171,7 +171,7 @@ def process_docx_file(docx_path: str) -> Optional[str]:
     
     try:
         subprocess.run(cmd, shell=True, check=True)
-        logger.info(f"[成功] 已创建 Markdown 文件: {md_path}")
+        logger.info(f"已创建 Markdown 文件: {md_path}")
     except subprocess.SubprocessError as e:
         logger.error(f"将 docx 转换为 md 失败: {e}")
         return None
@@ -224,7 +224,7 @@ if __name__ == '__main__':
         
         # 运行临时脚本
         subprocess.run([sys.executable, temp_script], check=True)
-        logger.info(f"[成功] 已将 md 转换为 pkl 并保存到 {abs_pkl_path}")
+        logger.info(f"已将 md 转换为 pkl 并保存到 {abs_pkl_path}")
         
         # 清理
         os.remove(temp_script)

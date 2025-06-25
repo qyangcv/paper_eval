@@ -154,7 +154,7 @@ def run_inference():
         # 使用脚本的绝对路径
         infer_path = os.path.join(SCRIPT_DIR, "infer.py")
         subprocess.run([sys.executable, infer_path], check=True)
-        logger.info("✓ 推理成功完成")
+        logger.info("推理成功完成")
         return True
     except subprocess.SubprocessError as e:
         logger.error(f"推理失败: {e}")

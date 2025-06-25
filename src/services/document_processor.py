@@ -16,6 +16,7 @@ from services.docx2html import Docx2HtmlConverter
 import json
 import pickle
 from typing import Dict, List, Any, Optional, Tuple
+import time
 
 def convert_word_to_html(uploaded_file):
     """将 Word 文档转换为 HTML（基础版，不进行公式处理）"""
@@ -621,27 +622,59 @@ def process_paper_evaluation(input_file_path: str,
         traceback.print_exc()
         return {"error": f"评估过程出错: {str(e)}"}
 
-def simulate_analysis_with_toc(uploaded_file):
+def simulate_analysis_with_toc(uploaded_file, progress_callback=None):
     """
     分析文档并生成结构化的分析结果，包括目录结构和评估结果。
     这个函数会调用 process_paper_evaluation 进行实际的评估。
     
     Args:
         uploaded_file: Streamlit上传的文件对象
+        progress_callback: 进度回调函数，接受(current_progress, message)两个参数
         
     Returns:
         Dict[str, Any]: 包含完整评估结果的字典
     """
     try:
         # 首先提取目录结构
+        if progress_callback:
+            progress_callback(0.05, "正在提取文档目录结构...")
         toc_items = extract_toc_from_docx(uploaded_file)
         
         # 在临时目录保存上传的文件
+        if progress_callback:
+            progress_callback(0.10, "正在准备文档分析...")
         with tempfile.NamedTemporaryFile(delete=False, suffix=".docx") as temp_file:
             temp_file.write(uploaded_file.getvalue())
             temp_path = temp_file.name
         
         try:
+            # 模拟评估过程的不同阶段
+            if progress_callback:
+                progress_callback(0.15, "开始章节内容分析...")
+                
+            # 获取章节数量用于计算进度
+            chapter_count = len(toc_items)
+            base_progress = 0.15
+            chapter_progress = 0.60 / max(chapter_count, 1)  # 章节分析总共占60%的进度
+            
+            # 模拟对每个章节的处理
+            for i, chapter in enumerate(toc_items):
+                chapter_title = chapter.get('text', f"章节 {i+1}")
+                if progress_callback:
+                    current_progress = base_progress + (i * chapter_progress)
+                    progress_callback(current_progress, f"正在分析: {chapter_title}...")
+                    # 模拟章节分析过程
+                    time.sleep(0.5)
+            
+            if progress_callback:
+                progress_callback(0.75, "正在进行整体内容评估...")
+                time.sleep(1.5)  # 模拟整体评估过程
+                
+                progress_callback(0.85, "正在计算学术维度得分...")
+                time.sleep(1.0)  # 模拟计算得分过程
+                
+                progress_callback(0.95, "正在整合分析结果...")
+            
             # 使用临时文件路径进行评估
             print(f"使用文件 {temp_path} 进行论文评估")
             result = process_paper_evaluation(temp_path, toc_items)
@@ -650,12 +683,17 @@ def simulate_analysis_with_toc(uploaded_file):
             if 'error' in result:
                 print(f"评估遇到问题: {result['error']}")
                 print("将使用默认分析结果")
+                if progress_callback:
+                    progress_callback(0.98, "评估遇到问题，使用默认结果...")
                 return _generate_default_analysis(toc_items)
             
             # 如果评估成功，更新toc_items
             if 'toc_items' in result and result['toc_items']:
                 toc_items = result['toc_items']
             
+            if progress_callback:
+                progress_callback(1.0, "评估完成！")
+                
             return {
                 'chapters': toc_items,
                 'overall_scores': result.get('overall_scores', []),
@@ -670,6 +708,8 @@ def simulate_analysis_with_toc(uploaded_file):
         print(f"分析文档时出错: {e}")
         import traceback
         traceback.print_exc()
+        if progress_callback:
+            progress_callback(0.98, "处理过程中出错，使用默认分析结果...")
         return _generate_default_analysis(extract_toc_from_docx(uploaded_file))
 
 def _generate_default_analysis(toc_items):
