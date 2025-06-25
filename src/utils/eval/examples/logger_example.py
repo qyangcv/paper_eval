@@ -2,7 +2,7 @@
 日志使用示例
 """
 
-from utils.logger import get_logger
+from utils.eval.tools.logger import get_logger
 
 # 获取日志记录器
 logger = get_logger(__name__)

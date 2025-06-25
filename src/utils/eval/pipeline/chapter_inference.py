@@ -2,24 +2,60 @@
 章节推理模块
 用于对论文的各个章节进行质量评估
 """
+# 确保能够导入项目模块
+import os
+
 # 导入项目模块
 from config.data_config import FILE_CONFIG
 from config.model_config import MODEL_CONFIG
 from models import request_qwen, request_deepseek, request_gemini
 from prompts import p_writing_quality
-from utils.file_utils import read_pickle
-from utils.logger import get_logger
+from utils.eval.tools.file_utils import read_pickle
+from utils.eval.tools.logger import get_logger
 
 
 # 导入第三方模块
-import os
 import json
 from typing import List, Dict, Any
 # from transformers import AutoTokenizer
 from multiprocessing import Pool
 from glob import glob
 import random
+import warnings
 
+# Use lazy imports for transformers to avoid Streamlit watcher issues
+_transformers = None
+_tokenizer = None
+
+def _safe_import_transformers():
+    """Safely import transformers module without triggering Streamlit file watcher issues."""
+    global _transformers
+    if _transformers is None:
+        try:
+            import transformers
+            _transformers = transformers
+            return transformers
+        except ImportError:
+            warnings.warn("Failed to import transformers library. Tokenization functionality will be unavailable.")
+            return None
+    return _transformers
+
+def _get_tokenizer(model_name):
+    """Safely get a tokenizer with deferred import."""
+    global _tokenizer
+    if _tokenizer is None:
+        transformers = _safe_import_transformers()
+        if transformers:
+            try:
+                if 'qwen' in model_name.lower():
+                    _tokenizer = transformers.AutoTokenizer.from_pretrained('Qwen/Qwen-7B-Chat')
+                else:
+                    _tokenizer = transformers.AutoTokenizer.from_pretrained('deepseek-ai/deepseek-llm-7b-chat')
+                return _tokenizer
+            except Exception as e:
+                warnings.warn(f"Failed to initialize tokenizer: {e}")
+                return None
+    return _tokenizer
 
 logger = get_logger(__name__)
 

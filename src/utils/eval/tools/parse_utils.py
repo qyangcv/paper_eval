@@ -7,7 +7,7 @@ from typing import List, Dict, Optional, Tuple
 import re
 from difflib import SequenceMatcher
 
-from utils.logger import get_logger
+from utils.eval.tools.logger import get_logger
 
 logger = get_logger(__name__)
 

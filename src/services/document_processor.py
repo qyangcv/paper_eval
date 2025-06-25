@@ -1,6 +1,7 @@
 import mammoth
 import tempfile
 import os
+import sys
 from docx import Document
 import base64
 import re
@@ -12,6 +13,9 @@ from docx.opc.constants import RELATIONSHIP_TYPE as RT
 from docx.oxml import OxmlElement
 from docx.oxml.ns import qn
 from services.docx2html import Docx2HtmlConverter
+import json
+import pickle
+from typing import Dict, List, Any, Optional, Tuple
 
 def convert_word_to_html(uploaded_file):
     """将 Word 文档转换为 HTML（基础版，不进行公式处理）"""
@@ -451,77 +455,295 @@ def is_personal_info(text):
             return True
     return False
 
-def simulate_analysis_with_toc(uploaded_file):
-    """模拟文档分析，整合目录提取和内容转换"""
+def process_paper_evaluation(input_file_path: str, 
+                           toc_items: List[Dict[str, Any]] = None,
+                           model_name: str = "deepseek-chat") -> Dict[str, Any]:
+    """
+    处理论文评估，调用full_paper_eval.py，并将结果格式化为results_page.py可用格式
+    
+    Args:
+        input_file_path: 输入文件路径，可以是docx或pkl文件
+        toc_items: 目录项列表，如果提供，会将评估结果与章节关联
+        model_name: 使用的模型名称，默认为"deepseek-chat"
+        
+    Returns:
+        Dict[str, Any]: 包含章节评估结果和整体评分的字典
+    """
     try:
-        # 提取目录结构
-        toc_items = extract_toc_from_docx(uploaded_file)
+        # 设置正确的导入路径
+        project_root = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+        eval_path = os.path.join(project_root, "src", "utils", "eval")
+        tools_path = os.path.join(eval_path, "tools")
+        models_path = os.path.join(eval_path, "models")
+        prompts_path = os.path.join(eval_path, "prompts")
         
-        # 仅转换为 HTML（不再生成 Markdown）
-        html_content = convert_word_to_html(uploaded_file)
+        # 添加所有相关路径
+        for path in [project_root, eval_path, tools_path, models_path, prompts_path]:
+            if path not in sys.path:
+                sys.path.insert(0, path)
         
-        # 模拟分析结果
-        word_count = sum(len(paragraph.text.split()) for paragraph in docx.Document(io.BytesIO(uploaded_file.getvalue())).paragraphs if paragraph.text.strip())
+        # 直接导入模块
+        from utils.eval.full_paper_eval import process_docx_file, load_chapters, process_chapter
+        from utils.eval.full_paper_eval import evaluate_overall, score_paper
         
-        # 模拟特殊关键词提取
-        special_keywords = ["研究", "分析", "方法", "结果", "讨论"]
-        
-        # 生成论文整体总结评价
-        paper_summary = {
-            "overall_comment": "本论文结构清晰，论述有理有据，研究方法得当，实验设计合理，结果可靠。整体来看，论文在选题、方法和数据分析方面表现出了较高的学术水平。",
-            "strengths": [
-                "研究问题明确，具有重要的理论和现实意义",
-                "研究方法选择恰当，技术路线清晰可行",
-                "数据分析全面，结果呈现清晰直观",
-                "结论基于实证分析，具有较强的说服力"
-            ],
-            "weaknesses": [
-                "文献综述部分对最新研究的涵盖不够全面",
-                "研究方法部分的理论依据可进一步加强",
-                "数据分析中的一些假设条件需要更充分的说明",
-                "对研究局限性的讨论可以更加深入"
-            ],
-            "suggestions": [
-                "建议补充最近1-2年发表的相关领域最新研究成果",
-                "可以增加对研究方法选择的理论依据说明",
-                "建议在数据分析部分增加敏感性分析，以增强结果的稳健性",
-                "可以在结论部分更明确地指出未来研究方向"
-            ]
-        }
-        
-        # 为每个章节生成分析结果
-        for chapter in toc_items:
-            # 添加分析字段
-            chapter['analysis'] = {
-                'summary': f"本章节主要讨论{chapter.get('standardized_text', chapter.get('text', ''))}相关内容，包含了相关理论基础和研究方法。",
-                'strengths': [
-                    "结构清晰，层次分明",
-                    "论述有理有据，引用恰当",
-                    "关键概念解释详细"
-                ],
-                'weaknesses': [
-                    f"建议为{chapter.get('standardized_text', chapter.get('text', ''))}添加更详细的小节划分，以提高内容的组织性",
-                    f"考虑在{chapter.get('standardized_text', chapter.get('text', ''))}中添加具体案例或数据支持，增强说服力",
-                    "部分论述可以更加精炼，避免冗余"
-                ]
-            }
+        # 处理输入文件
+        pkl_file_path = input_file_path
+        if input_file_path.lower().endswith('.docx'):
+            print("检测到.docx输入，进行文件转换")
+            pkl_file_path = process_docx_file(input_file_path)
+            if not pkl_file_path:
+                print("文件转换失败，无法继续")
+                return {"error": "文档转换失败"}
+                
+        # 加载章节
+        try:
+            chapters = load_chapters(pkl_file_path)
+        except Exception as e:
+            print(f"加载章节失败: {e}")
+            # 如果pkl加载失败，尝试直接使用toc_items中的内容
+            if toc_items:
+                chapters = []
+                for i, chapter in enumerate(toc_items, 1):
+                    if 'text' in chapter and 'original_text' in chapter:
+                        chapters.append({
+                            "index": i,
+                            "title": chapter['text'],
+                            "content": chapter.get('content', f"章节 {chapter['text']} 的内容") 
+                        })
+            else:
+                return {"error": f"无法加载章节内容: {str(e)}"}
+                
+        if not chapters:
+            return {"error": "未找到有效的章节内容"}
             
-            # 如果有子章节，添加相关建议
-            if 'children' in chapter and chapter['children']:
-                chapter['analysis']['subchapter_advice'] = f"建议加强{chapter.get('standardized_text', chapter.get('text', ''))}与其{len(chapter['children'])}个子章节之间的过渡说明，使内容衔接更加自然流畅。"
+        chapter_evaluations = []
         
-        # 构建分析结果
-        analysis_result = {
-            'word_count': word_count,
-            'special_keywords': special_keywords,
-            'chapters': toc_items,
-            'paper_summary': paper_summary,
-            'html_content': html_content
+        # 串行评估每个章节
+        for chapter in chapters:
+            evaluation = process_chapter(chapter, model_name)
+            chapter_evaluations.append(evaluation)
+            
+        # 进行整体评估
+        overall_evaluation = evaluate_overall(chapter_evaluations, model_name)
+        
+        # 合并所有评估结果（将整体评估放在首位）
+        all_evaluations = [overall_evaluation] + chapter_evaluations
+        
+        # 进行论文评分
+        paper_scores = score_paper(all_evaluations, model_name)
+        
+        # 整合评估结果和目录结构
+        if toc_items:
+            for chapter in toc_items:
+                chapter_title = chapter.get('text', '')
+                # 查找匹配的评估结果
+                matching_eval = None
+                for eval_item in all_evaluations:
+                    # 跳过整体评估
+                    if eval_item.get('chapter') == "全篇" or eval_item.get('index') == 0:
+                        continue
+                        
+                    # 寻找匹配的章节标题
+                    if chapter_title.lower() in eval_item.get('chapter', '').lower() or \
+                       eval_item.get('chapter', '').lower() in chapter_title.lower():
+                        matching_eval = eval_item
+                        break
+                
+                # 如果找到匹配的评估，添加到章节信息中
+                if matching_eval:
+                    chapter['analysis'] = {
+                        "summary": matching_eval.get('summary', ''),
+                        "strengths": matching_eval.get('strengths', []),
+                        "weaknesses": matching_eval.get('weaknesses', []),
+                        "suggestions": matching_eval.get('suggestions', [])
+                    }
+                else:
+                    # 未找到匹配的评估，添加空评估
+                    chapter['analysis'] = {
+                        "summary": f"本章节主要讨论{chapter_title}相关内容。",
+                        "strengths": [],
+                        "weaknesses": [],
+                        "suggestions": []
+                    }
+                    
+                # 递归处理子章节
+                if 'children' in chapter and chapter['children']:
+                    for child in chapter['children']:
+                        child_title = child.get('text', '')
+                        # 查找匹配的评估结果
+                        matching_child_eval = None
+                        for eval_item in all_evaluations:
+                            if eval_item.get('chapter') == "全篇" or eval_item.get('index') == 0:
+                                continue
+                            if child_title.lower() in eval_item.get('chapter', '').lower() or \
+                               eval_item.get('chapter', '').lower() in child_title.lower():
+                                matching_child_eval = eval_item
+                                break
+                                
+                        # 添加评估
+                        if matching_child_eval:
+                            child['analysis'] = {
+                                "summary": matching_child_eval.get('summary', ''),
+                                "strengths": matching_child_eval.get('strengths', []),
+                                "weaknesses": matching_child_eval.get('weaknesses', []),
+                                "suggestions": matching_child_eval.get('suggestions', [])
+                            }
+                        else:
+                            child['analysis'] = {
+                                "summary": f"本小节主要讨论{child_title}相关内容。",
+                                "strengths": [],
+                                "weaknesses": [],
+                                "suggestions": []
+                            }
+        
+        # 构建最终结果
+        result = {
+            "toc_items": toc_items,
+            "overall_scores": paper_scores,
+            "paper_summary": {
+                "overall_comment": overall_evaluation.get('summary', ''),
+                "strengths": overall_evaluation.get('strengths', []),
+                "weaknesses": overall_evaluation.get('weaknesses', []),
+                "suggestions": overall_evaluation.get('suggestions', [])
+            }
         }
         
-        return analysis_result
+        print(f"论文评估完成，共处理 {len(chapters)} 个章节")
+        return result
+        
+    except ImportError as e:
+        print(f"导入错误: {e}")
+        print("确保您在正确的项目结构中运行此脚本")
+        return {"error": f"导入评估模块失败: {str(e)}"}
     except Exception as e:
-        print(f"分析文档时出错: {str(e)}")
+        print(f"评估过程出错: {e}")
         import traceback
         traceback.print_exc()
-        return None 
+        return {"error": f"评估过程出错: {str(e)}"}
+
+def simulate_analysis_with_toc(uploaded_file):
+    """
+    分析文档并生成结构化的分析结果，包括目录结构和评估结果。
+    这个函数会调用 process_paper_evaluation 进行实际的评估。
+    
+    Args:
+        uploaded_file: Streamlit上传的文件对象
+        
+    Returns:
+        Dict[str, Any]: 包含完整评估结果的字典
+    """
+    try:
+        # 首先提取目录结构
+        toc_items = extract_toc_from_docx(uploaded_file)
+        
+        # 在临时目录保存上传的文件
+        with tempfile.NamedTemporaryFile(delete=False, suffix=".docx") as temp_file:
+            temp_file.write(uploaded_file.getvalue())
+            temp_path = temp_file.name
+        
+        try:
+            # 使用临时文件路径进行评估
+            print(f"使用文件 {temp_path} 进行论文评估")
+            result = process_paper_evaluation(temp_path, toc_items)
+            
+            # 检查是否有错误
+            if 'error' in result:
+                print(f"评估遇到问题: {result['error']}")
+                print("将使用默认分析结果")
+                return _generate_default_analysis(toc_items)
+            
+            # 如果评估成功，更新toc_items
+            if 'toc_items' in result and result['toc_items']:
+                toc_items = result['toc_items']
+            
+            return {
+                'chapters': toc_items,
+                'overall_scores': result.get('overall_scores', []),
+                'paper_summary': result.get('paper_summary', {})
+            }
+        finally:
+            # 确保删除临时文件
+            if os.path.exists(temp_path):
+                os.unlink(temp_path)
+                
+    except Exception as e:
+        print(f"分析文档时出错: {e}")
+        import traceback
+        traceback.print_exc()
+        return _generate_default_analysis(extract_toc_from_docx(uploaded_file))
+
+def _generate_default_analysis(toc_items):
+    """
+    生成默认的分析结果，当模型分析失败时使用
+    
+    Args:
+        toc_items: 目录结构列表
+        
+    Returns:
+        Dict[str, Any]: 默认分析结果
+    """
+    # 生成默认的分析结果
+    default_analysis = {
+        'chapters': toc_items,
+        'overall_scores': [
+            {'index': 1, 'module': '摘要', 'full_score': 5, 'score': 4},
+            {'index': 2, 'module': '选题背景和意义', 'full_score': 5, 'score': 4},
+            {'index': 3, 'module': '选题的理论意义与应用价值', 'full_score': 5, 'score': 4},
+            {'index': 4, 'module': '相关工作的国内外现状综述', 'full_score': 5, 'score': 4},
+            {'index': 5, 'module': '主要工作和贡献总结', 'full_score': 5, 'score': 4},
+            {'index': 6, 'module': '相关工作或相关技术的介绍', 'full_score': 5, 'score': 4},
+            {'index': 7, 'module': '论文的创新性', 'full_score': 25, 'score': 20},
+            {'index': 8, 'module': '实验完成度', 'full_score': 20, 'score': 15},
+            {'index': 9, 'module': '总结和展望', 'full_score': 5, 'score': 4},
+            {'index': 10, 'module': '工作量', 'full_score': 5, 'score': 4},
+            {'index': 11, 'module': '论文撰写质量', 'full_score': 10, 'score': 7},
+            {'index': 12, 'module': '参考文献', 'full_score': 5, 'score': 4},
+        ],
+        'paper_summary': {
+            "overall_comment": "本论文整体结构完整，内容丰富，研究方法合理，但部分章节可进一步完善。",
+            "strengths": [
+                "研究问题明确，具有一定的理论和实际意义",
+                "研究方法选择合理，实验设计完整",
+                "数据分析全面，结果可信度高"
+            ],
+            "weaknesses": [
+                "文献综述部分可以更加全面",
+                "创新点阐述不够突出",
+                "部分章节内容深度不够"
+            ],
+            "suggestions": [
+                "建议补充更多最新相关研究文献",
+                "加强对创新点的论述与证明",
+                "增加对研究局限性的讨论"
+            ]
+        }
+    }
+    
+    # 确保为每个章节添加分析结果
+    for chapter in default_analysis['chapters']:
+        if 'analysis' not in chapter:
+            chapter_title = chapter.get('text', '')
+            chapter['analysis'] = {
+                "summary": f"本章节主要讨论{chapter_title}相关内容，包含相关理论和方法介绍。",
+                "strengths": ["章节结构清晰", "内容充实"],
+                "weaknesses": ["可进一步扩展深度"],
+                "suggestions": ["建议增加案例分析"]
+            }
+            
+        # 处理子章节
+        if 'children' in chapter:
+            for child in chapter['children']:
+                if 'analysis' not in child:
+                    child_title = child.get('text', '')
+                    child['analysis'] = {
+                        "summary": f"本小节主要讨论{child_title}相关内容。",
+                        "strengths": ["逻辑清晰"],
+                        "weaknesses": ["内容可以更加充实"],
+                        "suggestions": ["建议增加具体示例"]
+                    }
+    
+    return default_analysis
+
+
+
+

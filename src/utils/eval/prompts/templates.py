@@ -125,4 +125,4 @@ p_writing_quality = """
 {content}
 
 请给出详细的评估意见和改进建议。
-""" 
+"""

@@ -1,6 +1,6 @@
 import re
 
-from .helper_utils import get_chapter_idx
+from utils.eval.tools.helper_utils import get_chapter_idx
 
 def fix_abs_toc(pattern_type: str, text: str):
     """修复摘要和目录部分的匹配问题"""

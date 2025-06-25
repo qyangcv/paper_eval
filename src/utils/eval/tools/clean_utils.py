@@ -3,7 +3,7 @@ import os
 from io import StringIO
 import pandas as pd
 
-from utils.helper_utils import text_similarity, keep_only_chinese_characters
+from utils.eval.tools.helper_utils import text_similarity, keep_only_chinese_characters
 
 
 

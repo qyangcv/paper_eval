@@ -1,5 +1,5 @@
 import streamlit as st
-from services.document_processor import convert_word_to_html, convert_word_to_html_with_math, extract_toc_from_docx, simulate_analysis_with_toc
+from services.document_processor import convert_word_to_html, convert_word_to_html_with_math, extract_toc_from_docx
 from utils.session_state import reset_session_state
 import re
 import streamlit.components.v1 as components
@@ -8,20 +8,6 @@ import textwrap
 import json
 import plotly.utils
 
-# -------- 示例 JSON ---------
-
-EXAMPLE_ANALYSIS = {
-    "summary": "示例：本章节主要介绍研究背景与动机，包括相关工作综述。",
-    "strengths": [
-        "结构逻辑清晰，层次分明",
-        "引用文献充分，论据充足",
-    ],
-    "weaknesses": [
-        "部分段落表述略显冗长，可适当精简",
-        "缺少对关键概念的图示说明，阅读门槛较高",
-    ],
-    "subchapter_advice": "可在'相关工作'子章节中加入最新的综述文章，提高时效性。",
-}
 
 def render_results_page():
     """渲染结果展示页面"""
@@ -272,16 +258,17 @@ def create_complete_html_document(content_html, toc_items=None):
             chapter_id = chapter.get('id', f"section-{i}")
             chapter_text = chapter.get('text', '')
             
-            # 获取分析数据
+            # 获取分析数据，确保使用模型分析结果
             analysis = chapter.get('analysis', {})
             summary = analysis.get("summary", f"本章节主要讨论{chapter_text}相关内容。")
             strengths = analysis.get("strengths", [])
             weaknesses = analysis.get("weaknesses", [])
-            subchapter_advice = analysis.get("subchapter_advice", "")
+            suggestions = analysis.get("suggestions", [])
             
-            # 生成优点和缺点列表
+            # 生成优点、缺点和建议列表
             strengths_html = "".join([f"<li>{item}</li>" for item in strengths]) if strengths else "<li>暂无明确优点</li>"
             weaknesses_html = "".join([f"<li>{item}</li>" for item in weaknesses]) if weaknesses else "<li>暂无明确不足</li>"
+            suggestions_html = "".join([f"<li>{item}</li>" for item in suggestions]) if suggestions else "<li>暂无具体建议</li>"
             
             # 生成章节优化建议卡片
             analysis_sidebar_html += f"""
@@ -309,14 +296,15 @@ def create_complete_html_document(content_html, toc_items=None):
                     </div>
             """
             
-            # 添加子章节建议（如果有）
-            if subchapter_advice:
-                analysis_sidebar_html += f"""
-                    <div class="detail-section">
-                        <div class="detail-header blue">💡 子章节建议</div>
-                        <div class="detail-content">{subchapter_advice}</div>
-                    </div>
-                """
+            # 添加改进建议
+            analysis_sidebar_html += f"""
+                <div class="detail-section">
+                    <div class="detail-header blue">💡 改进建议</div>
+                    <ul class="detail-list">
+                        {suggestions_html}
+                    </ul>
+                </div>
+            """
                 
             analysis_sidebar_html += """
                 </div>
@@ -932,7 +920,7 @@ def generate_analysis_html(chapter_text: str, analysis: dict | None = None) -> s
         - summary : str           内容摘要
         - strengths : list[str]   优点列表
         - weaknesses : list[str]  不足之处列表
-        - subchapter_advice : str 子章节建议（可选）
+        - suggestions : list[str] 改进建议列表
 
     返回
     ----
@@ -940,14 +928,15 @@ def generate_analysis_html(chapter_text: str, analysis: dict | None = None) -> s
         已拼接完成的 HTML 字符串，可直接用 `st.markdown(..., unsafe_allow_html=True)` 渲染。
     """
 
-    # 若未传入分析数据，则使用示例 JSON
-    if not analysis:
-        analysis = EXAMPLE_ANALYSIS
-
+    # 确保分析数据是字典类型
+    if analysis is None:
+        analysis = {}
+        
+    # 获取分析数据，如果不存在则使用默认值
     summary = analysis.get("summary") or f"本章节主要讨论{chapter_text}相关内容，包含了相关理论基础和研究方法。"
     strengths = analysis.get("strengths") or []
     weaknesses = analysis.get("weaknesses") or []
-    subchapter_advice = analysis.get("subchapter_advice")
+    suggestions = analysis.get("suggestions") or []
         
     # 构造列表项 HTML
     def _list_html(items):
@@ -1007,22 +996,23 @@ def generate_analysis_html(chapter_text: str, analysis: dict | None = None) -> s
         """,
     ]
 
-    # 可选子章节建议
-    if subchapter_advice:
-        html_parts.append(
-            f"""
-            <div style="background: var(--card-bg); border-radius: 10px; padding: 1rem; 
-                       box-shadow: 0 2px 8px rgba(0,0,0,0.03); margin-bottom: 1rem;">
-                <div style="font-weight: 600; color: var(--info-color); 
-                           display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
-                    <span>💡 子章节建议</span>
-                </div>
-                <div style="color: var(--text-secondary); font-size: 0.95rem; line-height: 1.6;">
-                    {subchapter_advice}
-                </div>
+    # 改进建议
+    html_parts.append(
+        f"""
+        <div style="background: var(--card-bg); border-radius: 10px; padding: 1rem; 
+                   box-shadow: 0 2px 8px rgba(0,0,0,0.03); margin-bottom: 1rem;">
+            <div style="font-weight: 600; color: var(--info-color); 
+                       display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
+                <span>💡 改进建议</span>
             </div>
-            """,
-        )
+            <div style="color: var(--text-secondary); font-size: 0.95rem; line-height: 1.6;">
+                <ul style="margin-top: 0.5rem; padding-left: 1.5rem;">
+                    {_list_html(suggestions)}
+                </ul>
+            </div>
+        </div>
+        """,
+    )
     
     return "\n".join(html_parts)
 
@@ -1040,7 +1030,6 @@ def _render_data_analysis_card(analysis_result: dict):
 
     # -------- 多维度评分 ---------
     # 如果后端分析已生成评分数据，则使用；否则给出示例占位
-    # 添加默认总结文本
     default_summary = {
         "overall_comment": "本论文整体表现良好，研究问题明确，方法创新，实验设计合理，结果可靠。",
         "strengths": [
@@ -1075,8 +1064,12 @@ def _render_data_analysis_card(analysis_result: dict):
         {'index': 12, 'module': '参考文献', 'full_score': 5, 'score': 4},
     ]
 
+    # 使用传入的评分数据，如果不存在则使用默认值
     scores_data = analysis_result.get('overall_scores', default_scores)
 
+    # 获取论文总结数据，使用process_paper_evaluation提供的数据而不是默认值
+    summary_data = analysis_result.get('paper_summary', default_summary)
+    
     # -------- 总得分 ---------
     total_full_score = sum(item.get('full_score', 0) for item in scores_data)
     total_score = sum(item.get('score', item.get('full_score', 0)) for item in scores_data)
@@ -1153,9 +1146,6 @@ def _render_data_analysis_card(analysis_result: dict):
         fig_html = "<p>图表渲染失败</p>"
 
     # -------- 渲染论文总结卡片 ---------
-    summary_data = analysis_result.get('paper_summary', default_summary)
-    
-    # 生成优点、缺点和建议的HTML列表
     strengths_list = summary_data.get("strengths", [])
     weaknesses_list = summary_data.get("weaknesses", [])
     suggestions_list = summary_data.get("suggestions", [])
@@ -1165,9 +1155,25 @@ def _render_data_analysis_card(analysis_result: dict):
     suggestions_html = "".join([f"<li>{item}</li>" for item in suggestions_list])
     
     # -------- 动态计算高度 ---------
-    # 基础高度 300px，加上每条列表项约 32px
+    # 基础高度，包含固定元素的高度
+    base_height = 400  # 增加基础高度
+    item_height = 36  # 每个列表项的高度
+    comment_line_height = 28  # 每行文字的高度
+    
+    # 计算列表项占用的高度
     item_count = len(strengths_list) + len(weaknesses_list) + len(suggestions_list)
-    dynamic_height = 360 + item_count * 32  # 额外空间防止阴影被裁剪
+    
+    # 计算整体评论可能需要的额外行数
+    overall_comment = summary_data.get("overall_comment", "论文整体结构完整，内容充实，研究方法合理，结果可靠。")
+    # 估算文本可能占用的行数 (每行约45个字符)
+    comment_length = len(overall_comment)
+    extra_comment_lines = max(1, (comment_length // 45))
+    
+    # 新的总高度计算，添加额外的高度余量
+    dynamic_height = base_height + item_count * item_height + extra_comment_lines * comment_line_height
+    
+    # 设置最小高度，确保短内容也能正常显示
+    dynamic_height = max(dynamic_height, 500)
 
     summary_html = f"""
     <style>
@@ -1179,9 +1185,10 @@ def _render_data_analysis_card(analysis_result: dict):
             transition: transform 0.25s ease, box-shadow 0.25s ease;
             padding: 1.8rem;
             margin-top: 1.5rem;
-            margin-bottom: 1.5rem;
+            margin-bottom: 2rem;  /* 增加底部边距 */
             width: 100%;
             box-sizing: border-box;
+            overflow: visible;  /* 确保内容超出时不被截断 */
         }}
         .summary-card:hover {{
             transform: translateY(-6px);
@@ -1207,14 +1214,14 @@ def _render_data_analysis_card(analysis_result: dict):
             margin-bottom: 1.5rem;
             color: var(--text-primary);
             font-size: 1rem;
-            line-height: 1.5;
+            line-height: 1.6;  /* 行高调整 */
         }}
         .section-title {{
             font-weight: 600;
             font-size: 1rem;
             color: var(--text-primary);
-            margin-top: 1.2rem;
-            margin-bottom: 0.5rem;
+            margin-top: 1.5rem;  /* 增加段落间距 */
+            margin-bottom: 0.7rem;  /* 调整标题与列表之间的间距 */
             display: flex;
             align-items: center;
             gap: 0.4rem;
@@ -1228,6 +1235,7 @@ def _render_data_analysis_card(analysis_result: dict):
             justify-content: center;
             font-size: 0.8rem;
             color: white;
+            flex-shrink: 0;  /* 防止图标缩小 */
         }}
         .icon-strength {{ background-color: #06d6a0; }}
         .icon-weakness {{ background-color: #f94144; }}
@@ -1238,8 +1246,14 @@ def _render_data_analysis_card(analysis_result: dict):
             color: var(--text-secondary);
         }}
         .summary-list li {{
-            margin-bottom: 0.5rem;
-            line-height: 1.5;
+            margin-bottom: 0.7rem;  /* 增加列表项间距 */
+            line-height: 1.6;  /* 增加行高 */
+            padding-right: 0.5rem;  /* 添加右边距 */
+        }}
+        /* 响应式处理 */
+        @media (max-width: 768px) {{
+            .summary-card {{ padding: 1.2rem; }}
+            .summary-list {{ padding-left: 1.2rem; }}
         }}
     </style>
     
@@ -1372,10 +1386,10 @@ def _render_data_analysis_card(analysis_result: dict):
     cleaned_summary_html = re.sub(r'^\s+', '', textwrap.dedent(summary_html), flags=re.MULTILINE)
     components.html(
         f"""
-        <div style="max-width: 100%; margin: 0 auto; overflow: visible;">
+        <div style="max-width: 100%; margin: 0 auto; padding-bottom: 20px; overflow: visible;">
             {cleaned_summary_html}
         </div>
         """,
         height=dynamic_height,
-        scrolling=False
+        scrolling=True  # 允许滚动以确保内容完全可见
     ) 

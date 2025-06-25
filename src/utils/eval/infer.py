@@ -9,18 +9,25 @@ import os
 from typing import List, Callable
 from glob import glob
 
-# 导入 pipeline 模块的推理函数
-from pipeline.batch_inference import infer as batch_infer
-from pipeline.chapter_inference import infer as chapter_infer
-from pipeline.quality_assessment import infer as quality_infer
-from utils.get_pkl_files import get_pkl_files
+# 添加当前目录到sys.path
+SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+if SCRIPT_DIR not in sys.path:
+    sys.path.insert(0, SCRIPT_DIR)
 
+# 导入 pipeline 模块的推理函数
+from utils.eval.pipeline.batch_inference import infer as batch_infer
+from utils.eval.pipeline.chapter_inference import infer as chapter_infer
+from utils.eval.pipeline.quality_assessment import infer as quality_infer
+from utils.eval.tools.get_pkl_files import get_pkl_files
+
+# 获取当前脚本的绝对路径
+SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 
 # ==================== 配置参数 ====================
 # 输入根目录：PKL文件或包含PKL文件的目录
-INPUT_ROOT = "data/processed/docx"
+INPUT_ROOT = os.path.join(SCRIPT_DIR, "data/processed/docx")
 # 输出根目录
-OUTPUT_ROOT = "data/output/docx/deepseek"
+OUTPUT_ROOT = os.path.join(SCRIPT_DIR, "data/output/docx/deepseek")
 # 处理进程数
 PROCESSES = 16
 # 使用的模型名称
@@ -49,6 +56,9 @@ def run_inference(pkl_paths: List[str], output_ROOT: str, infer_module: Callable
 
 
 def main(infer_module: Callable, model_name: str):
+    # 确保输入目录存在
+    os.makedirs(INPUT_ROOT, exist_ok=True)
+    
     # 获取PKL文件列表
     pkl_files = get_pkl_files(INPUT_ROOT)
     if not pkl_files:

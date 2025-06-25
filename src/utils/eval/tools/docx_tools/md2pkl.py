@@ -69,5 +69,41 @@ def main():
         pickle.dump(data, f)
     print(f'已保存到 {PKL_PATH}')
 
+def convert_md_to_pkl(md_path, pkl_path):
+    """
+    对外的函数接口，将Markdown文件转换为PKL文件
+    
+    Args:
+        md_path: Markdown文件路径
+        pkl_path: 输出的PKL文件路径
+        
+    Returns:
+        bool: 是否转换成功
+    """
+    try:
+        md = read_md(md_path)
+        zh_abs, en_abs = extract_abstracts(md)
+        ref = extract_reference(md)
+        chapters = extract_chapters(md)
+        
+        data = {
+            'zh_abs': zh_abs,
+            'en_abs': en_abs,
+            'ref': ref,
+            'chapters': chapters
+        }
+        
+        # 确保输出目录存在
+        os.makedirs(os.path.dirname(pkl_path), exist_ok=True)
+        
+        with open(pkl_path, 'wb') as f:
+            pickle.dump(data, f)
+            
+        print(f'已保存到 {pkl_path}')
+        return True
+    except Exception as e:
+        print(f"转换MD到PKL失败: {str(e)}")
+        return False
+
 if __name__ == '__main__':
     main()

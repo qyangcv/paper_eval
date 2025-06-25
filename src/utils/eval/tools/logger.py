@@ -8,7 +8,7 @@ import os
 from pathlib import Path
 from typing import Optional
 
-from config import LOG_CONFIG
+from utils.eval.config import LOG_CONFIG
 
 def setup_logger(name: Optional[str] = None) -> logging.Logger:
     """

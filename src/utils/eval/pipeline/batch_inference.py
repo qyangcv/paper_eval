@@ -6,8 +6,39 @@
 import os
 import sys
 import json
-from transformers import AutoTokenizer
 from multiprocessing import Pool
+import warnings
+
+# Use lazy imports for transformers to avoid Streamlit watcher issues
+_transformers = None
+_tokenizer = None
+
+def _safe_import_transformers():
+    """Safely import transformers module without triggering Streamlit file watcher issues."""
+    global _transformers
+    if _transformers is None:
+        try:
+            import transformers
+            _transformers = transformers
+            return transformers
+        except ImportError:
+            warnings.warn("Failed to import transformers library. Tokenization functionality will be unavailable.")
+            return None
+    return _transformers
+
+def _get_tokenizer(model_name):
+    """Safely get a tokenizer with deferred import."""
+    global _tokenizer
+    if _tokenizer is None:
+        transformers = _safe_import_transformers()
+        if transformers and not model_name.startswith("deepseek"):
+            try:
+                _tokenizer = transformers.AutoTokenizer.from_pretrained('Qwen/Qwen3-0.6B')
+                return _tokenizer
+            except Exception as e:
+                warnings.warn(f"Failed to initialize tokenizer: {e}")
+                return None
+    return _tokenizer
 
 from models import request_qwen, request_deepseek
 from models import request_gemini
@@ -18,8 +49,8 @@ from prompts import (
     p_wq_for,
     p_wq_ref
 )
-from utils import read_pickle
-from utils.logger import get_logger
+from utils.eval.tools.file_utils import read_pickle
+from utils.eval.tools.logger import get_logger
 from config.data_config import FILE_CONFIG
 from config.model_config import MODEL_CONFIG
 
@@ -36,8 +67,10 @@ def load_context(pkl_path: str, model_name: str) -> list[str]:
     Returns:
         list[str]: 论文内容列表
     """
+    # Use safe tokenizer import
     if not model_name.startswith("deepseek"):
-        tokenizer = AutoTokenizer.from_pretrained('Qwen/Qwen3-0.6B')
+        _get_tokenizer(model_name)
+    
     context_lst = []
     data = read_pickle(pkl_path)
     keys = list(data.keys())

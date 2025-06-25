@@ -6,7 +6,7 @@
 from typing import List, Tuple, Optional
 import re
 
-from utils.logger import get_logger
+from utils.eval.tools.logger import get_logger
 
 logger = get_logger(__name__)
 

@@ -11,6 +11,11 @@ import re
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
 
+# 获取当前脚本的绝对路径
+SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+# 设置工具目录的相对路径
+TOOLS_DIR = os.path.join(SCRIPT_DIR, "utils", "eval", "tools", "docx_tools")
+
 
 def check_dependencies():
     """检查所需依赖是否已安装"""
@@ -38,7 +43,11 @@ def check_dependencies():
         logger.info("✓ 已找到 DEEPSEEK_API_KEY")
     
     # 检查所需目录是否存在
-    dirs = ["data/raw/docx", "data/processed", "data/output"]
+    dirs = [
+        os.path.join(SCRIPT_DIR, "data/raw/docx"), 
+        os.path.join(SCRIPT_DIR, "data/processed"), 
+        os.path.join(SCRIPT_DIR, "data/output")
+    ]
     for dir_path in dirs:
         os.makedirs(dir_path, exist_ok=True)
         
@@ -54,7 +63,7 @@ def prepare_sample_file(docx_path):
     
     # 如果不在目标位置，将 docx 文件复制到 data/raw/docx
     filename = os.path.basename(docx_path)
-    dest_path = os.path.join("data/raw/docx", filename)
+    dest_path = os.path.join(SCRIPT_DIR, "data/raw/docx", filename)
     
     if docx_path != dest_path:
         shutil.copy(docx_path, dest_path)
@@ -62,14 +71,15 @@ def prepare_sample_file(docx_path):
     
     # 将 docx 转换为 md，使用 docx2md.py 而不是 pandoc
     md_filename = os.path.splitext(filename)[0] + ".md"
-    md_path = os.path.join("data/raw/docx", md_filename)
-    image_dir = os.path.join("data/raw/docx/images")
+    md_path = os.path.join(SCRIPT_DIR, "data/raw/docx", md_filename)
+    image_dir = os.path.join(SCRIPT_DIR, "data/raw/docx/images")
     
     # 确保图片目录存在
     os.makedirs(image_dir, exist_ok=True)
     
-    # 使用 docx2md.py 进行转换
-    cmd = f"{sys.executable} utils/docx_tools/docx2md.py \"{dest_path}\" -o \"{md_path}\" -i \"{image_dir}\""
+    # 使用 docx2md.py 进行转换 - 修正路径
+    docx2md_path = os.path.join(TOOLS_DIR, "docx2md.py")
+    cmd = f"{sys.executable} \"{docx2md_path}\" \"{dest_path}\" -o \"{md_path}\" -i \"{image_dir}\""
     logger.info(f"正在将 docx 转换为 md...")
     
     try:
@@ -82,14 +92,15 @@ def prepare_sample_file(docx_path):
     # 使用项目的工具将 md 转换为 pkl
     try:
         # 创建一个直接调用函数的简单脚本，而不修改原始脚本
-        temp_script = "temp_md2pkl.py"
+        temp_script = os.path.join(SCRIPT_DIR, "temp_md2pkl.py")
         
         # 确保输出目录存在
-        os.makedirs("data/processed/docx", exist_ok=True)
+        processed_dir = os.path.join(SCRIPT_DIR, "data/processed/docx")
+        os.makedirs(processed_dir, exist_ok=True)
         
         # 获取绝对路径以避免路径问题 - 保存到 data/processed/docx 以匹配 infer.py 的期望
         abs_md_path = os.path.abspath(md_path)
-        abs_pkl_path = os.path.abspath(f"data/processed/docx/{os.path.splitext(filename)[0]}.pkl")
+        abs_pkl_path = os.path.abspath(os.path.join(processed_dir, f"{os.path.splitext(filename)[0]}.pkl"))
         
         # 修复字符串字面量的路径格式（将反斜杠替换为双反斜杠）
         abs_md_path_str = abs_md_path.replace("\\", "\\\\")
@@ -99,7 +110,7 @@ def prepare_sample_file(docx_path):
         with open(temp_script, "w", encoding="utf-8") as f:
             f.write(f"""
 import sys
-sys.path.append("utils/docx_tools")
+sys.path.append(r'{TOOLS_DIR}')
 from md2pkl import read_md, extract_abstracts, extract_reference, extract_chapters
 import pickle
 
@@ -140,7 +151,9 @@ def run_inference():
     """运行推理过程"""
     logger.info("正在运行推理...")
     try:
-        subprocess.run([sys.executable, "infer.py"], check=True)
+        # 使用脚本的绝对路径
+        infer_path = os.path.join(SCRIPT_DIR, "infer.py")
+        subprocess.run([sys.executable, infer_path], check=True)
         logger.info("✓ 推理成功完成")
         return True
     except subprocess.SubprocessError as e:
@@ -148,13 +161,13 @@ def run_inference():
         return False
 
 def convert_output():
-    """将 JSON 输出转换为 Markdown"""
-    logger.info("正在将 JSON 输出转换为 Markdown...")
+    """将 JSON 输出处理进行后续操作"""
+    logger.info("正在处理 JSON 输出...")
     try:
         # 输出目录匹配 infer.py 的 OUTPUT_ROOT 变量
-        output_dir = "data/output/docx/deepseek"
+        output_dir = os.path.join(SCRIPT_DIR, "data/output/docx/deepseek")
         
-        # 查找最新的 JSON 输出并转换
+        # 查找最新的 JSON 输出
         outputs = list(Path(output_dir).glob("*.json"))
         if not outputs:
             logger.warning(f"在 {output_dir} 中未找到 JSON 输出")
@@ -162,20 +175,16 @@ def convert_output():
         
         # 按创建时间排序，最新的在前
         latest_output = sorted(outputs, key=lambda p: p.stat().st_mtime, reverse=True)[0]
-        logger.info(f"正在转换 {latest_output} 为 Markdown")
+        logger.info(f"找到最新的输出文件: {latest_output}")
         
-        # 运行转换脚本，使用适当的 Python 路径以找到 config 模块
-        cmd = f"{sys.executable} -c \"import sys; sys.path.insert(0, '.'); from utils.json2md import json2md; json2md(r'{latest_output}', r'{latest_output.with_suffix('.md')}');\""
-        subprocess.run(cmd, shell=True, check=True)
-        logger.info("✓ 转换完成")
-        
-        md_output = latest_output.with_suffix('.md')
-        if md_output.exists():
-            logger.info(f"结果保存到: {md_output}")
+        # 简单显示输出文件路径，不再转换为Markdown
+        logger.info("✓ 处理完成")
+        logger.info(f"结果文件路径: {latest_output}")
         
         return True
+            
     except Exception as e:
-        logger.error(f"转换失败: {e}")
+        logger.error(f"处理失败: {e}")
         return False
 
 def main():
@@ -196,7 +205,7 @@ def main():
             return
     else:
         # 检查是否有已准备好的 pkl 文件
-        pkl_files = list(Path("data/processed").glob("*.pkl"))
+        pkl_files = list(Path(os.path.join(SCRIPT_DIR, "data/processed")).glob("*.pkl"))
         if not pkl_files:
             logger.error("未找到 pkl 文件且未提供示例文件")
             return
