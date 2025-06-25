@@ -1,8 +1,21 @@
+# Python bytecode
+__pycache__/
+*.py[cod]
+
+# Environment files
+.env
+venv/
+
+# Jupyter Notebooks checkpoints
+.ipynb_checkpoints/
+
+# VSCode settings
+.vscode/ 
+
 # macOS specific
 **/.DS_Store
 
 # Python
-**/__pycache__/
 data/
 logs/ 
 

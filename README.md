@@ -1,72 +1,88 @@
-# 论文评价系统 
+# Word文档分析器
 
-## 项目简介
+一个基于Streamlit的智能Word文档分析工具，可以帮助用户分析和优化Word文档的结构和内容。
 
-本项目是一个基于大语言模型的论文质量评价系统，支持对学术论文进行自动化的写作质量评估。
+## 功能特点
 
-## 主要功能
-对论文的撰写质量进行评价，包括五个维度：
-- **中文写作质量**: 语言表达、逻辑结构
-- **英文写作质量**: 英文摘要和术语使用
-- **客观性**: 客观用词
-- **公式格式**: 数学公式的规范性
-- **参考文献**: 引用格式和完整性
+- 📝 智能预览：完整保留文档格式、图片和数学公式
+- 🔍 结构分析：逐章节分析文档结构，提供清晰导航
+- 💡 内容优化：智能分析文章内容，提供优化建议
+- 📊 质量评估：章节质量评分与改进方向指导
+- 🔖 交互式导航：通过自定义侧边栏实现章节快速跳转
+- 📱 全屏阅读：支持全屏模式，提供更好的阅读体验
+- ➗ 数学公式：完美支持LaTeX数学公式渲染
+- 🖼️ 图片显示：正确显示文档中的所有图片
+
+## 安装示例
+
+- Python 3.10.18
+- Streamlit 1.45.1
+- 其他依赖见 requirements.txt
+
+## 安装步骤
+
+```bash
+pip install -r requirements.txt
+```
+
+## 运行应用
+
+```bash
+streamlit run src/app.py
+```
 
 ## 项目结构
 
 ```
-paper_eval/
-├── config/          # 配置文件
-├── data/           # 数据目录
-│   ├── raw/        # 原始论文数据
-│   ├── processed/  # 处理后的数据
-│   └── output/     # 评估结果
-├── models/         # AI模型接口
-├── pipeline/       # 推理流水线
-├── prompts/        # 评估提示词
-├── utils/          # 工具函数
-└── infer.py        # 主入口文件
+paper_fronted/
+├── src/
+│   ├── app.py                 # 主应用入口
+│   ├── components/            # 页面组件
+│   │   ├── upload_page.py     # 文件上传页面
+│   │   ├── processing_page.py # 处理中页面
+│   │   └── results_page.py    # 结果展示页面
+│   ├── services/              # 业务逻辑服务
+│   │   ├── document_processor.py # 文档处理主逻辑
+│   │   ├── docx2html.py       # Word转HTML转换器
+│   │   └── omml_to_latex.py   # Office Math ML转LaTeX
+│   ├── utils/                 # 工具函数
+│   │   └── session_state.py   # 会话状态管理
+│   └── styles/                # 样式定义
+│       └── custom_styles.py   # 自定义样式
+├── requirements.txt           # 项目依赖
+└── README.md                  # 项目说明
 ```
 
-## 安装依赖
-- `pip install -r requirements.txt`
-- `python install_torch_gpu.py `
-- 安装 pandoc: https://pandoc.org/installing.html
+## 使用说明
 
-## 使用方法
+1. 启动应用后，在上传页面选择要分析的Word文档（.docx格式）
+2. 点击"开始分析"按钮，等待处理完成
+3. 在结果页面查看文档分析结果和优化建议
+4. 使用左侧内容优化建议面板导航不同章节
+5. 点击章节标题可展开查看详细分析和建议
+6. 点击"全屏查看"按钮进入全屏阅读模式
+7. 在全屏模式下，可使用左上角按钮切换侧边栏显示/隐藏
 
-### 1. 添加API Key
-在 `~/.bashrc` 或 `~/.zshrc` 中添加：
-```bash
-export DEEPSEEK_API_KEY=...
-```
+## 最新功能
 
+### 交互式章节导航
+- 点击侧边栏中的章节标题，自动跳转到对应内容位置
+- 章节内容动态展开/折叠，显示详细分析建议
+- 平滑滚动和过渡动画提升用户体验
 
-### 2. 处理docx文件
-文件转换过程：docx -> md -> pkl
-- 将 docx 文件复制到 `data/raw/docx` 目录
-- 执行 `pandoc data/raw/docx/<xxx>.docx -o data/raw/docx/<xxx>.md --extract-media=data/raw/docx/images`，将`<xxx>`修改为文件名，得到md文件
-- 执行 `utils/docx_tools/md2pkl.py`，将 `md2pkl.py`的`MD_PATH`和`PKL_PATH` 修改为源路径和目标路径，得到pkl文件
-- （可选）调试 `utils/docx_tools/pkl_analyse.py` 查看pkl内容
+### 全屏阅读模式
+- 支持全屏查看文档内容，减少干扰
+- 全屏模式下可切换显示/隐藏侧边栏
+- 优化的滚动条设计，仅保留内容区域滚动条
 
+### 数学公式与图片支持
+- 完美支持LaTeX数学公式渲染
+- 正确显示文档中的所有图片
+- 自适应布局，确保在不同设备上正常显示
 
-### 3. 开始评估
+## 注意事项
 
-```bash
-python infer.py
-```
-
-
-## 支持的模型
-
-- `deepseek-chat`: deepseek-v3
-
-
-## 文件格式
-- LLM 输入：pkl
-- LLM 输出：json
-- 格式转换工具（存在少量格式问题，待完善）：使用 `utils/json2md.py` 将 josn 转换为易读的 markdown
-
-## 日志
-
-日志文件保存在 `logs/` 目录下
+- 仅支持.docx格式的Word文档
+- 建议文档大小不超过10MB
+- 确保文档包含清晰的章节结构以获得更好的分析效果
+- 数学公式渲染需要网络连接以加载MathJax库
