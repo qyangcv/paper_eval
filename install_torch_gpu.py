@@ -45,44 +45,67 @@ def install_torch_gpu():
     # Major CUDA versions supported by PyTorch
     cuda_major = cuda_version.split('.')[0]
     
-    # For Tsinghua mirror with CUDA specific versions
+    # For specific CUDA versions, we need to use PyTorch's index as primary for torch packages
     if cuda_major == "12":
         # For CUDA 12.x
         print("Installing PyTorch for CUDA 12.x")
+        # First uninstall any existing torch installations to avoid conflicts
+        try:
+            subprocess.check_call([sys.executable, "-m", "pip", "uninstall", "torch", "torchvision", "torchaudio", "-y"])
+        except:
+            pass
+
+        # 使用清华源镜像的PyTorch CUDA版本
+        pytorch_mirror = "https://mirrors.tuna.tsinghua.edu.cn/anaconda/cloud/pytorch/linux-64/"
         cmd = [
-            sys.executable, "-m", "pip", "install", 
-            "-i", tsinghua_pypi,
-            "torch", "torchvision", "torchaudio"
+            sys.executable, "-m", "pip", "install",
+            "torch", "torchvision", "torchaudio",
+            "--index-url", "https://download.pytorch.org/whl/cu121"
         ]
-        # Add extra index URL for CUDA packages
-        extra_index = "https://download.pytorch.org/whl/cu121"
-        cmd.extend(["--extra-index-url", extra_index])
         
     elif cuda_major == "11":
         # For CUDA 11.x
         print("Installing PyTorch for CUDA 11.x")
+        # First uninstall any existing torch installations to avoid conflicts
+        try:
+            subprocess.check_call([sys.executable, "-m", "pip", "uninstall", "torch", "torchvision", "torchaudio", "-y"])
+        except:
+            pass
+
         cmd = [
-            sys.executable, "-m", "pip", "install", 
-            "-i", tsinghua_pypi,
-            "torch", "torchvision", "torchaudio"
+            sys.executable, "-m", "pip", "install",
+            "torch", "torchvision", "torchaudio",
+            "--index-url", "https://download.pytorch.org/whl/cu118"
         ]
-        # Add extra index URL for CUDA packages
-        extra_index = "https://download.pytorch.org/whl/cu118"
-        cmd.extend(["--extra-index-url", extra_index])
         
     else:
         print(f"CUDA version {cuda_version} may not be officially supported by PyTorch.")
-        print("Defaulting to the latest compatible version.")
+        print("Will try to install for CUDA 11.8 which has wide compatibility.")
+        # First uninstall any existing torch installations to avoid conflicts
+        try:
+            subprocess.check_call([sys.executable, "-m", "pip", "uninstall", "torch", "torchvision", "torchaudio", "-y"])
+        except:
+            pass
+
         cmd = [
             sys.executable, "-m", "pip", "install",
-            "-i", tsinghua_pypi,
-            "torch>=2.0.0", "torchvision", "torchaudio"
+            "torch", "torchvision", "torchaudio",
+            "--index-url", "https://download.pytorch.org/whl/cu118"
         ]
     
     print(f"Running: {' '.join(cmd)}")
     
     # Execute the installation command
     subprocess.check_call(cmd)
+    
+    # Install other packages using Tsinghua mirror
+    print("Installing other requirements using Tsinghua mirror...")
+    req_cmd = [
+        sys.executable, "-m", "pip", "install",
+        "-i", tsinghua_pypi,
+        "numpy>=1.24.0", "tqdm>=4.65.0", "pandas>=2.0.0"
+    ]
+    subprocess.check_call(req_cmd)
     
     # Verify installation
     print("\nVerifying PyTorch installation:")
@@ -93,6 +116,8 @@ print(f"CUDA available: {torch.cuda.is_available()}")
 if torch.cuda.is_available():
     print(f"CUDA version: {torch.version.cuda}")
     print(f"GPU device: {torch.cuda.get_device_name(0)}")
+else:
+    print("WARNING: CUDA is not available! Check your installation.")
 """
     subprocess.run([sys.executable, "-c", verify_script])
     print("\nPyTorch GPU installation completed.")
