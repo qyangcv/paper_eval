@@ -30,6 +30,7 @@ paper_eval/
 
 ## 安装依赖
 - `pip install -r requirements.txt`
+- `python install_torch_gpu.py `
 - 安装 pandoc: https://pandoc.org/installing.html
 
 ## 使用方法
