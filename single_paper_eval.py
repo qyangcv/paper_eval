@@ -11,17 +11,10 @@ import re
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
 
+
 def check_dependencies():
     """检查所需依赖是否已安装"""
     logger.info("检查依赖...")
-    
-    # 检查是否安装了 pandoc
-    try:
-        subprocess.run(["pandoc", "--version"], check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-        logger.info("✓ Pandoc 已安装")
-    except (subprocess.SubprocessError, FileNotFoundError):
-        logger.error("✗ Pandoc 未安装。请从 https://pandoc.org/installing.html 安装")
-        return False
     
     # 检查是否设置了 DEEPSEEK_API_KEY
     if not os.environ.get("DEEPSEEK_API_KEY"):
@@ -67,12 +60,17 @@ def prepare_sample_file(docx_path):
         shutil.copy(docx_path, dest_path)
         logger.info(f"已复制 {docx_path} 到 {dest_path}")
     
-    # 将 docx 转换为 md
+    # 将 docx 转换为 md，使用 docx2md.py 而不是 pandoc
     md_filename = os.path.splitext(filename)[0] + ".md"
     md_path = os.path.join("data/raw/docx", md_filename)
+    image_dir = os.path.join("data/raw/docx/images")
     
-    cmd = f"pandoc {dest_path} -o {md_path} --extract-media=data/raw/docx/images"
-    logger.info(f"正在将 docx 转换为 md: {cmd}")
+    # 确保图片目录存在
+    os.makedirs(image_dir, exist_ok=True)
+    
+    # 使用 docx2md.py 进行转换
+    cmd = f"{sys.executable} utils/docx_tools/docx2md.py \"{dest_path}\" -o \"{md_path}\" -i \"{image_dir}\""
+    logger.info(f"正在将 docx 转换为 md...")
     
     try:
         subprocess.run(cmd, shell=True, check=True)
