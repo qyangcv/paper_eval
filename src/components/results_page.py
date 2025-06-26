@@ -847,84 +847,107 @@ def create_complete_html_document(content_html, toc_items=None):
                 animation: highlight 2s;
             }}
             @keyframes highlight {{
-                0% {{ background-color: rgba(67, 97, 238, 0.2); }}
+                0% {{ background-color: rgba(255, 255, 0, 0.5); }}
+                70% {{ background-color: rgba(255, 255, 0, 0.3); }}
                 100% {{ background-color: transparent; }}
             }}
             
-            h1, h2, h3, h4, h5, h6 {{
-                scroll-margin-top: 20px;
+            /* 内容样式 */
+            .content {{
+                padding: 1rem 2rem;
             }}
-            .chapter-anchor {{
-                scroll-margin-top: 20px;
+            .content h1, .content h2, .content h3, .content h4, .content h5, .content h6 {{
+                color: #333;
+                margin-top: 1.5em;
+                margin-bottom: 0.7em;
+                font-weight: 600;
+                line-height: 1.3;
             }}
-            
-            @media (max-width: 768px) {{
-                body {{
-                    flex-direction: column;
-                }}
-                .sidebar {{
-                    width: 100%;
-                    height: auto;
-                    max-height: 45%;
-                }}
-                .content {{
-                    height: 55%;
-                }}
-                body.in-fullscreen .sidebar {{
-                    max-height: 0;
-                }}
-                #document-container:fullscreen {{
-                    flex-direction: column;
-                }}
-                #document-container:fullscreen .sidebar {{
-                    width: 100%;
-                    max-width: 100%;
-                    height: auto;
-                    max-height: 45%;
-                    overflow-y: auto;
-                    padding: 10px;
-                }}
-                #toggle-sidebar-btn {{
-                    top: 5px;
-                    left: 5px;
-                    font-size: 12px;
-                }}
-                .chapter-card-header {{
-                    padding: 10px;
-                }}
-            }}
-            table {{
-                border-collapse: collapse;
-                width: 100%;
-                margin: 1rem 0;
-            }}
-            table, th, td {{
-                border: 1px solid #ddd;
-            }}
-            th, td {{
-                padding: 8px;
-                text-align: left;
-            }}
-            img {{
-                max-width: 65%;
-                height: auto;
-                display: block;
-                margin: 0.5rem auto;
-            }}
-
-            /* 段落首行缩进 */
+            .content h1 {{ font-size: 2rem; }}
+            .content h2 {{ font-size: 1.75rem; }}
+            .content h3 {{ font-size: 1.5rem; }}
+            .content h4 {{ font-size: 1.25rem; }}
+            .content h5 {{ font-size: 1.1rem; }}
+            .content h6 {{ font-size: 1rem; }}
             .content p {{
-                text-indent: 2em;
-                line-height: 1.8;
-                margin: 0.8rem 0;
+                margin-bottom: 1em;
+                line-height: 1.6;
+                color: #444;
             }}
-
-            /* 居中公式段落（通过JS动态添加 center-text 类）*/
-            .content p.center-text {{
-                text-indent: 0;
+            .content ul, .content ol {{
+                margin-bottom: 1em;
+                padding-left: 2em;
+            }}
+            .content li {{
+                margin-bottom: 0.5em;
+                line-height: 1.6;
+            }}
+            .content strong {{
+                font-weight: 600;
+                color: #333;
+            }}
+            .content em {{
+                font-style: italic;
+            }}
+            .content blockquote {{
+                margin-left: 0;
+                padding-left: 1em;
+                border-left: 4px solid #ddd;
+                color: #666;
+            }}
+            .content code {{
+                font-family: monospace;
+                background-color: #f5f5f5;
+                padding: 0.2em 0.4em;
+                border-radius: 3px;
+                font-size: 0.9em;
+            }}
+            .content pre {{
+                background-color: #f5f5f5;
+                padding: 1em;
+                border-radius: 5px;
+                overflow-x: auto;
+                margin-bottom: 1em;
+            }}
+            .content table {{
+                width: 100%;
+                border-collapse: collapse;
+                margin-bottom: 1em;
+            }}
+            .content th, .content td {{
+                border: 1px solid #ddd;
+                padding: 0.5em;
+            }}
+            .content th {{
+                background-color: #f5f5f5;
+                font-weight: 600;
+            }}
+            .content img {{
+                max-width: 100%;
+                height: auto;
+                margin: 1em 0;
+            }}
+            .center-text {{
                 text-align: center;
             }}
-
+            
+            /* 滚动条样式 */
+            .content::-webkit-scrollbar, .sidebar::-webkit-scrollbar {{
+                width: 8px;
+                height: 8px;
+            }}
+            .content::-webkit-scrollbar-track, .sidebar::-webkit-scrollbar-track {{
+                background: #f1f1f1;
+                border-radius: 4px;
+            }}
+            .content::-webkit-scrollbar-thumb, .sidebar::-webkit-scrollbar-thumb {{
+                background: #ccc;
+                border-radius: 4px;
+            }}
+            .content::-webkit-scrollbar-thumb:hover, .sidebar::-webkit-scrollbar-thumb:hover {{
+                background: #aaa;
+            }}
+            
             /* 添加侧边栏宽度调整手柄 */
             .sidebar-resizer {{
                 position: absolute;
