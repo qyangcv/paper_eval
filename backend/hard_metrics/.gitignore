@@ -4,9 +4,14 @@
 # Python
 **/__pycache__/
 logs/*
+!logs/.gitkeep
+
 data/output/*
+!data/output/.gitkeep
 data/processed/*
-data/raw/pdf
+!data/processed/.gitkeep
+data/raw/pdf/*
+!data/raw/pdf/.gitkeep
 
 # VS Code
 .vscode/ 
