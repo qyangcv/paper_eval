@@ -15,9 +15,6 @@ venv/
 # macOS specific
 **/.DS_Store
 
-# Python
-data/
-logs/ 
 
 # VS Code
 .vscode/ 
