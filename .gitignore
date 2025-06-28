@@ -15,6 +15,15 @@ venv/
 # macOS specific
 **/.DS_Store
 
+# 数据文件
+*.pkl
+*.png
+*.docx
 
-# VS Code
-.vscode/ 
+# Markdown文件 (除了README.md)
+*.md
+!README.md
+!**/README.md
+
+# 数据目录
+/data/

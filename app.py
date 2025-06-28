@@ -2,6 +2,8 @@ import streamlit as st
 import sys
 import os
 import warnings
+import atexit
+import gc
 
 # 前端组件导入
 from frontend.utils.session_state import init_session_state, reset_session_state
@@ -32,6 +34,38 @@ warnings.filterwarnings("ignore", category=UserWarning)
 warnings.resetwarnings()
 warnings.filterwarnings("ignore", message=".*file watcher.*")
 warnings.filterwarnings("ignore", message=".*torch.*")
+# 忽略ResourceWarning警告
+warnings.filterwarnings("ignore", category=ResourceWarning)
+
+# 程序退出时的清理函数
+def cleanup():
+    """程序退出时执行的清理工作"""
+    # 强制回收垃圾对象
+    gc.collect()
+    
+    # 关闭所有可能打开的文件
+    for fd in range(3, 1000):  # 跳过标准输入输出错误
+        try:
+            os.close(fd)
+        except:
+            pass
+
+# 注册退出时的清理函数
+atexit.register(cleanup)
+
+# 创建必要的数据目录
+def create_data_directories():
+    """创建必要的数据目录结构"""
+    project_root = os.path.dirname(os.path.abspath(__file__))
+    directories = [
+        os.path.join(project_root, "data", "raw", "docx"),
+        os.path.join(project_root, "data", "raw", "docx", "images"),
+        os.path.join(project_root, "data", "processed", "docx"),
+        os.path.join(project_root, "data", "output")
+    ]
+    
+    for directory in directories:
+        os.makedirs(directory, exist_ok=True)
 
 # 页面配置必须是第一个 Streamlit 命令
 st.set_page_config(
@@ -43,6 +77,9 @@ st.set_page_config(
 
 def main():
     """主应用入口函数"""
+    # 创建必要的数据目录
+    create_data_directories()
+    
     # 初始化会话状态
     init_session_state()
     

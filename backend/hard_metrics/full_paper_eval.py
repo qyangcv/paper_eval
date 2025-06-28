@@ -26,11 +26,11 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 from pathlib import Path
 
 # 添加项目根目录到路径
-project_root = os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
+project_root = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 sys.path.insert(0, project_root)
 
 # 设置工具目录的相对路径
-TOOLS_DIR = os.path.join(project_root, "src", "utils", "eval", "tools", "docx_tools")
+TOOLS_DIR = os.path.join(project_root, "backend", "hard_metrics", "tools", "docx_tools")
 
 # 导入项目模块
 try:
@@ -109,9 +109,9 @@ def check_dependencies() -> bool:
     
     # 检查所需目录是否存在
     dirs = [
-        os.path.join(project_root, "data/raw/docx"), 
-        os.path.join(project_root, "data/processed/docx"),
-        os.path.join(project_root, "data/output")
+        os.path.join(project_root, "data", "raw", "docx"), 
+        os.path.join(project_root, "data", "processed", "docx"),
+        os.path.join(project_root, "data", "output")
     ]
     for dir_path in dirs:
         os.makedirs(dir_path, exist_ok=True)
@@ -148,9 +148,17 @@ def process_docx_file(docx_path: str) -> Optional[str]:
         logger.error(f"文件 {docx_path} 不是.docx格式")
         return None
         
+    # 确保所有必要的目录都存在
+    raw_docx_dir = os.path.join(project_root, "data", "raw", "docx")
+    processed_dir = os.path.join(project_root, "data", "processed", "docx")
+    
+    # 创建必要的目录
+    os.makedirs(raw_docx_dir, exist_ok=True)
+    os.makedirs(processed_dir, exist_ok=True)
+    
     # 如果不在目标位置，将 docx 文件复制到 data/raw/docx
     filename = os.path.basename(docx_path)
-    dest_docx_path = os.path.join(project_root, "data/raw/docx", filename)
+    dest_docx_path = os.path.join(raw_docx_dir, filename)
     
     if docx_path != dest_docx_path:
         shutil.copy(docx_path, dest_docx_path)
@@ -158,8 +166,8 @@ def process_docx_file(docx_path: str) -> Optional[str]:
     
     # 将 docx 转换为 md
     md_filename = os.path.splitext(filename)[0] + ".md"
-    md_path = os.path.join(project_root, "data/raw/docx", md_filename)
-    image_dir = os.path.join(project_root, "data/raw/docx/images")
+    md_path = os.path.join(raw_docx_dir, md_filename)
+    image_dir = os.path.join(raw_docx_dir, "images")
     
     # 确保图片目录存在
     os.makedirs(image_dir, exist_ok=True)
@@ -181,10 +189,6 @@ def process_docx_file(docx_path: str) -> Optional[str]:
         # 创建一个直接调用函数的临时脚本
         temp_script = os.path.join(project_root, "temp_md2pkl.py")
         
-        # 确保输出目录存在
-        processed_dir = os.path.join(project_root, "data/processed/docx")
-        os.makedirs(processed_dir, exist_ok=True)
-        
         # 获取绝对路径以避免路径问题
         abs_md_path = os.path.abspath(md_path)
         pkl_filename = f"{os.path.splitext(filename)[0]}.pkl"
@@ -196,32 +200,29 @@ def process_docx_file(docx_path: str) -> Optional[str]:
         
         # 创建一个导入原始模块并使用我们路径调用其函数的简单脚本
         with open(temp_script, "w", encoding="utf-8") as f:
-            f.write(f"""
-                import sys
-                sys.path.append(r'{TOOLS_DIR}')
-                from md2pkl import read_md, extract_abstracts, extract_reference, extract_chapters
-                import pickle
+            f.write(f"""import sys
+sys.path.append(r'{TOOLS_DIR}')
+from md2pkl import read_md, extract_abstracts, extract_reference, extract_chapters
+import pickle
 
-                def main():
-                    # 使用带有转义反斜杠的显式字符串
-                    md = read_md(r'{abs_md_path}')
-                    zh_abs, en_abs = extract_abstracts(md)
-                    ref = extract_reference(md)
-                    chapters = extract_chapters(md)
-                    data = {{
-                        'zh_abs': zh_abs,
-                        'en_abs': en_abs,
-                        'ref': ref,
-                        'chapters': chapters
-                    }}
-                    with open(r'{abs_pkl_path}', 'wb') as f:
-                        pickle.dump(data, f)
-                    print('已保存到 ' + r'{abs_pkl_path}')
+def main():
+    # 使用带有转义反斜杠的显式字符串
+    md = read_md(r'{abs_md_path}')
+    zh_abs, en_abs = extract_abstracts(md)
+    ref = extract_reference(md)
+    chapters = extract_chapters(md)
+    data = {{
+        'zh_abs': zh_abs,
+        'en_abs': en_abs,
+        'ref': ref,
+        'chapters': chapters
+    }}
+    with open(r'{abs_pkl_path}', 'wb') as f:
+        pickle.dump(data, f)
 
-                if __name__ == '__main__':
-                    main()
-                """
-            )
+if __name__ == '__main__':
+    main()
+""")
         
         # 运行临时脚本
         subprocess.run([sys.executable, temp_script], check=True)
@@ -671,7 +672,8 @@ def main():
         else:
             # 使用输入文件名作为输出文件名
             input_name = os.path.splitext(os.path.basename(args.input_path))[0]
-            output_path = os.path.join(project_root, "data/output", f"{input_name}_eval.json")
+            output_dir = os.path.join(project_root, "data", "output")
+            output_path = os.path.join(output_dir, f"{input_name}_eval.json")
             
         # 确保输出目录存在
         output_dir = os.path.dirname(output_path)

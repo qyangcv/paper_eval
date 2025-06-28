@@ -472,7 +472,7 @@ def process_paper_evaluation(input_file_path: str,
     try:
         # 设置正确的导入路径
         project_root = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-        eval_path = os.path.join(project_root, "src", "utils", "eval")
+        eval_path = os.path.join(project_root, "backend", "hard_metrics")
         tools_path = os.path.join(eval_path, "tools")
         models_path = os.path.join(eval_path, "models")
         prompts_path = os.path.join(eval_path, "prompts")
@@ -483,9 +483,9 @@ def process_paper_evaluation(input_file_path: str,
                 sys.path.insert(0, path)
         
         # 直接导入模块
-        from utils.eval.full_paper_eval import process_docx_file, load_chapters, process_chapter
-        from utils.eval.full_paper_eval import evaluate_overall, score_paper
-        
+        from backend.hard_metrics.full_paper_eval import process_docx_file, load_chapters, process_chapter
+        from backend.hard_metrics.full_paper_eval import evaluate_overall, score_paper 
+
         # 处理输入文件
         pkl_file_path = input_file_path
         if input_file_path.lower().endswith('.docx'):
@@ -633,6 +633,7 @@ def simulate_analysis_with_toc(uploaded_file, progress_callback=None):
     Returns:
         Dict[str, Any]: 包含完整评估结果的字典
     """
+    temp_path = None
     try:
         # 首先提取目录结构
         if progress_callback:
@@ -646,63 +647,57 @@ def simulate_analysis_with_toc(uploaded_file, progress_callback=None):
             temp_file.write(uploaded_file.getvalue())
             temp_path = temp_file.name
         
-        try:
-            # 模拟评估过程的不同阶段
+        # 模拟评估过程的不同阶段
+        if progress_callback:
+            progress_callback(0.15, "开始章节内容分析...")
+            
+        # 获取章节数量用于计算进度
+        chapter_count = len(toc_items)
+        base_progress = 0.15
+        chapter_progress = 0.60 / max(chapter_count, 1)  # 章节分析总共占60%的进度
+        
+        # 模拟对每个章节的处理
+        for i, chapter in enumerate(toc_items):
+            chapter_title = chapter.get('text', f"章节 {i+1}")
             if progress_callback:
-                progress_callback(0.15, "开始章节内容分析...")
-                
-            # 获取章节数量用于计算进度
-            chapter_count = len(toc_items)
-            base_progress = 0.15
-            chapter_progress = 0.60 / max(chapter_count, 1)  # 章节分析总共占60%的进度
+                current_progress = base_progress + (i * chapter_progress)
+                progress_callback(current_progress, f"正在分析: {chapter_title}...")
+                # 模拟章节分析过程
+                time.sleep(0.5)
+        
+        if progress_callback:
+            progress_callback(0.75, "正在进行整体内容评估...")
+            time.sleep(1.5)  # 模拟整体评估过程
             
-            # 模拟对每个章节的处理
-            for i, chapter in enumerate(toc_items):
-                chapter_title = chapter.get('text', f"章节 {i+1}")
-                if progress_callback:
-                    current_progress = base_progress + (i * chapter_progress)
-                    progress_callback(current_progress, f"正在分析: {chapter_title}...")
-                    # 模拟章节分析过程
-                    time.sleep(0.5)
+            progress_callback(0.85, "正在计算学术维度得分...")
+            time.sleep(1.0)  # 模拟计算得分过程
             
+            progress_callback(0.95, "正在整合分析结果...")
+        
+        # 使用临时文件路径进行评估
+        print(f"使用文件 {temp_path} 进行论文评估")
+        result = process_paper_evaluation(temp_path, toc_items)
+        
+        # 检查是否有错误
+        if 'error' in result:
+            print(f"评估遇到问题: {result['error']}")
+            print("将使用默认分析结果")
             if progress_callback:
-                progress_callback(0.75, "正在进行整体内容评估...")
-                time.sleep(1.5)  # 模拟整体评估过程
-                
-                progress_callback(0.85, "正在计算学术维度得分...")
-                time.sleep(1.0)  # 模拟计算得分过程
-                
-                progress_callback(0.95, "正在整合分析结果...")
+                progress_callback(0.98, "评估遇到问题，使用默认结果...")
+            return _generate_default_analysis(toc_items)
+        
+        # 如果评估成功，更新toc_items
+        if 'toc_items' in result and result['toc_items']:
+            toc_items = result['toc_items']
+        
+        if progress_callback:
+            progress_callback(1.0, "评估完成！")
             
-            # 使用临时文件路径进行评估
-            print(f"使用文件 {temp_path} 进行论文评估")
-            result = process_paper_evaluation(temp_path, toc_items)
-            
-            # 检查是否有错误
-            if 'error' in result:
-                print(f"评估遇到问题: {result['error']}")
-                print("将使用默认分析结果")
-                if progress_callback:
-                    progress_callback(0.98, "评估遇到问题，使用默认结果...")
-                return _generate_default_analysis(toc_items)
-            
-            # 如果评估成功，更新toc_items
-            if 'toc_items' in result and result['toc_items']:
-                toc_items = result['toc_items']
-            
-            if progress_callback:
-                progress_callback(1.0, "评估完成！")
-                
-            return {
-                'chapters': toc_items,
-                'overall_scores': result.get('overall_scores', []),
-                'paper_summary': result.get('paper_summary', {})
-            }
-        finally:
-            # 确保删除临时文件
-            if os.path.exists(temp_path):
-                os.unlink(temp_path)
-                
+        return {
+            'chapters': toc_items,
+            'overall_scores': result.get('overall_scores', []),
+            'paper_summary': result.get('paper_summary', {})
+        }
     except Exception as e:
         print(f"分析文档时出错: {e}")
         import traceback
@@ -710,6 +705,14 @@ def simulate_analysis_with_toc(uploaded_file, progress_callback=None):
         if progress_callback:
             progress_callback(0.98, "处理过程中出错，使用默认分析结果...")
         return _generate_default_analysis(extract_toc_from_docx(uploaded_file))
+    finally:
+        # 确保删除临时文件
+        if temp_path and os.path.exists(temp_path):
+            try:
+                os.unlink(temp_path)
+            except Exception as e:
+                print(f"无法删除临时文件 {temp_path}: {e}")
+                pass
 
 def _generate_default_analysis(toc_items):
     """

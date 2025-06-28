@@ -188,11 +188,6 @@ def render_processing_page():
             update_progress(0.01, "正在初始化处理环境...")
             time.sleep(0.3)
             
-            # 提取目录结构
-            update_progress(0.02, "正在提取文档结构...")
-            st.session_state.toc_items = extract_toc_from_docx(st.session_state.uploaded_file)
-            time.sleep(0.5)
-            
             # 生成HTML预览
             update_progress(0.03, "正在生成文档预览...")
             html_content = convert_word_to_html_with_math(st.session_state.uploaded_file)
@@ -211,7 +206,7 @@ def render_processing_page():
             update_progress(0.96, "正在整理评估结果...")
             time.sleep(0.3)
             
-            # 更新toc_items，确保包含分析结果
+            # 保存TOC项目到会话状态
             if analysis_result and 'chapters' in analysis_result:
                 st.session_state.toc_items = analysis_result['chapters']
             
