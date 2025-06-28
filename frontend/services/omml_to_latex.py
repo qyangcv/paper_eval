@@ -6,7 +6,13 @@ This module provides functions to convert Microsoft Word math equations to LaTeX
 import re
 import xml.etree.ElementTree as ET
 from lxml import etree
+from typing import Optional, Dict, List, Union, Tuple, Any
 
+# 导入自定义日志模块
+from frontend.utils.logger_setup import get_module_logger
+
+# 创建当前模块的logger
+logger = get_module_logger(__name__)
 
 class OmmlToLatexConverter:
     """Converter class for OMML to LaTeX transformation."""
@@ -610,7 +616,7 @@ class OmmlToLatexConverter:
             result = self.convert_element(omml_element)
             return self.clean_latex_output(result)
         except Exception as e:
-            print(f"Error converting OMML to LaTeX: {e}")
+            logger.info(f"Error converting OMML to LaTeX: {e}")
             return "[Math Formula]"
 
     def convert_symbol(self, element):

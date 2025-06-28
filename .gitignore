@@ -27,3 +27,4 @@ venv/
 
 # 数据目录
 /data/
+/logs/

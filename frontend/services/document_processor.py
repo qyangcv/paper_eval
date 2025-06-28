@@ -17,36 +17,55 @@ import json
 import pickle
 from typing import Dict, List, Any, Optional, Tuple
 import time
+import traceback
+from bs4 import BeautifulSoup
+
+# 导入自定义日志模块
+from frontend.utils.logger_setup import get_module_logger
+
+# 创建当前模块的logger
+logger = get_module_logger(__name__)
 
 def convert_word_to_html(uploaded_file):
-    """将 Word 文档转换为 HTML（基础版，不进行公式处理）"""
+    """
+    基本版本：将Word文档转换为HTML
+    
+    Args:
+        uploaded_file: Streamlit上传的文件对象
+        
+    Returns:
+        str: 转换后的HTML内容
+    """
     try:
-        # 读取上传的文件字节数据
-        bytes_data = uploaded_file.getvalue()
-
-        # 直接使用 mammoth 将 docx 转为 html
-        result = mammoth.convert_to_html(io.BytesIO(bytes_data))
-        html = result.value
-
-        # 若检测到目录标记，则只保留从目录开始的内容，逻辑与旧版保持一致
-        toc_markers = ["目录", "contents", "table of contents"]
-        for marker in toc_markers:
-            pattern = re.compile(f'<[^>]*>{re.escape(marker)}</[^>]*>', re.IGNORECASE)
-            match = pattern.search(html)
-            if match:
-                html = html[match.start():]
-                break
-
-        # 最简单的样式包装，后续可再扩展
+        # 读取上传文件的内容
+        content = uploaded_file.read()
+        
+        # 使用mammoth将Word文档转换为HTML
+        result = mammoth.convert_to_html(io.BytesIO(content))
+        html_content = result.value
+        
+        # 添加基本样式
         styled_html = f"""
-        <div style="font-family: 'Inter', system-ui, -apple-system, sans-serif; line-height: 1.6; color: var(--text-primary);">
-            {html}
+        <html>
+        <head>
+            <meta charset="UTF-8">
+            <style>
+                body {{ font-family: Arial, sans-serif; line-height: 1.6; margin: 2rem; }}
+                h1 {{ color: #333; }}
+                h2 {{ color: #444; margin-top: 2rem; }}
+                p {{ margin-bottom: 1rem; }}
+                img {{ max-width: 100%; height: auto; }}
+            </style>
+        </head>
+        <body>
+            {html_content}
+        </body>
+        </html>
         """
-
         return styled_html
     except Exception as e:
-        print(f"转换Word文档时出错: {e}")
-        return None
+        logger.info(f"转换Word文档时出错: {e}")
+        return "<p>转换文档时出错。请确保上传的是有效的Word文档。</p>"
 
 def convert_word_to_html_with_math(uploaded_file):
     """
@@ -103,7 +122,7 @@ def convert_word_to_html_with_math(uploaded_file):
             
             return html_content
     except Exception as e:
-        print(f"使用增强版转换器处理Word文档时出错: {e}")
+        logger.info(f"使用增强版转换器处理Word文档时出错: {e}")
         # 如果增强版转换失败，回退到基础版
         return convert_word_to_html(uploaded_file)
 
@@ -137,7 +156,7 @@ def extract_toc_from_docx(uploaded_file):
         found_content_start = False  # 是否找到正文开始（第二次出现"第一章"）
         chapter_texts = set()  # 用于跟踪已添加的章节，防止重复
         
-        print("开始分析文档结构...")
+        logger.info("开始分析文档结构...")
         
         # 第一次扫描：查找目录区域和正文开始位置
         toc_start_index = -1  # 目录开始位置
@@ -158,7 +177,7 @@ def extract_toc_from_docx(uploaded_file):
                 found_toc = True
                 in_toc_section = True
                 toc_start_index = i
-                print(f"检测到目录: '{text}' at index {i}")
+                logger.info(f"检测到目录: '{text}' at index {i}")
                 continue
             
             # 如果已经找到目录，检测章节标题
@@ -180,14 +199,14 @@ def extract_toc_from_docx(uploaded_file):
                         found_content_start = True
                         content_start_index = i
                         toc_end_index = i - 1  # 上一段落是目录的结束
-                        print(f"检测到正文开始: '{text}' at index {i}")
+                        logger.info(f"检测到正文开始: '{text}' at index {i}")
                         break
             
         # 如果没有明确找到目录结束位置，但找到了正文开始，则以正文开始位置作为目录结束
         if toc_end_index == -1 and content_start_index != -1:
             toc_end_index = content_start_index - 1
             
-        print(f"文档分析结果: 目录开始={toc_start_index}, 目录结束={toc_end_index}, 正文开始={content_start_index}")
+        logger.info(f"文档分析结果: 目录开始={toc_start_index}, 目录结束={toc_end_index}, 正文开始={content_start_index}")
         
         # 如果找到了目录区域，提取章节结构
         if found_toc and toc_start_index != -1 and content_start_index != -1:
@@ -308,8 +327,7 @@ def extract_toc_from_docx(uploaded_file):
                         'id': chapter_id,
                         'children': []
                     }
-                    
-                    print(f"添加章节: level={level}, text='{display_text}', id={chapter_id}")
+        
                     
                     if level == 1:
                         main_chapters.append(item)
@@ -318,7 +336,7 @@ def extract_toc_from_docx(uploaded_file):
         
         # 如果没有找到足够的章节，尝试其他规则
         if len(main_chapters) < 1:
-            print("未找到足够主章节，尝试通过内容特征识别...")
+            logger.info("未找到足够主章节，尝试通过内容特征识别...")
             
             # 查找有明显特征的段落
             start_index = content_start_index if content_start_index != -1 else 0
@@ -370,7 +388,7 @@ def extract_toc_from_docx(uploaded_file):
                             'children': []
                         })
                         
-                        print(f"通过内容特征添加章节: '{display_text}', id={chapter_id}")
+                        logger.info(f"通过内容特征添加章节: '{display_text}', id={chapter_id}")
         
         # 构建层级关系
         for sub_item in sub_chapters:
@@ -389,16 +407,11 @@ def extract_toc_from_docx(uploaded_file):
         # 合并所有章节数据
         toc_items = main_chapters
         
-        print(f"共提取 {len(toc_items)} 个主章节, {len(sub_chapters)} 个子章节")
-        for i, chapter in enumerate(toc_items):
-            print(f"  {i+1}. {chapter['text']} (ID: {chapter['id']})")
-            for j, subchapter in enumerate(chapter.get('children', [])):
-                print(f"     {i+1}.{j+1} {subchapter['text']} (ID: {subchapter['id']})")
+        logger.info(f"共提取 {len(toc_items)} 个主章节, {len(sub_chapters)} 个子章节")
         
         return toc_items
     except Exception as e:
-        print(f"提取目录时出错: {str(e)}")
-        import traceback
+        logger.info(f"提取目录时出错: {str(e)}")
         traceback.print_exc()
         return []
 
@@ -489,17 +502,17 @@ def process_paper_evaluation(input_file_path: str,
         # 处理输入文件
         pkl_file_path = input_file_path
         if input_file_path.lower().endswith('.docx'):
-            print("检测到.docx输入，进行文件转换")
+            logger.info("检测到.docx输入，进行文件转换")
             pkl_file_path = process_docx_file(input_file_path)
             if not pkl_file_path:
-                print("文件转换失败，无法继续")
+                logger.info("文件转换失败，无法继续")
                 return {"error": "文档转换失败"}
                 
         # 加载章节
         try:
             chapters = load_chapters(pkl_file_path)
         except Exception as e:
-            print(f"加载章节失败: {e}")
+            logger.info(f"加载章节失败: {e}")
             # 如果pkl加载失败，尝试直接使用toc_items中的内容
             if toc_items:
                 chapters = []
@@ -608,16 +621,15 @@ def process_paper_evaluation(input_file_path: str,
             }
         }
         
-        print(f"论文评估完成，共处理 {len(chapters)} 个章节")
+        logger.info(f"论文评估完成，共处理 {len(chapters)} 个章节")
         return result
         
     except ImportError as e:
-        print(f"导入错误: {e}")
-        print("确保您在正确的项目结构中运行此脚本")
+        logger.info(f"导入错误: {e}")
+        logger.info("确保您在正确的项目结构中运行此脚本")
         return {"error": f"导入评估模块失败: {str(e)}"}
     except Exception as e:
-        print(f"评估过程出错: {e}")
-        import traceback
+        logger.info(f"评估过程出错: {e}")
         traceback.print_exc()
         return {"error": f"评估过程出错: {str(e)}"}
 
@@ -675,13 +687,13 @@ def simulate_analysis_with_toc(uploaded_file, progress_callback=None):
             progress_callback(0.95, "正在整合分析结果...")
         
         # 使用临时文件路径进行评估
-        print(f"使用文件 {temp_path} 进行论文评估")
+        logger.info(f"使用文件 {temp_path} 进行论文评估")
         result = process_paper_evaluation(temp_path, toc_items)
         
         # 检查是否有错误
         if 'error' in result:
-            print(f"评估遇到问题: {result['error']}")
-            print("将使用默认分析结果")
+            logger.info(f"评估遇到问题: {result['error']}")
+            logger.info("将使用默认分析结果")
             if progress_callback:
                 progress_callback(0.98, "评估遇到问题，使用默认结果...")
             return _generate_default_analysis(toc_items)
@@ -699,8 +711,7 @@ def simulate_analysis_with_toc(uploaded_file, progress_callback=None):
             'paper_summary': result.get('paper_summary', {})
         }
     except Exception as e:
-        print(f"分析文档时出错: {e}")
-        import traceback
+        logger.info(f"分析文档时出错: {e}")
         traceback.print_exc()
         if progress_callback:
             progress_callback(0.98, "处理过程中出错，使用默认分析结果...")
@@ -711,7 +722,7 @@ def simulate_analysis_with_toc(uploaded_file, progress_callback=None):
             try:
                 os.unlink(temp_path)
             except Exception as e:
-                print(f"无法删除临时文件 {temp_path}: {e}")
+                logger.info(f"无法删除临时文件 {temp_path}: {e}")
                 pass
 
 def _generate_default_analysis(toc_items):

@@ -7,7 +7,17 @@ import plotly.graph_objects as go
 import textwrap
 import json
 import plotly.utils
+from pathlib import Path
+import io
+import base64
+from typing import Dict, List, Any, Optional, Tuple
+import os
 
+# 导入自定义日志模块
+from frontend.utils.logger_setup import get_module_logger
+
+# 创建当前模块的logger
+logger = get_module_logger(__name__)
 
 def render_results_page():
     """渲染结果展示页面"""
@@ -105,7 +115,7 @@ def add_chapter_anchors_to_html(html_content, toc_items):
     enhanced_html = html_content
     anchors_added = []
     
-    print("开始向HTML内容添加章节锚点...")
+    logger.info("开始向HTML内容添加章节锚点...")
     
     # 为每个目录项在HTML中查找对应位置并添加锚点
     for i, chapter in enumerate(toc_items):
@@ -126,7 +136,7 @@ def add_chapter_anchors_to_html(html_content, toc_items):
             if new_html != enhanced_html:
                 enhanced_html = new_html
                 anchors_added.append(chapter_id)
-                print(f"已添加主章节锚点: '{chapter['text']}' (ID: {chapter_id})")
+                logger.info(f"已添加主章节锚点: '{chapter['text']}' (ID: {chapter_id})")
             else:
                 # 如果简单替换失败，尝试在段落或标题标签上下文中匹配
                 p_pattern = r'<(p|h[1-6])[^>]*>' + re.escape(chapter_text) + r'</\1>'
@@ -142,7 +152,7 @@ def add_chapter_anchors_to_html(html_content, toc_items):
                 if new_html != enhanced_html:
                     enhanced_html = new_html
                     anchors_added.append(chapter_id)
-                    print(f"已添加主章节锚点(带标签): '{chapter['text']}' (ID: {chapter_id})")
+                    logger.info(f"已添加主章节锚点(带标签): '{chapter['text']}' (ID: {chapter_id})")
         
         # 处理子章节
         if 'children' in chapter:
@@ -162,9 +172,9 @@ def add_chapter_anchors_to_html(html_content, toc_items):
                     if new_html != enhanced_html:
                         enhanced_html = new_html
                         anchors_added.append(subchapter_id)
-                        print(f"已添加子章节锚点: '{subchapter['text']}' (ID: {subchapter_id})")
+                        logger.info(f"已添加子章节锚点: '{subchapter['text']}' (ID: {subchapter_id})")
     
-    print(f"共添加了 {len(anchors_added)} 个章节锚点")
+    logger.info(f"共添加了 {len(anchors_added)} 个章节锚点")
     return enhanced_html
 
 
@@ -231,12 +241,12 @@ def create_complete_html_document(content_html, toc_items=None):
             # 找到第二次出现的位置，从该位置开始截取
             second_occurrence_pos = matches[1].start()
             filtered_content = content_html[second_occurrence_pos:]
-            print(f"找到第二次出现的章节标题，从位置 {second_occurrence_pos} 开始截取内容")
+            logger.info(f"找到第二次出现的章节标题，从位置 {second_occurrence_pos} 开始截取内容")
             break
     
     # 如果没有找到第二次出现的章节标题，就使用原始内容
     if filtered_content == content_html:
-        print("未找到重复的章节标题，显示全部内容")
+        logger.info("未找到重复的章节标题，显示全部内容")
     
     # 现在在裁剪后的内容上添加章节锚点
     enhanced_content = filtered_content
@@ -1233,7 +1243,7 @@ def _render_data_analysis_card(analysis_result: dict):
         </script>
         """
     except Exception as e:
-        print(f"Radar chart rendering error: {e}")
+        logger.info(f"Radar chart rendering error: {e}")
         fig_html = "<p>图表渲染失败</p>"
 
     # -------- 渲染论文总结卡片 ---------

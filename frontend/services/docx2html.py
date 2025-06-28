@@ -13,7 +13,13 @@ from docx.table import _Cell, Table
 from docx.text.paragraph import Paragraph
 from lxml import etree
 from html import escape
-from ..services.omml_to_latex import OmmlToLatexConverter
+from frontend.services.omml_to_latex import OmmlToLatexConverter
+
+# 导入自定义日志模块
+from frontend.utils.logger_setup import get_module_logger
+
+# 创建当前模块的logger
+logger = get_module_logger(__name__)
 
 class Docx2HtmlConverter:
     """Converter class for DOCX to HTML transformation with math formula support."""
@@ -458,7 +464,7 @@ class Docx2HtmlConverter:
                 
             return image_filename
         except Exception as e:
-            print(f"Error extracting image: {e}")
+            logger.error(f"Error extracting image: {e}")
             return None
     
     def _has_math_or_images(self, paragraph):
@@ -624,7 +630,7 @@ if __name__ == "__main__":
     import sys
     
     if len(sys.argv) < 2:
-        print("Usage: python docx2html.py input.docx [output.html] [--no-images]")
+        logger.info("Usage: python docx2html.py input.docx [output.html] [--no-images]")
         sys.exit(1)
     
     docx_path = sys.argv[1]
@@ -632,4 +638,4 @@ if __name__ == "__main__":
     include_images = '--no-images' not in sys.argv
     
     output_file = convert_docx_to_html(docx_path, output_path, include_images=include_images)
-    print(f"Converted document saved to: {output_file}") 
+    logger.info(f"Converted document saved to: {output_file}") 
