@@ -18,7 +18,7 @@ def request_deepseek(prompt: str, model: str = "deepseek-chat"):
     Returns:
         str: 模型响应的JSON字符串
     """
-    api_key = "sk-e6068e4723e74a4b8a8e2788cf7ac055"
+    api_key = os.getenv("DEEPSEEK_API_KEY") or os.getenv("OPENAI_API_KEY")
     if not api_key:
         raise ValueError("缺少API密钥: 请设置DEEPSEEK_API_KEY或OPENAI_API_KEY环境变量")
     
