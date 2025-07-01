@@ -15,6 +15,7 @@ from glob import glob
 from pipeline.finegrained_inference import infer as finegrained_infer
 from pipeline.chapter_inference import infer as chapter_infer
 from pipeline.quality_assessment import infer as quality_infer
+from pipeline.overall_assess import infer as overall_assess
 from tools.get_pkl_files import get_pkl_files
 from tools.logger import get_logger
 
@@ -90,6 +91,6 @@ def main(infer_module: Callable, model_name: str):
 
 if __name__ == "__main__":
     # 选择推理模块
-    infer_module = chapter_infer
+    infer_module = overall_assess
     # 执行推理
     main(infer_module, MODEL_NAME)
