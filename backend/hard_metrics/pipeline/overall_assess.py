@@ -144,11 +144,14 @@ def parse_selected_chapters(response: str) -> List[str]:
         
     except (json.JSONDecodeError, KeyError) as e:
         logger.error(f"解析章节选择结果失败: {e}")
-        # 降级处理：从响应中提取可能的章节名称
-        chapters = re.findall(r'["\']([^"\']*章[^"\']*)["\']', response)
-        if chapters:
-            logger.info(f"使用正则表达式提取到章节: {chapters}")
-            return chapters[:5]  # 最多返回5个章节
+        # 处理异常：回复里可能带json字符
+        match = re.search(r'```json\s*(\{.*\})\s*```', content_str, re.DOTALL)
+        if match:
+            logger.info(f"使用正则表达式再次尝试提取")
+            cleaned_content_str = match.group(1)
+            selected_chapters=json.loads(cleaned_content_str)['selected_chapters']
+            logger.info(f"成功解析选择的章节: {selected_chapters}")
+            return selected_chapters
         else:
             logger.warning("无法解析章节选择结果，返回空列表")
             return []
@@ -229,7 +232,6 @@ def infer(
             ]
         
         overall_result = {}
-        
         for metric in metrics:
             logger.info(f"开始评估维度: {metric}")
             
@@ -283,7 +285,7 @@ def infer(
             }
             
             logger.info(f"完成维度 {metric} 的评估")
-        
+        logger.info(f"一共完成{len(metrics)}个维度的评估")
         # 保存结果到文件
         if save_dir:
             # 生成带时间戳的文件名

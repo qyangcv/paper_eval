@@ -19,7 +19,7 @@ venv/
 *.pkl
 *.png
 *.docx
-
+*.jpeg
 # Markdown文件 (除了README.md)
 *.md
 !README.md
