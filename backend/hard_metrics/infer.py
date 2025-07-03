@@ -91,6 +91,6 @@ def main(infer_module: Callable, model_name: str):
 
 if __name__ == "__main__":
     # 选择推理模块
-    infer_module = overall_assess
+    infer_module = chapter_infer
     # 执行推理
     main(infer_module, MODEL_NAME)
