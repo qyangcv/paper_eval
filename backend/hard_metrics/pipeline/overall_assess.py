@@ -132,11 +132,11 @@ def parse_selected_chapters(response: str) -> List[str]:
     Returns:
         List[str]: 选中的章节标题列表
     """
+    content_str = response
     try:
         # 尝试解析JSON
         api_data = json.loads(response)
         content_str = api_data['choices'][0]['message']['content']
-        print(content_str)
         selected_chapters=json.loads(content_str)['selected_chapters']
         
         logger.info(f"成功解析选择的章节: {selected_chapters}")
@@ -155,24 +155,6 @@ def parse_selected_chapters(response: str) -> List[str]:
         else:
             logger.warning("无法解析章节选择结果，返回空列表")
             return []
-
-def generate_overall_prompt(full_content: str) -> str:
-    """
-    生成整体评估提示词
-    
-    Args:
-        full_content: 完整论文内容
-        
-    Returns:
-        str: 格式化后的提示词
-    """
-    try:
-        return p_overall_content_logic.format(
-            paper_content=full_content
-        )
-    except KeyError as e:
-        logger.error(f"提示词模板缺少必要参数: {e}")
-        raise
 
 def generate_final_assessment_prompt(selected_content: str, metric: str) -> str:
     """
@@ -258,8 +240,10 @@ def infer(
             # 获取选中章节的内容
             selected_content = ""
             for title in selected_chapter_titles:
+                normalized_title = title.strip().lower()
                 for chapter_title, chapter_data in paper_data['chapters'].items():
-                    if title in chapter_title or chapter_title in title:
+                    normalized_chapter_title = chapter_title.strip().lower()
+                    if normalized_title == normalized_chapter_title:
                         selected_content += f"\n\n## {chapter_title}\n{chapter_data['content']}"
                         break
             
