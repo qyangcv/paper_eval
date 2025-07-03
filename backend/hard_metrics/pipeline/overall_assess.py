@@ -168,7 +168,7 @@ def generate_overall_prompt(full_content: str) -> str:
     """
     try:
         return p_overall_content_logic.format(
-            paper_content=full_content
+            content=full_content
         )
     except KeyError as e:
         logger.error(f"提示词模板缺少必要参数: {e}")
