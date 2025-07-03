@@ -3,54 +3,155 @@
 将整篇论文内容作为整体进行评估
 """
 import os
+import sys
 import json
+import re
+import random
+from datetime import datetime
 from typing import List, Dict, Any
 from multiprocessing import Pool
+from glob import glob
 import warnings
+from pathlib import Path
+
+# 添加项目根目录到Python路径
+current_dir = Path(__file__).parent
+project_root = current_dir.parent
+sys.path.insert(0, str(project_root))
 
 # 导入项目模块
-from models.deepseek import request_deepseek
-from models.qwen import request_qwen
-from models.gemini import request_gemini
+from config.data_config import FILE_CONFIG
+from config.model_config import MODEL_CONFIG
+from models.request_model import _request_model
 from tools.file_utils import read_pickle
 from tools.logger import get_logger
-from prompts.overall_assess_prompt import p_overall_content_logic
+from prompts.overall_assess_prompt import (
+    selection_prompt_logic, selection_prompt_innovation, selection_prompt_depth, 
+    selection_prompt_replicability, selection_prompt_quality,
+    p_overall_content_logic, p_overall_content_innovation, p_overall_content_depth,
+    p_overall_content_replicability, p_overall_content_quality
+)
 
 logger = get_logger(__name__)
 
-def load_full_paper(pkl_path: str) -> str:
+def extract_toc_and_chapters(md_path: str) -> dict:
     """
-    加载整篇论文内容
+    从Markdown文件中提取目录、摘要和章节内容
+    Args:
+        md_path: Markdown文件路径
+    Returns:
+        包含目录和章节内容的字典
+    """
+    with open(md_path, 'r', encoding='utf-8') as f:
+        content = f.read()
+    
+    # 提取目录部分
+    toc_start = content.find('目录')
+    toc_end = content.find('#', toc_start)
+    toc_content = content[toc_start:toc_end].strip() if toc_start != -1 and toc_end != -1 else ""
+    
+    # 清理目录内容：去除换行符，合并多个空格
+    if toc_content:
+        toc_content = re.sub(r'\n+', ' ', toc_content)  # 将一个或多个换行符替换为一个空格
+        toc_content = re.sub(r'\s+', ' ', toc_content)  # 将多个连续空格合并为一个空格
+        toc_content = toc_content.strip()
+    
+    # 提取摘要部分
+    abstract_start = content.find('摘要')
+    if abstract_start == -1:
+        abstract_start = content.find('abstract')
+    abstract_end = content.find('目录')
+    abstract_content = content[abstract_start:abstract_end].strip() if abstract_start != -1 and abstract_end != -1 else ""
+    
+    # 清理摘要内容：去除换行符，合并多个空格
+    if abstract_content:
+        abstract_content = re.sub(r'\n+', ' ', abstract_content)  # 将一个或多个换行符替换为一个空格
+        abstract_content = re.sub(r'\s+', ' ', abstract_content)  # 将多个连续空格合并为一个空格
+        abstract_content = abstract_content.strip()
+
+    # 提取各章节内容
+    chapters = {}
+    sections = re.findall(r'#+ (.+?)\n', content)
+    for section in sections:
+        if '目录' in section or '参考文献' in section or '致谢' in section or '附录' in section:
+            continue
+            
+        # 提取章节内容
+        section_start = content.find(f'# {section}')
+        next_section = content.find('#', section_start + 1)
+        section_content = content[section_start:next_section].strip() if next_section != -1 else content[section_start:].strip()
+        
+        # 提取子章节
+        subsections = re.findall(r'## (.+?)\n', section_content)
+        subchapter_contents = {}
+        for sub in subsections:
+            sub_start = section_content.find(f'## {sub}')
+            next_sub = section_content.find('##', sub_start + 1)
+            sub_content = section_content[sub_start:next_sub].strip() if next_sub != -1 else section_content[sub_start:].strip()
+            subchapter_contents[sub] = sub_content
+        
+        chapters[section] = {
+            'content': section_content,
+            'subchapters': subchapter_contents
+        }
+    
+    return {
+        'toc': toc_content,
+        'abstract': abstract_content,
+        'chapters': chapters
+    }
+
+def generate_selection_prompt(toc: str, abstract: str, metric: str) -> str:
+    """
+    生成章节选择提示词（第一阶段）
     
     Args:
-        pkl_path: pickle文件路径
+        toc: 论文目录
+        abstract: 论文摘要
+        metric: 评估维度
         
     Returns:
-        str: 拼接后的完整论文内容
+        str: 章节选择提示词
+    """
+    selection_prompt = {
+        "logic": selection_prompt_logic,
+        "innovation": selection_prompt_innovation,
+        "depth": selection_prompt_depth,
+        "replicability": selection_prompt_replicability,
+        "quality": selection_prompt_quality,
+    }[metric].format(toc=toc, abstract=abstract)
+    return selection_prompt
+
+def parse_selected_chapters(response: str) -> List[str]:
+    """
+    解析模型返回的章节选择结果
+    
+    Args:
+        response: 模型返回的JSON字符串
+        
+    Returns:
+        List[str]: 选中的章节标题列表
     """
     try:
-        data = read_pickle(pkl_path)
-        full_content = ""
+        # 尝试解析JSON
+        api_data = json.loads(response)
+        content_str = api_data['choices'][0]['message']['content']
+        print(content_str)
+        selected_chapters=json.loads(content_str)['selected_chapters']
         
-        # 处理摘要
-        if 'cn_abs' in data and isinstance(data['cn_abs'], str):
-            full_content += f"摘要:\n{data['cn_abs']}\n\n"
-            
-        # 处理各章节
-        chapters = data.get('chapters', [])
-        for chapter in chapters:
-            if isinstance(chapter, dict) and 'content' in chapter:
-                full_content += f"{chapter.get('title', '未命名章节')}:\n{chapter['content']}\n\n"
-                
-        if not full_content:
-            raise ValueError(f"没有找到有效的论文内容: {pkl_path}")
-            
-        logger.info(f'从 {pkl_path} 加载了完整论文内容，总长度: {len(full_content)}')
-        return full_content
+        logger.info(f"成功解析选择的章节: {selected_chapters}")
+        return selected_chapters
         
-    except Exception as e:
-        logger.error(f"加载论文内容失败: {e}")
-        raise
+    except (json.JSONDecodeError, KeyError) as e:
+        logger.error(f"解析章节选择结果失败: {e}")
+        # 降级处理：从响应中提取可能的章节名称
+        chapters = re.findall(r'["\']([^"\']*章[^"\']*)["\']', response)
+        if chapters:
+            logger.info(f"使用正则表达式提取到章节: {chapters}")
+            return chapters[:5]  # 最多返回5个章节
+        else:
+            logger.warning("无法解析章节选择结果，返回空列表")
+            return []
 
 def generate_overall_prompt(full_content: str) -> str:
     """
@@ -70,62 +171,133 @@ def generate_overall_prompt(full_content: str) -> str:
         logger.error(f"提示词模板缺少必要参数: {e}")
         raise
 
-def infer(pkl_path: str, out_dir: str, num_processes: int = 8, model_name: str = "deepseek-chat") -> None:
+def generate_final_assessment_prompt(selected_content: str, metric: str) -> str:
     """
-    对论文进行推理
+    生成最终评估提示词（第二阶段）
     
     Args:
-        pkl_path: pickle文件路径
-        out_dir: 输出目录
+        selected_content: 选中章节的内容
+        metric: 评估维度
+        
+    Returns:
+        str: 最终评估提示词
+    """
+    final_prompt = {
+        "logic": p_overall_content_logic,
+        "innovation": p_overall_content_innovation,
+        "depth": p_overall_content_depth,
+        "replicability": p_overall_content_replicability,
+        "quality": p_overall_content_quality,
+    }[metric].format(content=selected_content)
+    return final_prompt
+
+def infer(
+    md_path: str,
+    metrics: List[str] = None,
+    num_processes: int = 1,
+    model_name: str = 'deepseek-chat',
+    save_dir: str = None
+) -> dict:
+    """
+    对论文进行两阶段推理
+    
+    Args:
+        md_path: markdown文件路径
+        metrics: 评估指标列表
         num_processes: 进程数
         model_name: 使用的模型名称
+        save_dir: 结果保存目录
         
-    Raises:
-        ChapterInferenceError: 当推理过程出错时抛出
+    Returns:
+        dict: 包含评估结果的字典
     """
     try:
-        os.makedirs(out_dir, exist_ok=True)
+        if save_dir:
+            os.makedirs(save_dir, exist_ok=True)
         
-        # 1. 加载完整论文内容
-        full_content = load_full_paper(pkl_path)
+        # 提取论文目录和章节内容
+        paper_data = extract_toc_and_chapters(md_path)
         
-        # 2. 生成整体评估提示词
-        prompt = generate_overall_prompt(full_content)
-        logger.info(f'生成的整体评估提示词长度: {len(prompt)}')
+        # 设置默认评估指标
+        if metrics is None:
+            metrics = [
+                'logic',
+                'innovation',
+                'depth',
+                'replicability',
+                'quality',
+            ]
         
-        # 3. 调用模型进行评估
-        if model_name.startswith("deepseek"):
-            response = request_deepseek(prompt, model_name)
-        elif model_name == "gemini":
-            response = request_gemini(prompt)
-        elif model_name == "qwen":
-            response = request_qwen(prompt)
-        else:
-            raise ValueError(f"不支持的模型名称: {model_name}")
+        overall_result = {}
+        
+        for metric in metrics:
+            logger.info(f"开始评估维度: {metric}")
             
-        # 4. 解析响应
-        try:
-            result = json.loads(response)
-        except json.JSONDecodeError:
-            # 尝试提取JSON部分
-            json_match = re.search(r'```json\s*(.*?)\s*```', response, re.DOTALL)
-            if json_match:
-                result = json.loads(json_match.group(1))
-            else:
-                result = {
-                    "error": "无法解析模型响应",
-                    "raw_response": response
-                }
+            # 第一阶段: 根据评价维度选择需要评估的章节
+            selection_prompt = generate_selection_prompt(
+                paper_data['toc'], 
+                paper_data['abstract'], 
+                metric
+            )
+            selected_chapters_result = _request_model((selection_prompt, model_name))
+            
+            # 检查API调用是否成功
+            if 'error' in selected_chapters_result:
+                logger.error(f"章节选择API调用失败: {selected_chapters_result['error']}")
+                continue
                 
-        # 5. 保存结果
-        filename = os.path.basename(pkl_path)
-        output_file = os.path.join(out_dir, filename.replace('.pkl', '_overall.json'))
-        
-        with open(output_file, 'w', encoding='utf-8') as f:
-            json.dump(result, f, ensure_ascii=False, indent=4)
+            # 解析模型返回选择的章节
+            selected_chapter_titles = parse_selected_chapters(selected_chapters_result['output'])
             
-        logger.info(f"整体评估完成，结果已保存到: {output_file}")
-        return result
+            if not selected_chapter_titles:
+                logger.warning(f"未能选择到章节，跳过维度 {metric}")
+                continue
+            
+            # 获取选中章节的内容
+            selected_content = ""
+            for title in selected_chapter_titles:
+                for chapter_title, chapter_data in paper_data['chapters'].items():
+                    if title in chapter_title or chapter_title in title:
+                        selected_content += f"\n\n## {chapter_title}\n{chapter_data['content']}"
+                        break
+            
+            if not selected_content:
+                logger.warning(f"未找到选中章节的内容，跳过维度 {metric}")
+                continue
+            
+            # 第二阶段：将选择好的章节内容和对应的评价提示词，一起输入给模型提问
+            final_prompt = generate_final_assessment_prompt(selected_content, metric)
+            final_assessment_result = _request_model((final_prompt, model_name))
+            
+            # 检查API调用是否成功
+            if 'error' in final_assessment_result:
+                logger.error(f"最终评估API调用失败: {final_assessment_result['error']}")
+                continue
+            
+            # 保存结果
+            overall_result[metric] = {
+                'selected_chapters': selected_chapter_titles,
+                'assessment': final_assessment_result['output'],
+                'selection_reasoning': selected_chapters_result.get('output', ''),
+                'final_prompt_used': final_prompt
+            }
+            
+            logger.info(f"完成维度 {metric} 的评估")
+        
+        # 保存结果到文件
+        if save_dir:
+            # 生成带时间戳的文件名
+            timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+            base_filename = os.path.basename(md_path).replace('.md', '')
+            filename = f"{base_filename}_overall_assessment_{timestamp}.json"
+            output_file = os.path.join(save_dir, filename)
+            
+            with open(output_file, 'w', encoding='utf-8') as f:
+                json.dump(overall_result, f, ensure_ascii=False, indent=4)
+            
+            logger.info(f"整体评估结果已保存到: {output_file}")
+        
+        return overall_result
         
     except Exception as e:
         logger.error(f"整体评估过程出错: {e}")
@@ -146,20 +318,20 @@ if __name__ == "__main__":
         input_dir = os.path.join(input_root, 'docx')
         output_dir = os.path.join(output_root, 'docx')
 
-        # 获取所有pkl文件
-        pkl_pattern = str(input_dir) + '/*.pkl'
-        pkl_lst = glob(pkl_pattern)
+        # 获取所有md文件（假设处理的是markdown文件）
+        md_pattern = str(input_dir) + '/*.md'
+        md_lst = glob(md_pattern)
         
-        if not pkl_lst:
-            logger.warning(f"在 {input_dir} 中没有找到要处理的PKL文件")
+        if not md_lst:
+            logger.warning(f"在 {input_dir} 中没有找到要处理的MD文件")
             
         # 处理每个文件
-        for pkl_path in pkl_lst:
+        for md_path in md_lst:
             try:
-                logger.info(f"开始处理文件: {pkl_path}")
-                infer(pkl_path, str(output_dir), num_processes=8)
+                logger.info(f"开始处理文件: {md_path}")
+                infer(md_path, save_dir=str(output_dir))
             except Exception as e:
-                logger.error(f"处理文件 {pkl_path} 时出错: {e}")
+                logger.error(f"处理文件 {md_path} 时出错: {e}")
                 continue
                 
     except Exception as e:
