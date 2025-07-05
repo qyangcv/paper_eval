@@ -1,4 +1,5 @@
 import streamlit as st
+import os
 
 def render_feature_card(emoji, title, description, color):
     return f"""
@@ -9,6 +10,86 @@ def render_feature_card(emoji, title, description, color):
         <p style="color: var(--text-secondary); font-size: 1rem; line-height: 1.6;">{description}</p>
     </div>
     """
+
+def render_model_config_modal():
+    """
+    渲染API配置弹窗
+    """
+    # 使用会话状态来存储API Keys
+    if 'api_keys' not in st.session_state:
+        st.session_state.api_keys = {
+            'deepseek': '',
+            'gemini': '',
+            'gpt': '',
+        }
+    
+    with st.expander("🔧 配置模型API密钥"):
+        st.markdown("### API密钥配置")
+        st.markdown("请输入您的API密钥，以便使用相应的模型服务。密钥将存储在当前会话中。")
+        
+        # DeepSeek API密钥
+        st.session_state.api_keys['deepseek'] = st.text_input(
+            "DeepSeek API密钥",
+            value=st.session_state.api_keys.get('deepseek', ''),
+            type="password",
+            help="输入DeepSeek API密钥，用于DeepSeek模型分析"
+        )
+        
+        # Gemini API密钥
+        st.session_state.api_keys['gemini'] = st.text_input(
+            "Gemini API密钥",
+            value=st.session_state.api_keys.get('gemini', ''),
+            type="password",
+            help="输入Gemini API密钥，用于Gemini模型分析"
+        )
+        
+        # GPT API密钥
+        st.session_state.api_keys['gpt'] = st.text_input(
+            "GPT API密钥",
+            value=st.session_state.api_keys.get('gpt', ''),
+            type="password",
+            help="输入OpenAI API密钥，用于GPT模型分析"
+        )
+        
+        # 保存按钮
+        if st.button("保存配置"):
+            st.success("API密钥配置已保存！")
+
+# ------------------- 弹出式 API 配置对话框 -------------------
+@st.dialog("🔧 配置模型API密钥", width="large")
+def api_config_dialog():
+    """模型 API Key 配置对话框 (Session State 内存储)"""
+    if 'api_keys' not in st.session_state:
+        st.session_state.api_keys = {
+            'deepseek': '',
+            'gemini': '',
+            'gpt': '',
+        }
+
+    st.markdown("### API密钥配置")
+    st.markdown("请输入各模型的 API Key，信息仅保存在本次会话中。")
+
+    st.session_state.api_keys['deepseek'] = st.text_input(
+        "DeepSeek API密钥",
+        value=st.session_state.api_keys.get('deepseek', ''),
+        type="password",
+    )
+    st.session_state.api_keys['gemini'] = st.text_input(
+        "Gemini API密钥",
+        value=st.session_state.api_keys.get('gemini', ''),
+        type="password",
+    )
+    st.session_state.api_keys['gpt'] = st.text_input(
+        "GPT API密钥",
+        value=st.session_state.api_keys.get('gpt', ''),
+        type="password",
+    )
+
+    if st.button("保存配置"):
+        st.success("API密钥配置已保存！")
+        # 关闭对话框
+        st.session_state['api_cfg_open'] = False
+        st.rerun()
 
 def render_upload_page():
     """渲染上传页面"""
@@ -61,6 +142,44 @@ def render_upload_page():
         label_visibility="collapsed"
     )
     
+    # 添加模型选择下拉框
+    # 初始化模型选择状态
+    if 'selected_model' not in st.session_state:
+        st.session_state.selected_model = 'deepseek'
+    
+    # 初始化 API Key 存储
+    if 'api_keys' not in st.session_state:
+        st.session_state.api_keys = {
+            'deepseek': '',
+            'gemini': '',
+            'gpt': '',
+        }
+    
+    # 模型选择下拉框
+    st.session_state.selected_model = st.selectbox(
+        "选择分析模型",
+        options=['deepseek', 'gemini', 'gpt', 'none'],
+        format_func=lambda x: {
+            'deepseek': 'DeepSeek',
+            'gemini': 'Gemini',
+            'gpt': 'GPT',
+            'none': '无模型分析'
+        }.get(x, x),
+        index=['deepseek', 'gemini', 'gpt', 'none'].index(st.session_state.selected_model)
+    )
+
+    # 当前模型展示 + 齿轮按钮
+    info_col, gear_col = st.columns([5, 1])
+    with info_col:
+        st.markdown(f"**当前模型:** {st.session_state.selected_model}")
+    with gear_col:
+        if st.button("⚙️", key="open_api_cfg", help="配置API密钥", use_container_width=True):
+            st.session_state['api_cfg_open'] = True
+
+    # 如果会话状态标记为打开，则渲染对话框
+    if st.session_state.get('api_cfg_open', False):
+        api_config_dialog()
+    
     if uploaded_file is not None:
         st.markdown("""
         <div style="background: var(--success-light); border-radius: 12px; padding: 0.75rem; margin-bottom: 0.5rem;">
@@ -75,6 +194,24 @@ def render_upload_page():
         st.session_state.uploaded_file = uploaded_file
         
         if st.button("🚀 开始分析", type="primary", use_container_width=True):
+            selected_model = st.session_state.selected_model
+
+            # 若未配置任何 API Key 且未选择 none，则给出提示
+            if selected_model != 'none' and not st.session_state.api_keys.get(selected_model):
+                st.error("请先在右侧⚙️中配置对应模型的API密钥！")
+                st.stop()
+
+            # 保存选择的模型到会话状态
+            st.session_state.model_for_analysis = selected_model
+
+            # 根据配置写入环境变量
+            if selected_model == 'deepseek' and st.session_state.api_keys.get('deepseek'):
+                os.environ["DEEPSEEK_API_KEY"] = st.session_state.api_keys['deepseek']
+            elif selected_model == 'gemini' and st.session_state.api_keys.get('gemini'):
+                os.environ["GEMINI_API_KEY"] = st.session_state.api_keys['gemini']
+            elif selected_model == 'gpt' and st.session_state.api_keys.get('gpt'):
+                os.environ["OPENAI_API_KEY"] = st.session_state.api_keys['gpt']
+            
             st.session_state.current_page = 'processing'
             st.rerun()
     

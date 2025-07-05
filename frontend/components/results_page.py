@@ -24,56 +24,48 @@ def render_results_page():
     # 创建新容器以替换旧内容
     main_container = st.container()
     
+    # 顶部区块：左侧标题，右侧信息面板 + 按钮
     with main_container:
-        st.markdown('<h1 class="main-header">📊 文档分析结果</h1>', unsafe_allow_html=True)
-    
-    # 顶部信息面板
-    if st.session_state.uploaded_file:
-        st.markdown(f"""
-        <div style="background: linear-gradient(to right, rgba(67, 97, 238, 0.05), rgba(76, 201, 240, 0.03)); 
-                    border-radius: 12px; padding: 1rem 1.5rem; margin-bottom: 2rem; 
-                    display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap;">
-            <div style="display: flex; align-items: center;">
-                <div style="background-color: var(--primary-color); border-radius: 50%; width: 40px; height: 40px;
-                            display: flex; align-items: center; justify-content: center; margin-right: 1rem;">
-                    <span style="color: white; font-size: 1.5rem;">📄</span>
-                </div>
-                <div>
-                    <div style="font-size: 1.1rem; font-weight: 600; color: var(--text-primary);">
-                        {st.session_state.uploaded_file.name}
+        left_col, right_col = st.columns([5, 2])
+        # 左: 页面标题
+        with left_col:
+            st.markdown('<h1 class="main-header">📊 文档分析结果</h1>', unsafe_allow_html=True)
+
+        # 右: 信息面板 + 按钮
+        with right_col:
+            if st.session_state.uploaded_file:
+                st.markdown(f"""
+                <div style="background: linear-gradient(to right, rgba(67, 97, 238, 0.05), rgba(76, 201, 240, 0.03)); 
+                            border-radius: 12px; padding: 0.8rem 1rem; margin-bottom: 0.2rem; 
+                            display: flex; align-items: center; gap: 0.6rem; margin-left: auto; max-width: 260px;">
+                    <div style="background-color: var(--primary-color); border-radius: 50%; width: 32px; height: 32px;
+                                display: flex; align-items: center; justify-content: center;">
+                        <span style="color: white; font-size: 1.2rem;">📄</span>
                     </div>
-                    <div style="color: var(--text-secondary); font-size: 0.85rem;">
-                        分析完成 · {len(st.session_state.toc_items) if hasattr(st.session_state, 'toc_items') else 0} 个章节
+                    <div>
+                        <div style="font-size: 0.95rem; font-weight: 600; color: var(--text-primary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 220px;">
+                            {st.session_state.uploaded_file.name}
+                        </div>
+                        <div style="color: var(--text-secondary); font-size: 0.8rem;">分析完成</div>
                     </div>
                 </div>
-            </div>
-        </div>
-        """, unsafe_allow_html=True)
-    
-    # 操作按钮
-    col1, col2, col3 = st.columns([1, 1, 1])
-    with col1:
+                """, unsafe_allow_html=True)
+
+    # -------------------- 操作按钮区块 --------------------
+    btn_row1, btn_row2, btn_row3 = st.columns([1, 1, 1])
+    with btn_row1:
         if st.button("🔙 重新上传", key="reload_btn", help="重新上传Word文档", use_container_width=True):
             reset_session_state()
             st.session_state.current_page = 'upload'
             st.rerun()
-    
-    with col3:
+
+    with btn_row3:
         if st.button("📥 导出报告", key="export_btn", help="导出分析报告", use_container_width=True):
             st.info("导出功能开发中...")
-    
+
     # 文档预览和分析区域
     container = st.container()
     with container:
-        
-        # 状态提示
-        st.markdown("""
-            <div style="display: flex; align-items: center; gap: 1rem;">
-                <div style="height: 6px; flex-grow: 1; background: linear-gradient(90deg, var(--primary-color), var(--primary-light), transparent);
-                           border-radius: 3px;"></div>
-                <span style="color: var(--text-secondary); font-size: 0.9rem;">文档分析已完成</span>
-            </div>
-            """, unsafe_allow_html=True)
         
         st.markdown("</div>", unsafe_allow_html=True)
         
@@ -103,8 +95,6 @@ def render_results_page():
             # 处理没有内容的情况
             st.warning("无法显示文档内容，请重新上传文档。")
     
-    # 废弃 Streamlit 原侧边栏，全部改为 iframe 内部优化建议
-    # 旧侧边栏代码已移除
 
 # 为HTML内容添加章节锚点
 def add_chapter_anchors_to_html(html_content, toc_items):
@@ -136,7 +126,7 @@ def add_chapter_anchors_to_html(html_content, toc_items):
             if new_html != enhanced_html:
                 enhanced_html = new_html
                 anchors_added.append(chapter_id)
-                logger.info(f"已添加主章节锚点: '{chapter['text']}' (ID: {chapter_id})")
+                logger.info(f"已添加主章节锚点: '{chapter['text']}'")
             else:
                 # 如果简单替换失败，尝试在段落或标题标签上下文中匹配
                 p_pattern = r'<(p|h[1-6])[^>]*>' + re.escape(chapter_text) + r'</\1>'
@@ -522,7 +512,7 @@ def create_complete_html_document(content_html, toc_items=None):
                     // 克隆段落并移除公式 / 图片节点，用于检测剩余文本
                     const clone = p.cloneNode(true);
                     clone.querySelectorAll('img, math, .math, .katex, .mml-equation').forEach(el => el.remove());
-                    const remainingText = clone.textContent.replace(/\s+/g, '');
+                    const remainingText = clone.textContent.replace(/\\s+/g, '');
 
                     const hasFormulaOrImg = p.querySelector('img, math, .math, .katex, .mml-equation');
 

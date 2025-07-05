@@ -139,6 +139,9 @@ def render_processing_page():
     # 显示处理进度
     st.markdown('<h1 class="main-header">⚙️ 文档处理中...</h1>', unsafe_allow_html=True)
     
+    # 获取选择的模型
+    selected_model = st.session_state.get('model_for_analysis', 'deepseek')
+    
     # 显示上传的文件信息
     st.markdown(f"""
     <div style="background: linear-gradient(to right, rgba(67, 97, 238, 0.05), rgba(76, 201, 240, 0.03)); 
@@ -153,7 +156,7 @@ def render_processing_page():
                 {st.session_state.uploaded_file.name}
             </div>
             <div style="color: var(--text-secondary); font-size: 0.85rem;">
-                正在处理文档并进行智能分析，请稍候...
+                正在处理文档并使用 {selected_model if selected_model != 'none' else '默认模式'} 进行智能分析，请稍候...
             </div>
         </div>
     </div>
@@ -199,7 +202,8 @@ def render_processing_page():
             # 调用论文评估函数，传递进度回调函数，比例为5%-95%
             analysis_result = simulate_analysis_with_toc(
                 st.session_state.uploaded_file,
-                progress_callback=lambda prog, text: update_progress(0.05 + prog * 0.90, text)
+                progress_callback=lambda prog, text: update_progress(0.05 + prog * 0.90, text),
+                model_name=selected_model
             )
             
             # 最终处理阶段 (占总进度的5%)

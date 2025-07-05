@@ -633,7 +633,7 @@ def process_paper_evaluation(input_file_path: str,
         traceback.print_exc()
         return {"error": f"评估过程出错: {str(e)}"}
 
-def simulate_analysis_with_toc(uploaded_file, progress_callback=None):
+def simulate_analysis_with_toc(uploaded_file, progress_callback=None, model_name="deepseek"):
     """
     分析文档并生成结构化的分析结果，包括目录结构和评估结果。
     这个函数会调用 process_paper_evaluation 进行实际的评估。
@@ -641,6 +641,7 @@ def simulate_analysis_with_toc(uploaded_file, progress_callback=None):
     Args:
         uploaded_file: Streamlit上传的文件对象
         progress_callback: 进度回调函数，接受(current_progress, message)两个参数
+        model_name: 要使用的模型名称，如果为'none'则使用默认内容
         
     Returns:
         Dict[str, Any]: 包含完整评估结果的字典
@@ -651,6 +652,27 @@ def simulate_analysis_with_toc(uploaded_file, progress_callback=None):
         if progress_callback:
             progress_callback(0.05, "正在提取文档目录结构...")
         toc_items = extract_toc_from_docx(uploaded_file)
+        
+        # 如果选择了'none'模型，直接返回默认内容
+        if model_name == 'none':
+            if progress_callback:
+                progress_callback(0.10, "使用默认内容填充分析结果...")
+                time.sleep(0.5)
+                
+                # 模拟进度增长
+                for i in range(10, 100, 10):
+                    progress_callback(i / 100.0, "正在生成默认分析内容...")
+                    time.sleep(0.3)
+                    
+                progress_callback(1.0, "完成！")
+                
+            logger.info("用户选择了'none'模型，直接返回默认分析内容")
+            return _generate_default_analysis(toc_items)
+        
+        # 确保使用正确的模型名称
+        actual_model_name = model_name
+        if model_name == 'deepseek':
+            actual_model_name = 'deepseek-chat'
         
         # 在临时目录保存上传的文件
         if progress_callback:
@@ -678,7 +700,7 @@ def simulate_analysis_with_toc(uploaded_file, progress_callback=None):
                 time.sleep(0.5)
         
         if progress_callback:
-            progress_callback(0.75, "正在进行整体内容评估...")
+            progress_callback(0.75, f"正在使用 {model_name} 进行整体内容评估...")
             time.sleep(1.5)  # 模拟整体评估过程
             
             progress_callback(0.85, "正在计算学术维度得分...")
@@ -687,8 +709,8 @@ def simulate_analysis_with_toc(uploaded_file, progress_callback=None):
             progress_callback(0.95, "正在整合分析结果...")
         
         # 使用临时文件路径进行评估
-        logger.info(f"使用文件 {temp_path} 进行论文评估")
-        result = process_paper_evaluation(temp_path, toc_items)
+        logger.info(f"使用文件 {temp_path} 和模型 {model_name} 进行论文评估")
+        result = process_paper_evaluation(temp_path, toc_items, actual_model_name)
         
         # 检查是否有错误
         if 'error' in result:
