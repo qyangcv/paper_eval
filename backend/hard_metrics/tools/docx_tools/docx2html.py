@@ -10,6 +10,8 @@ DOCX转HTML工具
 - 按文档顺序处理所有元素
 - 支持UTF-8编码输出
 - 生成完整的HTML文档结构
+- 后处理1：去除特定条件下段落的段首空格
+- 后处理2：去除所有斜体标签
 
 依赖要求：
     pip install python-docx
@@ -39,6 +41,8 @@ DOCX转HTML工具
 - 数学公式转换为LaTeX格式
 - 表格转换为标准HTML表格格式
 - 默认包含基础CSS样式，支持自定义样式
+- 满足特定条件下自动去除段首空格
+- 所有斜体标签(<em>)被移除
 
 注意事项：
 - 确保输入文件为有效的DOCX格式
@@ -47,7 +51,10 @@ DOCX转HTML工具
 - 某些Word特有的格式可能无法完美转换
 
 作者: PaperEval Team
-版本: 1.1.0
+版本: 1.3.0
+新增功能：
+    1.2.0: 后处理去除特定条件下段落的段首空格
+    1.3.0: 后处理去除所有斜体标签
 """
 
 import os
@@ -503,13 +510,13 @@ def process_paragraph_with_math(paragraph, image_dir, image_id_counter, relation
         if image_id in relationship_map:
             rel = relationship_map[image_id]
             image_filename = save_image(rel, image_dir, image_id_counter[0])
-            if image_filename:
-                # 使用相对路径
-                image_path = os.path.join(
-                    image_dir, image_filename).replace('\\', '/')
-                image_content.append(
-                    f'<img src="{image_path}" alt="image_{image_id_counter[0]}">')
-                image_id_counter[0] += 1
+        if image_filename:
+            # 使用相对路径
+            image_path = os.path.join(
+                image_dir, image_filename).replace('\\', '/')
+            image_content.append(
+                f'<img src="{image_path}" alt="image_{image_id_counter[0]}">')
+            image_id_counter[0] += 1
 
     # 获取对齐方式
     alignment = get_paragraph_alignment(paragraph)
@@ -595,8 +602,9 @@ def process_run_element(run_element):
             if getattr(run_format, 'b', None) is not None or getattr(run_format, 'bCs', None) is not None:
                 formatted_text = f'<strong>{formatted_text}</strong>'
             # 斜体
-            if getattr(run_format, 'i', None) is not None or getattr(run_format, 'iCs', None) is not None:
-                formatted_text = f'<em>{formatted_text}</em>'
+            # 注释掉斜体处理，因为最后会统一移除所有斜体标签
+            # if getattr(run_format, 'i', None) is not None or getattr(run_format, 'iCs', None) is not None:
+            #     formatted_text = f'<em>{formatted_text}</em>'
             # 下划线
             if getattr(run_format, 'u', None) is not None:
                 formatted_text = f'<u>{formatted_text}</u>'
@@ -612,6 +620,75 @@ def process_run_element(run_element):
     return formatted_text
 
 
+def remove_leading_space_after_math(html_content):
+    """
+    后处理HTML内容：如果块级公式后的段落以特定字开头，则去除段首空格
+
+    Args:
+        html_content (str): HTML内容字符串
+
+    Returns:
+        str: 处理后的HTML内容
+    """
+    # 将HTML内容按行分割
+    lines = html_content.split('\n')
+
+    # 初始化变量
+    processed_lines = []
+    prev_was_math = False
+
+    # 遍历每一行
+    for i, line in enumerate(lines):
+        # 检查是否为块级数学公式结束标签
+        if '</div>' in line and '<div class="math">' in line:
+            # 标记前一个区块是数学公式
+            prev_was_math = True
+            processed_lines.append(line)
+            continue
+
+        # 检查当前行是否为段落开始
+        if line.strip().startswith('<p'):
+            # 检查前一个区块是否为数学公式
+            if prev_was_math:
+                # 检查段落内容是否以特定字开头
+                if re.search(r'<p[^>]*>\s*&#12288;&#12288;([其并或])', line):
+                    # 去除段首空格
+                    line = re.sub(
+                        r'(<p[^>]*>)\s*&#12288;&#12288;', r'\1', line)
+                    # 打印调试信息
+                    print(f"已去除段首空格: 行 {i+1}")
+
+            # 重置前一个区块状态
+            prev_was_math = False
+        else:
+            # 如果不是段落开始行，重置前一个区块状态
+            prev_was_math = False
+
+        processed_lines.append(line)
+
+    return '\n'.join(processed_lines)
+
+
+def remove_italic_tags(html_content):
+    """
+    后处理HTML内容：移除所有斜体标签（<em>和</em>）
+
+    Args:
+        html_content (str): HTML内容字符串
+
+    Returns:
+        str: 处理后的HTML内容（已移除所有斜体标签）
+    """
+    # 使用正则表达式移除所有斜体标签
+    # 注意：我们只移除标签本身，保留标签内的内容
+    html_content = re.sub(r'</?em>', '', html_content)
+
+    # 打印处理信息
+    print(f"已移除所有斜体标签")
+
+    return html_content
+
+
 def docx_to_html(docx_path, output_html_path, image_dir="images", css_file=None):
     """
     将DOCX文件转换为HTML格式，保持文本、图像、表格和数学公式的顺序
@@ -623,6 +700,8 @@ def docx_to_html(docx_path, output_html_path, image_dir="images", css_file=None)
     4. 提取并保存图像
     5. 转换数学公式为LaTeX格式
     6. 生成完整的HTML文档
+    7. 后处理1：去除特定条件下段落的段首空格
+    8. 后处理2：去除所有斜体标签
 
     Args:
         docx_path (str): 输入的DOCX文件路径
@@ -635,6 +714,8 @@ def docx_to_html(docx_path, output_html_path, image_dir="images", css_file=None)
         - 支持UTF-8编码，处理中文内容
         - 数学公式转换为LaTeX格式
         - 生成完整的HTML5文档结构
+        - 后处理满足特定条件的段落
+        - 后处理移除所有斜体标签
     """
     # 创建图像目录
     if not os.path.exists(image_dir):
@@ -750,6 +831,12 @@ def docx_to_html(docx_path, output_html_path, image_dir="images", css_file=None)
     {'\n'.join(html_content)}
 </body>
 </html>"""
+
+    # 后处理1：去除特定条件下段落的段首空格
+    full_html = remove_leading_space_after_math(full_html)
+
+    # 后处理2：去除所有斜体标签
+    full_html = remove_italic_tags(full_html)
 
     # 写入HTML文件 - 确保UTF-8编码
     try:
