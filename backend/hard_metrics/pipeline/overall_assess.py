@@ -328,16 +328,6 @@ def infer(
                                                                                 eval_result=final_assessment_result
                                                                             )
                 hallucination_result = _request_model((hallucination_prompt, model_name))
-        
-                # 检查幻觉检测API调用是否成功
-                if 'error' in hallucination_result:
-                    logger.error(f"幻觉检测API调用失败: {hallucination_result['error']}")
-                    # 如果幻觉检测失败，使用原始评估结果
-                    final_assessment = final_assessment_result
-                    hallucination_info = {
-                        'detection_status': 'failed',
-                        'error': hallucination_result['hallucination_points']
-                    }
                 hallucination_data = parse_hallucination_detection_result(hallucination_result['output'])
                 
                 if not hallucination_data:
