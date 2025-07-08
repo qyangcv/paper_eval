@@ -27,9 +27,9 @@ from tools.file_utils import read_pickle
 from tools.logger import get_logger
 from prompts.overall_assess_prompt import (
     selection_prompt_logic, selection_prompt_innovation, selection_prompt_depth, 
-    selection_prompt_replicability, selection_prompt_quality,
+    selection_prompt_replicability,
     p_overall_content_logic, p_overall_content_innovation, p_overall_content_depth,
-    p_overall_content_replicability, p_overall_content_quality
+    p_overall_content_replicability, p_overall_hallucination_detection
 )
 
 logger = get_logger(__name__)
@@ -118,7 +118,6 @@ def generate_selection_prompt(toc: str, abstract: str, metric: str) -> str:
         "innovation": selection_prompt_innovation,
         "depth": selection_prompt_depth,
         "replicability": selection_prompt_replicability,
-        "quality": selection_prompt_quality,
     }[metric].format(toc=toc, abstract=abstract)
     return selection_prompt
 
@@ -172,9 +171,51 @@ def generate_final_assessment_prompt(selected_content: str, metric: str) -> str:
         "innovation": p_overall_content_innovation,
         "depth": p_overall_content_depth,
         "replicability": p_overall_content_replicability,
-        "quality": p_overall_content_quality,
     }[metric].format(content=selected_content)
     return final_prompt
+
+def generate_hallucination_detection_prompt(
+    dimension: str, abstract: str, eval_result: str, eval_requirement: str
+) -> str:
+    return p_overall_hallucination_detection.format(
+        dimension=dimension,
+        abstract=abstract,
+        eval_requirement=eval_requirement,
+        eval_result=eval_result
+    )
+
+def parse_hallucination_detection_result(response: str) -> dict:
+    content_str = response
+    try:
+        # 尝试解析JSON
+        api_data = json.loads(response)
+        content_str = api_data['choices'][0]['message']['content']
+        result = json.loads(content_str)
+        
+        return result
+        
+    except (json.JSONDecodeError, KeyError) as e:
+        logger.error(f"解析幻觉检测结果失败: {e}")
+        # 处理异常：回复里可能带json字符
+        match = re.search(r'```json\s*(\{.*\})\s*```', content_str, re.DOTALL)
+        if match:
+            logger.info(f"使用正则表达式再次尝试提取")
+            cleaned_content_str = match.group(1)
+            result = json.loads(cleaned_content_str)
+            logger.info(f"成功解析幻觉检测结果")
+            return result
+        else:
+            logger.warning("无法解析幻觉检测结果，返回空字典")
+            return {}
+        
+def get_message(json_str: str):
+    try:
+        api_data = json.loads(json_str)
+        content_str = api_data['choices'][0]['message']['content']
+        return content_str
+    except Exception as e:
+        logger.error(f"解析JSON字符串失败: {e}")
+        return json_str
 
 def infer(
     md_path: str,
@@ -184,7 +225,7 @@ def infer(
     save_dir: str = None
 ) -> dict:
     """
-    对论文进行两阶段推理
+    对论文进行三阶段推理：章节选择 -> 内容评估 -> 幻觉检测
     
     Args:
         md_path: markdown文件路径
@@ -210,11 +251,24 @@ def infer(
                 'innovation',
                 'depth',
                 'replicability',
-                'quality',
             ]
         
+        # 评估维度中英文映射
+        dimension_mapping = {
+            'logic': '逻辑连贯性与结构严谨性',
+            'innovation': '学术贡献与创新性的实质性',
+            'depth': '论证深度与批判性思维',
+            'replicability': '研究的严谨性与可复现性'
+        }
+        
         overall_result = {}
+        result = {}
         for metric in metrics:
+            # 跳过不支持幻觉检测的维度
+            if metric not in dimension_mapping:
+                logger.warning(f"维度 {metric} 不支持幻觉检测，跳过")
+                continue
+                
             logger.info(f"开始评估维度: {metric}")
             
             # 第一阶段: 根据评价维度选择需要评估的章节
@@ -224,6 +278,7 @@ def infer(
                 metric
             )
             selected_chapters_result = _request_model((selection_prompt, model_name))
+            selected_chapters_result = parse_selected_chapters(selected_chapters_result['output'])
             
             # 检查API调用是否成功
             if 'error' in selected_chapters_result:
@@ -231,7 +286,7 @@ def infer(
                 continue
                 
             # 解析模型返回选择的章节
-            selected_chapter_titles = parse_selected_chapters(selected_chapters_result['output'])
+            selected_chapter_titles =selected_chapters_result
             
             if not selected_chapter_titles:
                 logger.warning(f"未能选择到章节，跳过维度 {metric}")
@@ -254,22 +309,77 @@ def infer(
             # 第二阶段：将选择好的章节内容和对应的评价提示词，一起输入给模型提问
             final_prompt = generate_final_assessment_prompt(selected_content, metric)
             final_assessment_result = _request_model((final_prompt, model_name))
+            final_assessment_result = get_message(final_assessment_result['output'])
             
             # 检查API调用是否成功
             if 'error' in final_assessment_result:
                 logger.error(f"最终评估API调用失败: {final_assessment_result['error']}")
                 continue
             
+            # 第三阶段：幻觉检测
+            logger.info(f"开始对维度 {metric} 进行幻觉检测")
+
+                # 解析幻觉检测结果
+            for i in range(3):
+                hallucination_prompt = generate_hallucination_detection_prompt(
+                                                                                dimension=dimension_mapping[metric],
+                                                                                abstract=paper_data['abstract'],
+                                                                                eval_requirement=final_prompt,
+                                                                                eval_result=final_assessment_result
+                                                                            )
+                hallucination_result = _request_model((hallucination_prompt, model_name))
+                hallucination_data = parse_hallucination_detection_result(hallucination_result['output'])
+                
+                if not hallucination_data:
+                    logger.warning(f"幻觉检测结果解析失败，使用原始评估结果")
+                    final_assessment = final_assessment_result
+                    hallucination_info = {
+                        'detection_status': 'parse_failed',
+                        'raw_response': hallucination_result['output']
+                    }
+                elif 'hallucination_points' in hallucination_data and hallucination_data['hallucination_points']:
+                    # 检测到幻觉，使用修正后的结果
+                    logger.info(f"检测到 {len(hallucination_data['hallucination_points'])} 个幻觉点，使用修正后的结果")
+                    final_assessment_result = json.dumps(hallucination_data['fixed_eval_result'], ensure_ascii=False)
+                    hallucination_info = {
+                        'detection_status': 'hallucination_detected',
+                        'hallucination_points': hallucination_data['hallucination_points'],
+                        'original_assessment': final_assessment_result
+                    }
+                else:
+                    # 未检测到幻觉，使用原始结果
+                    logger.info(f"未检测到幻觉，使用原始评估结果")
+                    final_assessment = final_assessment_result
+                    hallucination_info = {
+                        'detection_status': 'no_hallucination',
+                        'verification': hallucination_data.get('verification', '所有陈述均有原文支持')
+                    }
+                    break
+            
             # 保存结果
             overall_result[metric] = {
                 'selected_chapters': selected_chapter_titles,
-                'assessment': final_assessment_result['output'],
-                'selection_reasoning': selected_chapters_result.get('output', ''),
-                'final_prompt_used': final_prompt
+                'assessment': final_assessment,
+                'selection_reasoning': selected_chapters_result,
+                'final_prompt_used': final_prompt,
+                'hallucination_detection': hallucination_info
             }
-            
+            final_data = json.loads(final_assessment)
+            result[metric] = {
+                "name": dimension_mapping[metric],
+                "score":  final_data['score'],
+                "full_score": 10,
+                "weight": 1.0,
+                "focus_chapter": selected_chapter_titles,
+                "comment": final_data['overall_assessment'],
+                "advantages": final_data['strengths'],
+                "weaknesses": final_data['weaknesses'],
+                "suggestions": final_data['suggestions'],
+            }
             logger.info(f"完成维度 {metric} 的评估")
-        logger.info(f"一共完成{len(metrics)}个维度的评估")
+            
+        logger.info(f"一共完成{len(overall_result)}个维度的评估")
+        
         # 保存结果到文件
         if save_dir:
             # 生成带时间戳的文件名
@@ -279,11 +389,11 @@ def infer(
             output_file = os.path.join(save_dir, filename)
             
             with open(output_file, 'w', encoding='utf-8') as f:
-                json.dump(overall_result, f, ensure_ascii=False, indent=4)
+                json.dump(result, f, ensure_ascii=False, indent=4)
             
             logger.info(f"整体评估结果已保存到: {output_file}")
         
-        return overall_result
+        return result
         
     except Exception as e:
         logger.error(f"整体评估过程出错: {e}")
@@ -300,14 +410,14 @@ if __name__ == "__main__":
         base_dir = FILE_CONFIG.get('base_dir')
         input_root = FILE_CONFIG.get('processed_data_dir')
         output_root = FILE_CONFIG.get('output_data_dir')
-        
+
         input_dir = os.path.join(input_root, 'docx')
         output_dir = os.path.join(output_root, 'docx')
 
         # 获取所有md文件（假设处理的是markdown文件）
         md_pattern = str(input_dir) + '/*.md'
         md_lst = glob(md_pattern)
-        
+
         if not md_lst:
             logger.warning(f"在 {input_dir} 中没有找到要处理的MD文件")
             
