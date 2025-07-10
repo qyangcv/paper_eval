@@ -21,6 +21,7 @@ from tools.file_utils import read_pickle
 from tools.logger import get_logger
 from prompts.assess_detail_prompt import p_writing_quality
 
+
 # 创建日志记录器
 logger = get_logger(__name__)
 
@@ -161,6 +162,10 @@ def chapter_inference():
         input_root = FILE_CONFIG.get('processed_data_dir')
         output_root = FILE_CONFIG.get('output_data_dir')
         
+        # 确保变量已正确初始化
+        assert input_root is not None, "input_root 必须被初始化"
+        assert output_root is not None, "output_root -必须被初始化"
+
         input_dir = os.path.join(input_root, 'docx')
         output_dir = os.path.join(output_root, 'docx')
 
