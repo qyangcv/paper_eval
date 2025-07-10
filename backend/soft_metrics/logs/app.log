@@ -1,0 +1,118 @@
+2025-07-10 13:07:30 [INFO] __main__: 开始处理文件: /Users/fullmoon/gitrepo/paper_eval/backend/soft_metrics/data/processed/docx/龚礼盛-本科毕业论文_with_formulas.md
+2025-07-10 13:07:30 [INFO] __main__: 开始评估维度: logic
+2025-07-10 13:07:31 [INFO] httpx: HTTP Request: POST https://api.deepseek.com/chat/completions "HTTP/1.1 200 OK"
+2025-07-10 13:07:36 [INFO] __main__: 成功解析选择的章节: ['1.1 研究背景及意义', '1.3 研究内容与创新点', '3.5 LEAD架构', '4.2 大模型评测', '4.3 LEAD对比实验', '5.1 论文工作总结']
+2025-07-10 13:07:38 [INFO] httpx: HTTP Request: POST https://api.deepseek.com/chat/completions "HTTP/1.1 200 OK"
+2025-07-10 13:07:54 [INFO] __main__: 开始对维度 logic 进行幻觉检测
+2025-07-10 13:07:56 [INFO] httpx: HTTP Request: POST https://api.deepseek.com/chat/completions "HTTP/1.1 200 OK"
+2025-07-10 13:08:00 [ERROR] __main__: 解析幻觉检测结果失败: Expecting value: line 1 column 1 (char 0)
+2025-07-10 13:08:00 [INFO] __main__: 使用正则表达式再次尝试提取
+2025-07-10 13:08:00 [INFO] __main__: 成功解析幻觉检测结果
+2025-07-10 13:08:00 [INFO] __main__: 未检测到幻觉，使用原始评估结果
+2025-07-10 13:08:00 [INFO] __main__: 完成维度 logic 的评估
+2025-07-10 13:08:00 [INFO] __main__: 开始评估维度: innovation
+2025-07-10 13:08:02 [INFO] httpx: HTTP Request: POST https://api.deepseek.com/chat/completions "HTTP/1.1 200 OK"
+2025-07-10 13:08:08 [INFO] __main__: 成功解析选择的章节: ['1.3 研究内容与创新点6', '3.5 LEAD架构18', '4.2 大模型评测22', '4.3 LEAD对比实验25', '1.2.2 越狱防御策略4', '3.2 启发性检测方法15', '4.2.3 评测结果与分析23']
+2025-07-10 13:08:08 [WARNING] __main__: 未找到选中章节的内容，跳过维度 innovation
+2025-07-10 13:08:08 [INFO] __main__: 开始评估维度: depth
+2025-07-10 13:08:10 [INFO] httpx: HTTP Request: POST https://api.deepseek.com/chat/completions "HTTP/1.1 200 OK"
+2025-07-10 13:08:15 [INFO] __main__: 成功解析选择的章节: ['1.2 国内外研究现状', '3.2 启发性检测方法', '4.2.3 评测结果与分析', '4.3.3 实验结果', '5.2 未来工作展望']
+2025-07-10 13:08:17 [INFO] httpx: HTTP Request: POST https://api.deepseek.com/chat/completions "HTTP/1.1 200 OK"
+2025-07-10 13:08:35 [INFO] __main__: 开始对维度 depth 进行幻觉检测
+2025-07-10 13:08:36 [INFO] httpx: HTTP Request: POST https://api.deepseek.com/chat/completions "HTTP/1.1 200 OK"
+2025-07-10 13:08:43 [ERROR] __main__: 解析幻觉检测结果失败: Expecting value: line 1 column 1 (char 0)
+2025-07-10 13:08:43 [INFO] __main__: 使用正则表达式再次尝试提取
+2025-07-10 13:08:43 [INFO] __main__: 成功解析幻觉检测结果
+2025-07-10 13:08:43 [INFO] __main__: 未检测到幻觉，使用原始评估结果
+2025-07-10 13:08:43 [INFO] __main__: 完成维度 depth 的评估
+2025-07-10 13:08:43 [INFO] __main__: 开始评估维度: replicability
+2025-07-10 13:08:45 [INFO] httpx: HTTP Request: POST https://api.deepseek.com/chat/completions "HTTP/1.1 200 OK"
+2025-07-10 13:08:50 [INFO] __main__: 成功解析选择的章节: ['3.5.1 数据集与预处理', '3.5.2 模型训练', '4.2.1 JailBench数据集', '4.2.2 评估实验设计', '4.3.1 评估指标', '4.3.2 基线方法', '4.3.3 实验结果']
+2025-07-10 13:08:52 [INFO] httpx: HTTP Request: POST https://api.deepseek.com/chat/completions "HTTP/1.1 200 OK"
+2025-07-10 13:09:07 [INFO] __main__: 开始对维度 replicability 进行幻觉检测
+2025-07-10 13:09:08 [INFO] httpx: HTTP Request: POST https://api.deepseek.com/chat/completions "HTTP/1.1 200 OK"
+2025-07-10 13:09:15 [ERROR] __main__: 解析幻觉检测结果失败: Expecting value: line 1 column 1 (char 0)
+2025-07-10 13:09:15 [INFO] __main__: 使用正则表达式再次尝试提取
+2025-07-10 13:09:15 [INFO] __main__: 成功解析幻觉检测结果
+2025-07-10 13:09:15 [INFO] __main__: 未检测到幻觉，使用原始评估结果
+2025-07-10 13:09:15 [INFO] __main__: 完成维度 replicability 的评估
+2025-07-10 13:09:15 [INFO] __main__: 一共完成3个维度的评估
+2025-07-10 13:09:15 [INFO] __main__: 整体评估结果已保存到: /Users/fullmoon/gitrepo/paper_eval/backend/soft_metrics/data/output/docx/龚礼盛-本科毕业论文_with_formulas_overall_assessment_20250710_130915.json
+2025-07-10 13:13:53 [INFO] __main__: 开始处理文件: /Users/fullmoon/gitrepo/paper_eval/backend/soft_metrics/data/processed/docx/龚礼盛-本科毕业论文_with_formulas.md
+2025-07-10 13:13:53 [INFO] __main__: 开始评估维度: logic
+2025-07-10 13:13:54 [INFO] httpx: HTTP Request: POST https://api.deepseek.com/chat/completions "HTTP/1.1 200 OK"
+2025-07-10 13:14:00 [INFO] __main__: 成功解析选择的章节: ['1.1 研究背景及意义', '1.3 研究内容与创新点', '3.5 LEAD架构', '4.2 大模型评测', '4.3 LEAD对比实验', '5.1 论文工作总结']
+2025-07-10 13:14:01 [INFO] httpx: HTTP Request: POST https://api.deepseek.com/chat/completions "HTTP/1.1 200 OK"
+2025-07-10 13:14:22 [INFO] __main__: 开始对维度 logic 进行幻觉检测
+2025-07-10 13:14:23 [INFO] httpx: HTTP Request: POST https://api.deepseek.com/chat/completions "HTTP/1.1 200 OK"
+2025-07-10 13:14:28 [ERROR] __main__: 解析幻觉检测结果失败: Expecting value: line 1 column 1 (char 0)
+2025-07-10 13:14:28 [INFO] __main__: 使用正则表达式再次尝试提取
+2025-07-10 13:14:28 [INFO] __main__: 成功解析幻觉检测结果
+2025-07-10 13:14:28 [INFO] __main__: 未检测到幻觉，使用原始评估结果
+2025-07-10 13:14:28 [INFO] __main__: 完成维度 logic 的评估
+2025-07-10 13:14:28 [INFO] __main__: 开始评估维度: innovation
+2025-07-10 13:14:30 [INFO] httpx: HTTP Request: POST https://api.deepseek.com/chat/completions "HTTP/1.1 200 OK"
+2025-07-10 13:14:34 [INFO] __main__: 成功解析选择的章节: ['1.3 研究内容与创新点6', '3.5 LEAD架构18', '4.2 大模型评测22', '4.3 LEAD对比实验25', '5.1 论文工作总结33']
+2025-07-10 13:14:34 [WARNING] __main__: 未找到选中章节的内容，跳过维度 innovation
+2025-07-10 13:14:34 [INFO] __main__: 开始评估维度: depth
+2025-07-10 13:14:35 [INFO] httpx: HTTP Request: POST https://api.deepseek.com/chat/completions "HTTP/1.1 200 OK"
+2025-07-10 13:31:13 [ERROR] __main__: 错误: 没有找到MD文件
+2025-07-10 13:31:13 [ERROR] __main__: 请检查输入路径: data/processed/docx
+2025-07-10 13:31:53 [INFO] __main__: 找到 1 个MD文件:
+2025-07-10 13:31:53 [INFO] __main__:   - data/processed/docx/龚礼盛-本科毕业论文_with_formulas.md
+2025-07-10 13:31:53 [INFO] __main__: 
+配置信息:
+2025-07-10 13:31:53 [INFO] __main__:   - 输入路径: data/processed/docx
+2025-07-10 13:31:53 [INFO] __main__:   - 输出目录: data/output/docx
+2025-07-10 13:31:53 [INFO] __main__:   - 模型名称: deepseek-chat
+2025-07-10 13:31:53 [INFO] __main__: 待处理文件数量: 1
+2025-07-10 13:31:53 [INFO] __main__: 开始推理...
+2025-07-10 13:31:53 [INFO] __main__: 处理文件: data/processed/docx/龚礼盛-本科毕业论文_with_formulas.md...
+2025-07-10 13:31:53 [INFO] pipeline.overall_assess: 开始评估维度: logic
+2025-07-10 13:31:54 [INFO] httpx: HTTP Request: POST https://api.deepseek.com/chat/completions "HTTP/1.1 200 OK"
+2025-07-10 13:31:59 [INFO] pipeline.overall_assess: 成功解析选择的章节: ['1.1 研究背景及意义', '1.3 研究内容与创新点', '3.5 LEAD架构', '4.2 大模型评测', '4.3 LEAD对比实验', '5.1 论文工作总结']
+2025-07-10 13:32:01 [INFO] httpx: HTTP Request: POST https://api.deepseek.com/chat/completions "HTTP/1.1 200 OK"
+2025-07-10 13:32:21 [INFO] pipeline.overall_assess: 开始对维度 logic 进行幻觉检测
+2025-07-10 13:32:22 [INFO] httpx: HTTP Request: POST https://api.deepseek.com/chat/completions "HTTP/1.1 200 OK"
+2025-07-10 13:32:26 [ERROR] pipeline.overall_assess: 解析幻觉检测结果失败: Expecting value: line 1 column 1 (char 0)
+2025-07-10 13:32:26 [INFO] pipeline.overall_assess: 使用正则表达式再次尝试提取
+2025-07-10 13:32:26 [INFO] pipeline.overall_assess: 成功解析幻觉检测结果
+2025-07-10 13:32:26 [INFO] pipeline.overall_assess: 未检测到幻觉，使用原始评估结果
+2025-07-10 13:32:26 [INFO] pipeline.overall_assess: 完成维度 logic 的评估
+2025-07-10 13:32:26 [INFO] pipeline.overall_assess: 开始评估维度: innovation
+2025-07-10 13:32:28 [INFO] httpx: HTTP Request: POST https://api.deepseek.com/chat/completions "HTTP/1.1 200 OK"
+2025-07-10 13:32:33 [INFO] pipeline.overall_assess: 成功解析选择的章节: ['1.3 研究内容与创新点', '3.5 LEAD架构', '4.2 大模型评测', '4.3 LEAD对比实验', '5.1 论文工作总结']
+2025-07-10 13:32:34 [INFO] httpx: HTTP Request: POST https://api.deepseek.com/chat/completions "HTTP/1.1 200 OK"
+2025-07-10 13:32:53 [INFO] pipeline.overall_assess: 开始对维度 innovation 进行幻觉检测
+2025-07-10 13:32:55 [INFO] httpx: HTTP Request: POST https://api.deepseek.com/chat/completions "HTTP/1.1 200 OK"
+2025-07-10 13:33:01 [ERROR] pipeline.overall_assess: 解析幻觉检测结果失败: Expecting value: line 1 column 1 (char 0)
+2025-07-10 13:33:01 [INFO] pipeline.overall_assess: 使用正则表达式再次尝试提取
+2025-07-10 13:33:01 [INFO] pipeline.overall_assess: 成功解析幻觉检测结果
+2025-07-10 13:33:01 [INFO] pipeline.overall_assess: 未检测到幻觉，使用原始评估结果
+2025-07-10 13:33:01 [INFO] pipeline.overall_assess: 完成维度 innovation 的评估
+2025-07-10 13:33:01 [INFO] pipeline.overall_assess: 开始评估维度: depth
+2025-07-10 13:33:02 [INFO] httpx: HTTP Request: POST https://api.deepseek.com/chat/completions "HTTP/1.1 200 OK"
+2025-07-10 13:33:07 [INFO] pipeline.overall_assess: 成功解析选择的章节: ['1.2 国内外研究现状', '3.2 启发性检测方法', '4.2.3 评测结果与分析', '4.3.3 实验结果', '5.1 论文工作总结', '5.2 未来工作展望']
+2025-07-10 13:33:09 [INFO] httpx: HTTP Request: POST https://api.deepseek.com/chat/completions "HTTP/1.1 200 OK"
+2025-07-10 13:33:27 [INFO] pipeline.overall_assess: 开始对维度 depth 进行幻觉检测
+2025-07-10 13:33:29 [INFO] httpx: HTTP Request: POST https://api.deepseek.com/chat/completions "HTTP/1.1 200 OK"
+2025-07-10 13:33:33 [ERROR] pipeline.overall_assess: 解析幻觉检测结果失败: Expecting value: line 1 column 1 (char 0)
+2025-07-10 13:33:33 [INFO] pipeline.overall_assess: 使用正则表达式再次尝试提取
+2025-07-10 13:33:33 [INFO] pipeline.overall_assess: 成功解析幻觉检测结果
+2025-07-10 13:33:33 [INFO] pipeline.overall_assess: 未检测到幻觉，使用原始评估结果
+2025-07-10 13:33:33 [INFO] pipeline.overall_assess: 完成维度 depth 的评估
+2025-07-10 13:33:33 [INFO] pipeline.overall_assess: 开始评估维度: replicability
+2025-07-10 13:33:34 [INFO] httpx: HTTP Request: POST https://api.deepseek.com/chat/completions "HTTP/1.1 200 OK"
+2025-07-10 13:33:40 [INFO] pipeline.overall_assess: 成功解析选择的章节: ['3.5.1 数据集与预处理', '3.5.2 模型训练', '4.2.1 JailBench数据集', '4.2.2 评估实验设计', '4.3.1 评估指标', '4.3.2 基线方法', '4.3.3 实验结果']
+2025-07-10 13:33:42 [INFO] httpx: HTTP Request: POST https://api.deepseek.com/chat/completions "HTTP/1.1 200 OK"
+2025-07-10 13:33:58 [INFO] pipeline.overall_assess: 开始对维度 replicability 进行幻觉检测
+2025-07-10 13:34:00 [INFO] httpx: HTTP Request: POST https://api.deepseek.com/chat/completions "HTTP/1.1 200 OK"
+2025-07-10 13:34:04 [ERROR] pipeline.overall_assess: 解析幻觉检测结果失败: Expecting value: line 1 column 1 (char 0)
+2025-07-10 13:34:04 [INFO] pipeline.overall_assess: 使用正则表达式再次尝试提取
+2025-07-10 13:34:04 [INFO] pipeline.overall_assess: 成功解析幻觉检测结果
+2025-07-10 13:34:04 [INFO] pipeline.overall_assess: 未检测到幻觉，使用原始评估结果
+2025-07-10 13:34:04 [INFO] pipeline.overall_assess: 完成维度 replicability 的评估
+2025-07-10 13:34:04 [INFO] pipeline.overall_assess: 一共完成4个维度的评估
+2025-07-10 13:34:04 [INFO] pipeline.overall_assess: 整体评估结果已保存到: data/output/docx/龚礼盛-本科毕业论文_with_formulas_overall_assessment_20250710_133404.json
+2025-07-10 13:34:04 [INFO] __main__: 文件 data/processed/docx/龚礼盛-本科毕业论文_with_formulas.md 处理完成
+2025-07-10 13:34:04 [INFO] __main__: 推理完成！

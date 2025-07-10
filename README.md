@@ -33,7 +33,15 @@ paper_eval/
     │   ├── data/              # 数据目录
     │   ├── infer.py           # 主入口文件
     │   └── README.md          # 后端说明文档
-    ├── (soft_metrics)         # 软指标评价模块，待添加
+    ├── (soft_metrics)         # 软指标评价模块
+    │   ├── config/            # 配置文件
+    │   ├── models/            # AI模型接口
+    │   ├── pipeline/          # 推理流水线
+    │   ├── prompts/           # 评估提示词
+    │   ├── tools/             # 工具函数
+    │   ├── data/              # 数据目录
+    │   ├── infer.py           # 主入口文件
+    │   └── README.md          # 后端说明文档
     └── (...)                  # 其他评价模块，待添加
 ```
 
