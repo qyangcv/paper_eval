@@ -42,8 +42,8 @@ def calculate_orb_similarity(image1_path, image2_path, threshold=0.6):
         return False, match_count  
 
 def main():
-    image1_path = './paper_image/clip_part.png' 
-    image2_path = './paper_image/clip_vague.png' 
+    image1_path = './images/image4.png' 
+    image2_path = './images/image5.png'
 
     is_similar, match_count = calculate_orb_similarity(image1_path, image2_path)
     if is_similar:
