@@ -10,7 +10,24 @@ venv/
 .ipynb_checkpoints/
 
 # VSCode settings
-.vscode/ 
+.vscode/
+
+# Node.js / npm
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+package-lock.json
+yarn.lock
+.npm
+.yarn-integrity
+.pnpm-debug.log*
+
+# Build outputs
+dist/
+build/
+*.tgz
+*.tar.gz
 
 # macOS specific
 **/.DS_Store
@@ -28,3 +45,14 @@ venv/
 # 数据目录
 /data/
 /logs/
+
+# 日志文件
+*.log
+
+# 临时文件和缓存
+/temp/
+/backend_fastapi/temp/
+/backend_fastapi/logs/
+
+# 版本号文件夹（防止pip install产生的临时文件）
+/backend_fastapi/[0-9]*
