@@ -69,7 +69,7 @@ from docx.table import _Cell, Table
 from docx.text.paragraph import Paragraph
 from docx.enum.text import WD_ALIGN_PARAGRAPH
 from docx.oxml.ns import qn
-from omml_to_latex import convert_omml_to_latex
+from .omml_to_latex import convert_omml_to_latex
 
 # 默认CSS样式 - 增强列表样式
 DEFAULT_CSS = """
