@@ -20,6 +20,9 @@ venv/
 *.png
 *.docx
 *.jpeg
+*.json
+*.log
+
 # Markdown文件 (除了README.md)
 *.md
 !README.md
