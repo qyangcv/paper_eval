@@ -1,0 +1,18 @@
+2025-06-30 19:48:22 [INFO] frontend.services.document_processor: 开始分析文档结构...
+2025-06-30 19:48:22 [INFO] frontend.services.document_processor: 检测到目录: '目录' at index 54
+2025-06-30 19:48:22 [INFO] frontend.services.document_processor: 检测到正文开始: '第一章 绪论' at index 101
+2025-06-30 19:48:22 [INFO] frontend.services.document_processor: 文档分析结果: 目录开始=54, 目录结束=100, 正文开始=101
+2025-06-30 19:48:23 [INFO] frontend.services.document_processor: 共提取 8 个主章节, 1 个子章节
+2025-06-30 19:48:29 [INFO] frontend.services.document_processor: 使用文件 /var/folders/_0/glfw9bp519b2s6r5c1v78k2m0000gn/T/tmp6wvyxb9_.docx 进行论文评估
+2025-06-30 19:50:09 [INFO] frontend.services.document_processor: 开始分析文档结构...
+2025-06-30 19:50:09 [INFO] frontend.services.document_processor: 检测到目录: '目录' at index 54
+2025-06-30 19:50:09 [INFO] frontend.services.document_processor: 检测到正文开始: '第一章 绪论' at index 101
+2025-06-30 19:50:09 [INFO] frontend.services.document_processor: 文档分析结果: 目录开始=54, 目录结束=100, 正文开始=101
+2025-06-30 19:50:09 [INFO] frontend.services.document_processor: 共提取 8 个主章节, 1 个子章节
+2025-06-30 19:50:16 [INFO] frontend.services.document_processor: 使用文件 /var/folders/_0/glfw9bp519b2s6r5c1v78k2m0000gn/T/tmpxbj8xf72.docx 进行论文评估
+2025-06-30 19:54:09 [INFO] frontend.services.document_processor: 开始分析文档结构...
+2025-06-30 19:54:09 [INFO] frontend.services.document_processor: 检测到目录: '目录' at index 54
+2025-06-30 19:54:09 [INFO] frontend.services.document_processor: 检测到正文开始: '第一章 绪论' at index 101
+2025-06-30 19:54:09 [INFO] frontend.services.document_processor: 文档分析结果: 目录开始=54, 目录结束=100, 正文开始=101
+2025-06-30 19:54:09 [INFO] frontend.services.document_processor: 共提取 8 个主章节, 1 个子章节
+2025-06-30 19:54:15 [INFO] frontend.services.document_processor: 使用文件 /var/folders/_0/glfw9bp519b2s6r5c1v78k2m0000gn/T/tmpb9peomm7.docx 进行论文评估
