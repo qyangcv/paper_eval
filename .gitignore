@@ -17,7 +17,7 @@ venv/
 
 # 数据文件
 *.pkl
-*.png
+*.pn
 *.docx
 *.jpeg
 # Markdown文件 (除了README.md)
@@ -26,5 +26,7 @@ venv/
 !**/README.md
 
 # 数据目录
-/data/
-/logs/
+./backend/hard_criteria/data/
+./backend/hard_criteria/logs/
+./backend/multimodal/downloaded_images/
+./backend/multimodal/images/
