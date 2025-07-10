@@ -31,3 +31,5 @@ venv/
 ./backend/multimodal/downloaded_images/
 ./backend/multimodal/images/
 ./backend/multimodal/tables/
+
+!./backend/hard_criteria/data/raw/docx/
