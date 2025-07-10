@@ -30,3 +30,4 @@ venv/
 ./backend/hard_criteria/logs/
 ./backend/multimodal/downloaded_images/
 ./backend/multimodal/images/
+./backend/multimodal/tables/
