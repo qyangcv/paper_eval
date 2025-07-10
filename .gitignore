@@ -17,7 +17,7 @@ venv/
 
 # 数据文件
 *.pkl
-*.pn
+*.png
 *.docx
 *.jpeg
 # Markdown文件 (除了README.md)
