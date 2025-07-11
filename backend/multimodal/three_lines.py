@@ -1,7 +1,7 @@
 import cv2, numpy as np, matplotlib.pyplot as plt
 
 # -------------------- 0. 基本参数 --------------------
-img_path = "/Users/fengyihang/python_code/paper_evaluation/paper_image/table_error.png" 
+img_path = "./tables/table_3.png" 
 canny_lo, canny_hi = 30, 100
 min_len_ratio  = 0.10          
 coord_tol, gap_tol = 4, 3

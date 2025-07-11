@@ -12,7 +12,7 @@ SAVE_DIR = Path("downloaded_images")
 SAVE_DIR.mkdir(exist_ok=True)
 SAVE_TXT = Path("./downloaded_images/image_urls.txt") 
 
-file = "/Users/fengyihang/python_code/paper_evaluation/paper_image/clip_part.png"
+file = "/Users/yang/Documents/bupt/code/github/paper_eval/backend/multimodal/images/image4.png"
 
 @logger.catch()
 async def demo_async() -> None:
@@ -31,6 +31,9 @@ def demo_sync() -> None:
 
 def show_result(resp: BingResponse) -> None:
     logger.info(f"Search URL: {resp.url}")
+    
+    # 记录是否找到了任何图片URL
+    found_urls = False
 
     if resp.pages_including:
         logger.info("Pages Including:")
@@ -43,15 +46,24 @@ def show_result(resp: BingResponse) -> None:
                 logger.info("-" * 20)
                 if page_item.image_url:                           
                     f.write(page_item.image_url + "\n")
+                    found_urls = True
+    else:
+        logger.warning("未找到包含该图片的页面")
 
     if resp.visual_search:
         logger.info("Visual Search:")
-        for visual_item in resp.visual_search:
-            logger.info(f"  Name: {visual_item.name}")
-            logger.info(f"  URL: {visual_item.url}")
-            logger.info(f"  Thumbnail URL: {visual_item.thumbnail}")
-            logger.info(f"  Image URL: {visual_item.image_url}")
-            logger.info("-" * 20)
+        with SAVE_TXT.open("a", encoding="utf-8") as f:
+            for visual_item in resp.visual_search:
+                logger.info(f"  Name: {visual_item.name}")
+                logger.info(f"  URL: {visual_item.url}")
+                logger.info(f"  Thumbnail URL: {visual_item.thumbnail}")
+                logger.info(f"  Image URL: {visual_item.image_url}")
+                logger.info("-" * 20)
+                if visual_item.image_url:
+                    f.write(visual_item.image_url + "\n")
+                    found_urls = True
+    else:
+        logger.warning("未找到相似的图片")
 
     if resp.related_searches:
         logger.info("Related Searches:")
@@ -91,7 +103,7 @@ def show_result(resp: BingResponse) -> None:
             logger.info(f"  Thumbnail URL: {entity.thumbnail}")
             logger.info(f"  Description: {entity.description}")
             logger.info(f"  Short Description: {entity.short_description}")
-            if entity.prfiles:
+            if hasattr(entity, 'profiles') and entity.profiles:
                 logger.info("  Profiles:")
                 for profile in entity.profiles:
                     logger.info(f"     {profile.get('social_network')}: {profile.get('url')}")
@@ -100,6 +112,11 @@ def show_result(resp: BingResponse) -> None:
 
     if resp.best_guess:
         logger.info(f"Best Guess: {resp.best_guess}")
+    
+    # 如果没有找到任何图片URL，创建空文件
+    if not found_urls:
+        logger.warning("未找到任何图片URL，创建空的URL文件")
+        SAVE_TXT.touch()  # 创建空文件
 
 def download_images_from_txt(txt_path: Path, save_dir: Path, max_images: int = 5) -> None:
     if not txt_path.exists():
@@ -129,5 +146,14 @@ def download_images_from_txt(txt_path: Path, save_dir: Path, max_images: int = 5
 
 
 if __name__ == "__main__":
-    asyncio.run(demo_async())
-    download_images_from_txt(SAVE_TXT, SAVE_DIR, 5)
+    try:
+        logger.info("开始图像搜索...")
+        asyncio.run(demo_async())
+        logger.info("图像搜索完成")
+        
+        logger.info("开始下载图片...")
+        download_images_from_txt(SAVE_TXT, SAVE_DIR, 5)
+    except Exception as e:
+        logger.error(f"程序执行出现错误: {e}")
+        import traceback
+        logger.error(traceback.format_exc())

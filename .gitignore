@@ -16,11 +16,20 @@ venv/
 *.png
 *.docx
 *.jpeg
+*.json
+*.log
+
 # Markdown文件 (除了README.md)
 *.md
 !README.md
 !**/README.md
 
 # 数据目录
-/data/
-/logs/
+./backend/hard_criteria/data/output/
+./backend/hard_criteria/data/processed/
+./backend/hard_criteria/logs/
+./backend/multimodal/downloaded_images/
+./backend/multimodal/images/
+./backend/multimodal/tables/
+
+!./backend/hard_criteria/data/raw/docx/
