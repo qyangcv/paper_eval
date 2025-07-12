@@ -82,7 +82,7 @@ def process_references(input_path, output_path):
         input_dir = os.path.dirname(input_path)
         if not os.path.exists(input_dir):
             os.makedirs(input_dir, exist_ok=True)
-            raise FileNotFoundError(f"输入目录已自动创建，请将参考文献文件保存到: {input_path}")
+            print(f"输入目录已自动创建，请将参考文献文件保存到: {input_path}")
         
         references = read_references_from_file(input_path)
         if not references:
