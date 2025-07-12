@@ -2,7 +2,6 @@ import os
 from openai import OpenAI  # 修改导入方式
 from dotenv import load_dotenv
 import argparse
-import os
 # 加载环境变量
 load_dotenv()
 

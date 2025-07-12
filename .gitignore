@@ -1,4 +1,8 @@
-# 环境变量文件
+# Python bytecode
+__pycache__/
+*.py[cod]
+
+# Environment files
 .env
 venv/
 
