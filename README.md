@@ -24,7 +24,7 @@ paper_eval/
 │   ├── utils/                 # 工具函数
 │   └── README.md              # 前端说明文档
 └── backend/                   # 后端评估模块
-    ├── hard_metrics/          # 硬指标评价模块
+    ├── hard_criteria/          # 硬指标评价模块
     │   ├── config/            # 配置文件
     │   ├── models/            # AI模型接口
     │   ├── pipeline/          # 推理流水线
@@ -33,13 +33,21 @@ paper_eval/
     │   ├── data/              # 数据目录
     │   ├── infer.py           # 主入口文件
     │   └── README.md          # 后端说明文档
-    ├── (soft_metrics)         # 软指标评价模块，待添加
+    ├── (soft_metrics)         # 软指标评价模块
+    │   ├── config/            # 配置文件
+    │   ├── models/            # AI模型接口
+    │   ├── pipeline/          # 推理流水线
+    │   ├── prompts/           # 评估提示词
+    │   ├── tools/             # 工具函数
+    │   ├── data/              # 数据目录
+    │   ├── infer.py           # 主入口文件
+    │   └── README.md          # 后端说明文档
     └── (...)                  # 其他评价模块，待添加
 ```
 
 ## 快速开始
 - 请阅读前端文档：`frontend/README.md` 
-- 请阅读后端文档：`backend/hard_metrics/README.md`
+- 请阅读后端文档：`backend/hard_criteria/README.md`
 
 ## 核心功能
 

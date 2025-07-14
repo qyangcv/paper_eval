@@ -36,6 +36,9 @@ build/
 *.pkl
 *.png
 *.docx
+*.jpeg
+*.json
+*.log
 
 # Markdown文件 (除了README.md)
 *.md
@@ -45,14 +48,3 @@ build/
 # 数据目录
 /data/
 /logs/
-
-# 日志文件
-*.log
-
-# 临时文件和缓存
-/temp/
-/backend_fastapi/temp/
-/backend_fastapi/logs/
-
-# 版本号文件夹（防止pip install产生的临时文件）
-/backend_fastapi/[0-9]*

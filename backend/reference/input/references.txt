@@ -1,0 +1,17 @@
+[1]Lin, H., Wen, H., Chen, X., & Song, X. (2023, November). Clip-based composed image retrieval with comprehensive fusion and data augmentation. In Australasian Joint Conference on Artificial Intelligence (pp. 190–202). Singapore: Springer Nature Singapore.
+[2]Hochreiter, S., & Schmidhuber, J. (1997). Long short-term memory. Neural computation, 9(8), 1735–1780.
+[3]Hochreiter, S. Schmidhuber, J. 1997. Long short-term memory. Neural computation 9(8), pp.1735–1780.
+[4]Lin, H. et al. (2023). Clip-based composed image retrieval. Australasian Joint Conference on Artificial Intelligence, 190-202.
+[5]Lin, Haoqiang, et al. "Clip-based composed image retrieval with comprehensive fusion and data augmentation." Australasian Joint Conference on Artificial Intelligence. Singapore: Springer Nature Singapore, 2023.
+[6]Wan, Yongquan, Guobing Zou, and Bofeng Zhang. "Composed image retrieval: a survey on recent research and development." Applied Intelligence 55.6 (2025): 482.
+[7]Lin, H., Wen, H., Chen, X., Song, X. "Clip-based composed image retrieval." Australasian Joint Conference, Springer Nature Singapore, 2023.
+[8]"Composed image retrieval: a survey on recent research." Wan, Yongquan, et al. Applied Intelligence 2025: 482.
+[9]Song X, Lin H, Wen H, et al. A comprehensive survey on composed image retrieval[J]. arXiv preprint arXiv:2502.18495, 2025.
+[10]Wan Y, Zou G, Zhang B. Composed image retrieval: a survey on recent research and development[J]. Applied Intelligence, 2025, 55(6): 482.
+[11]Song, X., Lin, H., Wen, H. A comprehensive survey on composed image retrieval. arXiv preprint arXiv:2502.18495 (2025).
+[12]Wan Y; Zou G; Zhang B. Composed image retrieval [J]: Applied Intelligence. 2025, 55(6), 482.
+[13]瞿林东，吴怀祺，陈其泰. 从创立走向建设：中国史学史学科发展的历程[J]. 北京师范大学学报：人文社会科学版，2002(5)：125–143.
+[14]GITLIN A，MARGONIS F. The political aspect of reform：teacher resistance as good sense[J]. American Journal of Education，1995（4）：37–40.
+[15]瞿林东、吴怀祺、陈其泰. 从创立走向建设：中国史学史学科发展的历程[J] 北京师范大学学报（人文社会科学版），2002年第5期：125-143.
+[16]雅斯贝尔斯. 什么是教育[M]，北京：生活•读书•新知三联书店，1991年：98页.
+[17]Song X, Lin H, Wen H, et al. A comprehensive survey on composed image retrieval[J]. arXiv preprint arXiv:2502.18495, 2025.
