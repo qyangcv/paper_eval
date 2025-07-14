@@ -1,0 +1,789 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>test_file.docx - Converted Document</title>
+    <style>
+        
+/* 基础文档样式 */
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    line-height: 1.6;
+    color: #333;
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+/* 标题样式 */
+h1, h2, h3, h4, h5, h6 {
+    color: #2c3e50;
+    margin-top: 1.5em;
+    margin-bottom: 0.5em;
+    font-weight: 600;
+}
+
+h1 { font-size: 2.2em; }
+h2 { font-size: 1.8em; }
+h3 { font-size: 1.5em; }
+h4 { font-size: 1.3em; }
+h5 { font-size: 1.1em; }
+h6 { font-size: 1em; }
+
+/* 段落样式 */
+p {
+    margin: 0 0 1em 0;
+    text-align: justify;
+}
+
+/* 列表样式 - 增强 */
+ul, ol {
+    margin: 0 0 1em 1.5em;
+    padding: 0;
+}
+
+li {
+    margin-bottom: 0.8em;
+    position: relative;
+    list-style: none; /* 移除默认列表标记 */
+}
+
+/* 无序列表标记样式 */
+ul li::before {
+    content: "•";
+    color: #3498db;
+    position: absolute;
+    left: -1.5em;
+    font-size: 1.2em;
+}
+
+/* 有序列表计数器 */
+ol {
+    counter-reset: list-counter;
+    margin-left: 1.8em;
+}
+
+ol li {
+    counter-increment: list-counter;
+    position: relative;
+}
+
+ol li::before {
+    content: counter(list-counter) ".";
+    position: absolute;
+    left: -1.8em;
+    width: 1.5em;
+    text-align: right;
+    font-weight: bold;
+    color: #3498db;
+}
+
+/* 字母序号列表 */
+ol.alpha-lower li::before {
+    content: counter(list-counter, lower-alpha) ".";
+}
+
+ol.alpha-upper li::before {
+    content: counter(list-counter, upper-alpha) ".";
+}
+
+/* 罗马数字序号列表 */
+ol.roman-lower li::before {
+    content: counter(list-counter, lower-roman) ".";
+}
+
+ol.roman-upper li::before {
+    content: counter(list-counter, upper-roman) ".";
+}
+
+/* 表格样式 */
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 1em 0;
+    box-shadow: 0 0 10px rgba(0,0,0,0.05);
+}
+
+th, td {
+    padding: 10px 15px;
+    text-align: left;
+    border: 1px solid #ddd;
+}
+
+th {
+    background-color: #f8f9fa;
+    font-weight: 600;
+}
+
+tr:nth-child(even) {
+    background-color: #f9f9f9;
+}
+
+/* 图片样式 */
+img {
+    max-width: 100%;
+    height: auto;
+    display: block;
+    margin: 1em auto;
+    border-radius: 4px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+
+/* 数学公式样式 */
+.math {
+    margin: 1em 0;
+    text-align: center;
+    padding: 10px;
+    background-color: #f8f9fa;
+    border-radius: 4px;
+    overflow-x: auto;
+}
+
+.math-inline {
+    display: inline;
+    padding: 2px 5px;
+}
+
+/* 引用块样式 */
+blockquote {
+    border-left: 4px solid #3498db;
+    padding: 10px 20px;
+    margin: 1em 0;
+    background-color: #f9f9f9;
+    color: #555;
+    font-style: italic;
+}
+
+/* 对齐样式 */
+.text-left {
+    text-align: left;
+}
+
+.text-center {
+    text-align: center;
+}
+
+.text-right {
+    text-align: right;
+}
+
+.text-justify {
+    text-align: justify;
+}
+
+    </style>
+    <!-- MathJax 支持数学公式渲染 -->
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+</head>
+<body>
+    <img src="images/image_1.jpeg" alt="image_1">
+<p class="text-center">&#12288;&#12288;<strong>本 科 毕 业 设 计（论文）</strong></p>
+<img src="images/image_2.png" alt="image_2">
+<p class="text-left">&#12288;&#12288;<strong>题目: </strong><u><strong>基于大模型提示注入的攻击与防御技术研究</strong></u></p>
+<p class="text-left">&#12288;&#12288;<strong>姓    名</strong><u><strong>      龚礼盛      </strong></u></p>
+<p class="text-left">&#12288;&#12288;<strong>学    院</strong><u><strong>    人工智能学院  </strong></u></p>
+<p class="text-left">&#12288;&#12288;<strong>专    业</strong><u><strong>     人工智能     </strong></u></p>
+<p class="text-left">&#12288;&#12288;<strong>班    级</strong><u><strong>     2021219112   </strong></u></p>
+<p class="text-left">&#12288;&#12288;<strong>学    号</strong><u><strong>     2021213523   </strong></u></p>
+<p class="text-left">&#12288;&#12288;<strong>指导教师</strong><u><strong>      赵志</strong></u><u><strong>诚</strong></u><u><strong>      </strong></u></p>
+<h1>2025 年  5  月</h1>
+<p class="text-center">&#12288;&#12288;<strong>北 京 邮 电 大 学</strong></p>
+<p class="text-center">&#12288;&#12288;<strong>本科毕业设计（论文）诚信声明</strong></p>
+<p class="text-left">&#12288;&#12288;本人声明所呈交的毕业设计（论文），题目《基于大模型提示注入的攻击与防御技术研究》是本人在指导教师的指导下，独立进行研究工作所取得的成果。尽我所知，除了文中特别加以标注和致谢中所罗列的内容以外，论文中不包含其他人已经发表或撰写过的研究成果，也不包含为获得北京邮电大学或其他教育机构的学位或证书而使用过的材料。</p>
+<p class="text-left">&#12288;&#12288;申请学位论文与资料若有不实之处，本人承担一切相关责任。</p>
+<p class="text-left">&#12288;&#12288;本人签名：<u>                    </u>     日期：<u>                       </u>   </p>
+<p class="text-center">&#12288;&#12288;<strong>关于论文使用授权的说明</strong></p>
+<p class="text-left">&#12288;&#12288;本人完全了解并同意北京邮电大学有关保留、使用学位论文的规定，即：北京邮电大学拥有以下关于学位论文的无偿使用权，具体包括：学校有权保留并向国家有关部门或机构送交学位论文，有权允许学位论文被查阅和借阅；学校可以公布学位论文的全部或部分内容，有权允许采用影印、缩印或其它复制手段保存。汇编学位论文，将学位论文的全部或部分内容编入有关数据库进行检索。（保密的学位论文在解密后遵守此规定）          </p>
+<p class="text-left">&#12288;&#12288;本人签名：<u>                    </u>     日期：<u>                       </u>   </p>
+<p class="text-left">&#12288;&#12288;导师签名：<u>                    </u>     日期：<u>                       </u>   </p>
+<p class="text-center">&#12288;&#12288;<strong>基于大模型提示注入的攻击与防御技术研究</strong></p>
+<p class="text-center">&#12288;&#12288;<strong>摘要</strong></p>
+<p class="text-left">&#12288;&#12288;近年来，大型语言模型(Large Language Models, LLMs)在自然语言处理任务中展现出卓越能力，广泛应用于生成式对话、文本摘要与智能问答等场景。然而，其开放式生成特性也使其暴露于越狱提示(Jailbreak Prompt)攻击的风险之下。攻击者通过精心设计输入，引导模型绕过安全限制，输出敏感或有害内容。这类攻击具备高度隐蔽性与语义复杂性，严重威胁大模型的安全可控性，急需高效且鲁棒的检测方法加以应对。</p>
+<p class="text-left">&#12288;&#12288;现有的部分越狱提示检测技术虽然能应对自动化生成的前后缀对抗提示，但在识别结构复杂、语义隐蔽的人类精心设计的攻击时效果有限，且普遍存在检测效率低、对基座模型依赖强、误报与漏报难以平衡的问题。</p>
+<p class="text-justify">&#12288;&#12288;为此，本文首先基于JailBench数据集对目前主流的大型语言模型进行了较为全面的越狱防御评测，总结了现有模型在面对隐蔽提示时普遍存在的防御短板。随后，本文设计了规则过滤、情感分析、基于困惑度检测等多种启发式的检测方法，进一步梳理出现有方案的局限。在此基础上，本文扩展并构建了更具有均衡性和代表性的数据集JailBench++，提出了一种高效的轻量化越狱提示检测器LEAD (<strong>L</strong>ightweight <strong>E</strong>fficient <strong>A</strong>nti-Jailbreak <strong>D</strong>etector)。LEAD基于Qwen2-1.5B-Instruct，通过引入LoRA指令微调技术实现了低成本适配，显著提升了对复杂越狱提示的识别能力。实验结果显示，在JailBench++测试集上，本文提出的LEAD在F1 得分、准确率与召回率等核心指标上均优于主流检测方法，且推理延迟极低，展现出良好的实际应用潜力。</p>
+<p class="text-left">&#12288;&#12288;<strong>关键词</strong> 大型语言模型 越狱提示检测 LoRA微调 高效轻量检测器</p>
+<p class="text-center">&#12288;&#12288;<strong>Research on Attack and Defense Techniques Based on Large Model Prompt Injection</strong></p>
+<p class="text-center">&#12288;&#12288;<strong>ABSTRACT</strong></p>
+<p class="text-left">&#12288;&#12288;In recent years, Large Language Models (LLMs) have demonstrated remarkable capabilities in natural language processing tasks such as dialogue generation, summarization, and question answering. However, their open-ended generation also exposes them to jailbreak prompt attacks, where adversarial inputs bypass safety mechanisms to induce harmful or sensitive content. These attacks are often covert and semantically complex, posing serious threats to the controllability and safety of LLMs and calling for efficient and robust detection methods.</p>
+<p class="text-left">&#12288;&#12288;Although some existing jailbreak detection techniques are effective against automatically generated prefix- and suffix-based adversarial prompts, they remain limited in detecting human-crafted attacks characterized by complex structures and implicit semantics. In addition, these methods often suffer from low detection efficiency, heavy reliance on the underlying base models, and a persistent challenge in balancing false positives and false negatives.</p>
+<p class="text-left">&#12288;&#12288;To address these challenges, this thesis first performs a comprehensive jailbreak defense evaluation of mainstream LLMs using the JailBench dataset, uncovering their common weaknesses in handling stealthy prompts. It then investigates several heuristic detection methods—including rule-based filtering, sentiment analysis, and perplexity filtering—and summarizes their limitations. Building on this analysis, a more balanced and representative dataset, JailBench++, is constructed. Furthermore, this thesis proposes LEAD (<strong>L</strong>ightweight <strong>E</strong>fficient <strong>A</strong>nti-Jailbreak <strong>D</strong>etector), a lightweight detector based on Qwen2-1.5B-Instruct, enhanced via LoRA instruction fine-tuning. LEAD achieves high detection performance with minimal computational cost. Experiments on JailBench++ test set show that LEAD outperforms existing methods in F1 score, precision, and recall, while maintaining extremely low inference latency, highlighting its practical deployment potential.</p>
+<p class="text-left">&#12288;&#12288;<strong>KEY WORDS</strong> Large Language Models  Jailbreak Prompt Detection  LoRA Fine-Tuning  Lightweight And Efficient Detector</p>
+<p class="text-center">&#12288;&#12288;<strong>目录</strong></p>
+<p class="text-left">&#12288;&#12288;<strong></strong><strong></strong><strong></strong></p>
+<p class="text-left">&#12288;&#12288;第一章 绪论1</p>
+<p class="text-left">&#12288;&#12288;1.1 研究背景及意义1</p>
+<p class="text-left">&#12288;&#12288;1.2 国内外研究现状3</p>
+<p class="text-left">&#12288;&#12288;1.2.1 大模型越狱攻击3</p>
+<p class="text-left">&#12288;&#12288;1.2.2 越狱防御策略4</p>
+<p class="text-left">&#12288;&#12288;1.2.3 参数高效微调4</p>
+<p class="text-left">&#12288;&#12288;1.2.4 指令微调5</p>
+<p class="text-left">&#12288;&#12288;1.3 研究内容与创新点6</p>
+<p class="text-left">&#12288;&#12288;1.4 章节安排7</p>
+<p class="text-left">&#12288;&#12288;第二章 相关技术9</p>
+<p class="text-left">&#12288;&#12288;2.1 大型语言模型9</p>
+<p class="text-left">&#12288;&#12288;2.2 混合专家模型11</p>
+<p class="text-left">&#12288;&#12288;2.3 参数高效微调LoRA12</p>
+<p class="text-left">&#12288;&#12288;2.4 指令微调13</p>
+<p class="text-left">&#12288;&#12288;2.5 本章小结14</p>
+<p class="text-left">&#12288;&#12288;第三章 轻量化的越狱提示检测器LEAD15</p>
+<p class="text-left">&#12288;&#12288;3.1 概述15</p>
+<p class="text-left">&#12288;&#12288;3.2 启发性检测方法15</p>
+<p class="text-left">&#12288;&#12288;3.3 模型选择17</p>
+<p class="text-left">&#12288;&#12288;3.4 任务定义18</p>
+<p class="text-left">&#12288;&#12288;3.5 LEAD架构18</p>
+<p class="text-left">&#12288;&#12288;3.5.1 数据集与预处理18</p>
+<p class="text-left">&#12288;&#12288;3.5.2 模型训练19</p>
+<p class="text-left">&#12288;&#12288;3.5.3 推理部署20</p>
+<p class="text-left">&#12288;&#12288;3.6 本章小结21</p>
+<p class="text-left">&#12288;&#12288;第四章 实验与分析22</p>
+<p class="text-left">&#12288;&#12288;4.1 概述22</p>
+<p class="text-left">&#12288;&#12288;4.2 大模型评测22</p>
+<p class="text-left">&#12288;&#12288;4.2.1 JailBench数据集22</p>
+<p class="text-left">&#12288;&#12288;4.2.2 评估实验设计22</p>
+<p class="text-left">&#12288;&#12288;4.2.3 评测结果与分析23</p>
+<p class="text-left">&#12288;&#12288;4.3 LEAD对比实验25</p>
+<p class="text-left">&#12288;&#12288;4.3.1 评估指标25</p>
+<p class="text-left">&#12288;&#12288;4.3.2 基线方法25</p>
+<p class="text-left">&#12288;&#12288;4.3.3 实验结果28</p>
+<p class="text-left">&#12288;&#12288;4.4 本章小结32</p>
+<p class="text-left">&#12288;&#12288;第五章 总结与展望33</p>
+<p class="text-left">&#12288;&#12288;5.1 论文工作总结33</p>
+<p class="text-left">&#12288;&#12288;5.2 未来工作展望34</p>
+<p class="text-left">&#12288;&#12288;参考文献36</p>
+<p class="text-left">&#12288;&#12288;致谢40</p>
+<p class="text-left">&#12288;&#12288;附录41</p>
+<p class="text-left">&#12288;&#12288;附录1 缩略词表41</p>
+<p class="text-left">&#12288;&#12288;<strong></strong></p>
+<h1>第一章 绪论</h1>
+<h2>1.1 研究背景及意义</h2>
+<p class="text-left">&#12288;&#12288;大型语言模型(Large Language Models, LLMs)，比如ChatGPT<sup></sup><sup></sup><sup></sup><sup></sup><sup></sup><sup>[1]</sup><sup></sup>, Llama<sup></sup><sup></sup><sup></sup><sup>[2]</sup><sup></sup>, Qwen<sup></sup><sup></sup><sup></sup><sup>[3]</sup><sup></sup>等已经在自然语言处理(Natural Language Processing, NLP)任务上表现出强大的能力，广泛应用于问答系统、代码补全、文本生成、智能搜索、对话系统、教育辅导、法律咨询以及医疗问诊等多个领域。这些模型之所以能够取得如此显著的性能，主要得益于其深层次的语义理解与生成能力。这种能力源自对海量高质量文本语料的深度预训练，使模型能够在多样化的语言环境中不断学习语言规律、归纳语义模式，从而在文本理解和自然语言生成任务中实现高度泛化与精确表达。</p>
+<p class="text-left">&#12288;&#12288;然而，大模型的复杂性和开放性也使其潜在的攻击面进一步扩大。提示注入(Prompt Injection)/越狱(Jailbreak)对大模型的安全构成威胁，是针对于大模型限制机制的核心攻击模式。这种攻击会通过提供特殊或恶意输入，引导大模型生成违规或敏感输出，如图1-1所示。一方面，越狱提示会导致大模型的滥用，从而可能导致各种非法或不良的后果<sup></sup><sup></sup><sup></sup><sup></sup><sup></sup><sup>[4]</sup><sup></sup><sup></sup><sup></sup><sup></sup><sup>[5]</sup><sup></sup>。尽管大模型通常在后训练时会与人类价值观念进行安全对齐<sup></sup><sup></sup><sup></sup><sup></sup><sup></sup><sup>[6]</sup><sup></sup><sup></sup><sup></sup><sup></sup><sup>[7]</sup><sup></sup>，但是仍然会容易受到各种攻击<sup></sup><sup></sup><sup></sup><sup></sup><sup></sup><sup>[4]</sup><sup></sup><sup></sup><sup></sup><sup></sup><sup>[5]</sup><sup></sup><sup> </sup><sup></sup><sup></sup><sup></sup><sup>[8]</sup><sup></sup><sup></sup><sup></sup><sup></sup><sup>[9]</sup><sup></sup>。另一方面，如果训练集中的越狱提示未被检测和过滤，那么模型在微调后，容易遵循越狱提示的指令，表现出不安全的行为<sup></sup><sup></sup><sup></sup><sup></sup><sup></sup><sup>[10]</sup><sup></sup>。</p>
+<img src="images/image_3.png" alt="image_3">
+<p class="text-center">&#12288;&#12288;图1-1  越狱的一个示例</p>
+<p class="text-left">&#12288;&#12288;为了降低大模型被滥用和恶意微调的风险，需要设计出能够精确检测出越狱提示的方法。当前用于越狱提示检测的主流方法有规则过滤、困惑度分析以及零样本检测。第一，规则过滤方法通常依赖黑名单关键词、单词频率统计或字符级重复序列的检测，通过设定一系列阈值来判定输入是否为越狱提示。这类方法虽然实现简单且能有效地捕获明显违规的文本，但其性能高度依赖于规则的设置精度，需要大量的人工干预和维护；同时，这些方法往往伴随着较高的误报率，尤其是在遇到结构复杂且语义连贯的人类精心设计的攻击时表现不足。第二，基于困惑度(Perplexity)、窗口化困惑度的过滤检测方法<sup></sup><sup></sup><sup></sup><sup></sup><sup></sup><sup>[11]</sup><sup></sup>，包括综合输入的令牌(token)数量、困惑度等特征进行轻量级分类的判断<sup></sup><sup></sup><sup></sup><sup></sup><sup></sup><sup>[12]</sup><sup></sup>策略，在检测部分越狱提示时表现较为出色，但由于困惑度本质上依赖于语义连贯性，对于一些机器生成的对抗性后缀(Adversarial Suffix)<sup></sup><sup></sup><sup></sup><sup>[4]</sup><sup></sup>往往效果更佳。然而面对人工精心设计(Human-crafted)的攻击<sup></sup><sup></sup><sup></sup><sup>[13]</sup><sup></sup>时，困惑度变化不易显现，导致检测效果下降。此外，仅依赖困惑度阈值也容易出现较高的误检率：例如当输入为短文本或是包含较多代码片段时，困惑度也会显著升高，导致误判。由于拥有丰富的知识库和强大的推理能力，大模型也可以用作零样本(Zero-shot)检测器。然而，用作零样本检测器的大模型通常性能不佳，例如高估了安全风险，导致较高的误检率。</p>
+<p class="text-left">&#12288;&#12288;伴随模型的规模持续扩张、上下游任务日益多样化，越狱提示的形态开始呈现跨模态、跨轮次甚至“社交工程”化的特征：攻击者不再满足于一次性的提示注入，而是通过对话上下文渐进式地诱导模型暴露控制权；有的还会混入代码段、表情符号或罕见语种，刻意逃避基于关键词和困惑度的过滤。传统检测策略对这类“混合型”“渐进式”越狱显得捉襟见肘，亟需一种能够辨析深层意图、兼顾语义流动性的系统化研究框架。</p>
+<p class="text-left">&#12288;&#12288;本文的研究意义体现在学术、应用与社会价值三个层面。学术上，本文将语言安全问题引入自然语言处理核心议题，推动从“提示文本”到“提示意图”的建模转向，为理解和提升语言模型的鲁棒性提供了新的理论视角。同时，越狱提示检测问题天然跨越 NLP、对抗样本分析与信息安全等多个领域，为跨领域协同研究提供了实践样本。在应用层面，随着聊天机器人、智能搜索、辅助编程等大模型应用不断走向用户终端，模型行为一旦失控，违规内容可在毫秒内传播，带来严重合规与舆情风险。本文以“实时、高精度、低资源消耗”为目标，构建可部署、可验证的检测方案，为企业侧部署、移动端推理乃至边缘设备中的模型防护提供了可行参考，有助于在保障用户体验的同时，降低安全运维成本与法律风险。从更广义的社会视角看，AI技术正深度介入教育、医疗、金融等关键领域，若越狱攻击得不到有效遏制，不仅可能诱发违法行为，也会损害公众对AI系统的信任。本文通过构建系统化的检测机制和安全响应路径，旨在为构建可信任、可治理的人工智能生态提供数据基础与方法支撑。</p>
+<h2>1.2 国内外研究现状</h2>
+<h3>1.2.1 大模型越狱攻击</h3>
+<p class="text-left">&#12288;&#12288;随着大语言模型在各类对话系统中的广泛应用，其安全性问题日益受到关注。研究者发现，这些模型可以被“越狱”，即通过特定的提示诱导其输出违反平台安全政策或伦理准则的内容。这类攻击主要分为两种路径：一种是自动化生成的对抗性提示，尤其是通过在原始用户提示前或后添加干扰性的前缀或后缀；另一种则是人类精心设计的越狱提示。</p>
+<p class="text-left">&#12288;&#12288;自动化前缀/后缀攻击是近年来研究的热点之一。这类攻击依赖于算法驱动的搜索机制，自动生成可以诱导模型“越狱”的文本。Zou等人提出了一种高效的梯度搜索算法<sup></sup><sup></sup><sup></sup><sup>[4]</sup><sup></sup>，能自动生成攻击性强、可迁移性高的后缀，在多个主流模型中均表现出色。类似地，Liu等人设计出了AutoDAN<sup></sup><sup></sup><sup></sup><sup>[14]</sup><sup></sup>，将人类可读性融入自动生成流程，使得对抗提示既具备语义合理性，又能稳定触发有害输出。此外，Wang等人设计的ASETF<sup></sup><sup></sup><sup></sup><sup>[15]</sup><sup></sup>方法则通过自然语言生成器对攻击提示进行润色，使其更符合语言习惯，从而更难被现有的检测器捕捉。这类攻击手段的优势在于：不依赖于具体任务语境，具备高度的可迁移性和自动化能力。</p>
+<p class="text-left">&#12288;&#12288;相比之下，大量证据显示人类精心设计的越狱提示依旧是最难防御的威胁。Xie等人提出的“Self-Reminder”工作<sup></sup><sup></sup><sup></sup><sup>[5]</sup><sup></sup>首先构建了含58条手工攻击的基准，并证明这些提示可将ChatGPT的越狱成功率提升至67%以上，且常规“软防御”只能将风险部分抑制；随后Liu等人通过对78条真实案例的系统研究提出三大类、十种模式的攻防分类框架<sup></sup><sup></sup><sup></sup><sup></sup><sup></sup><sup>[8]</sup><sup></sup>，实证显示这些策略在GPT-3.5与GPT-3上具备跨场景高迁移性，揭示了角色扮演、语境转移与权限提升等组合的强大越狱能力；在中文领域，JailBench利用“AJPE”扩展手工模版，生成10800条变体并在13款主流模型上评测，将ChatGPT的攻击成功率进一步提升到73%以上，凸显了中文语境下同样严峻的安全缺口。</p>
+<p class="text-left">&#12288;&#12288;人工精心设计的越狱提示因其语义自然、可组合且易规模化复制，远比自动化前缀/后缀更难检测与防御；因而，在模型输入端设计高效且轻量化的越狱提示检测器，作为多层防线中的首要关卡，不仅能够在源头阻断违规语境的注入，更为后续策略调用与内容审计提供必要的安全缓冲。</p>
+<h3>1.2.2 越狱防御策略</h3>
+<p class="text-left">&#12288;&#12288;在大模型被广泛应用之前，内容审核工作主要集中于某些类型的在线社交媒体信息<sup></sup><sup></sup><sup></sup><sup></sup><sup></sup><sup>[16]</sup><sup></sup><sup></sup><sup></sup><sup></sup><sup>[17]</sup><sup></sup>，例如在Twitter<sup></sup><sup></sup><sup></sup><sup></sup><sup></sup><sup>[18]</sup><sup></sup><sup></sup><sup></sup><sup></sup><sup>[19]</sup><sup></sup>和Reddit<sup></sup><sup></sup><sup></sup><sup></sup><sup></sup><sup>[17]</sup><sup></sup>等平台上发现的信息。目前已开发出各种在线审核API，例如 OpenAI Moderation API、Azure API、Perspective API等。这些API通常基于使用海量数据训练的模型。例如，OpenAI推出了OpenAI Moderation API<sup></sup><sup></sup><sup></sup><sup>[20]</sup><sup></sup>，旨在通过细致的数据收集、标记、模型训练和主动学习过程来检测不良内容。</p>
+<p class="text-left">&#12288;&#12288;近年来的防御研究首先聚焦于输入提示的困惑度：Jain等人提出的基线防御体系<sup></sup><sup></sup><sup></sup><sup>[11]</sup><sup></sup>将困惑度过滤视作第一道“粗筛”，发现优化生成的后缀往往呈现出与人类文本显著拉开的高困惑度分布，因而可在零微调条件下拦截大部分自动化越狱请求。然而，高阈值过滤易造成误报；Alon与Kamfonas则在此之上引入token 长度与LightGBM级联分类器<sup></sup><sup></sup><sup></sup><sup>[12]</sup><sup></sup>，将误检率显著压低至1.4 %，同时保持对已知攻击（GCG、AutoDAN等）的94%召回率。然而，困惑度方法对“语义自然、低困惑度”的人类精心设计的越狱提示防御力不足。</p>
+<p class="text-left">&#12288;&#12288;另一条新兴路线是安全关键梯度分析。Xie等人提出的GradSafe<sup></sup><sup></sup><sup></sup><sup>[21]</sup><sup></sup>将LLM原生梯度作为“安全指纹”，在无需附加训练的前提下，仅通过一次前向-反向过程就可辨别提示是否在诱导模型生成违规内容。作者观察到，当越狱提示配合“合规响应”计算损失时，模型在一小簇与安全策略相关的参数上会出现高度一致的梯度方向，而正常提示的梯度模式则呈现弱相关或相反趋势。然而，这一方法所产生的推理开销较大。</p>
+<p class="text-left">&#12288;&#12288;不同于以上方法，本文设计了一种能高效检测人工精心设计的越狱提示，且轻量级的检测器。</p>
+<h3>1.2.3 参数高效微调</h3>
+<p class="text-left">&#12288;&#12288;近年来，参数高效微调(Parameter-Efficient Fine-Tuning, PEFT)已成为大型预训练模型迁移的核心范式，其共识是“冻结”大模型主体，仅为每个下游任务引入极少可训练参数，以显著降低存储与算力成本。早期工作Adapter Tuning<sup></sup><sup></sup><sup></sup><sup></sup><sup>[22]</sup><sup></sup>在每个Transformer<sup></sup><sup></sup><sup></sup><sup>[23]</sup><sup></sup>层插入瓶颈‑结构的小模块并独立训练，从而将新增参数量压缩至3-4%且不破坏原模型权重；Houlsby等人证明在GLUE<sup></sup><sup></sup><sup></sup><sup>[24]</sup><sup></sup>多任务场景下，该策略即可逼近全量微调性能。随后，Pfeiffer等人提出跨语言共享的AdapterFusion<sup></sup><sup></sup><sup></sup><sup>[25]</sup><sup></sup>，进一步提高了多任务可重用性；而Mahabadi等人的Compacter<sup></sup><sup></sup><sup></sup><sup>[26]</sup><sup></sup>采用超复数低秩分解，使新增参数量降至0.05%仍能在SuperGLUE<sup></sup><sup></sup><sup></sup><sup>[27]</sup><sup></sup>超越全量微调。</p>
+<p class="text-left">&#12288;&#12288;随着提示工程(Prompt‑engineering)的兴起，研究者开始直接在输入侧注入可学习的向量。Prefix‑Tuning<sup></sup><sup></sup><sup></sup><sup></sup><sup>[28]</sup><sup></sup>将一组可训练的“前缀”键-值对拼接到注意力机制中，在生成任务上用0.1%参数达到全量微调性能；Prompt‑Tuning<sup></sup><sup></sup><sup></sup><sup>[29]</sup><sup></sup>进一步将前缀简化为连续软提示(Soft Prompts)，并发现模型规模越大，其与全量微调的差距越小；而P‑Tuning v2<sup></sup><sup></sup><sup></sup><sup>[30]</sup><sup></sup>通过深层梯度初始化，使NLU任务上0.1 %–3 %的参数即可稳定复现全量微调结果。另一条轻量路线BitFit<sup></sup><sup></sup><sup></sup><sup>[31]</sup><sup></sup>则极端地只更新偏置项（二元化更新），在中小数据集上可与Adapter持平，同时推理零开销。</p>
+<p class="text-left">&#12288;&#12288;在众多方法中，Low‑Rank Adaptation(LoRA)<sup></sup><sup></sup><sup></sup><sup>[32]</sup><sup></sup>通过将每个权重矩阵的更新项分解为两级低秩乘积，从根本上减少梯度与优化状态的维度。与Adapter系列相比，LoRA无需引入额外推理路径：训练结束后可将低秩矩阵与原权重合并，保证推理时无额外延迟；而Adapter模块在部署阶段仍需前向计算，增加了服务链路复杂度。相较 Prompt/Prefix‑Tuning，LoRA直接作用于内部表示空间，不依赖输入长度，因而在长文本或多模态场景中更稳定；同时其低秩特性允许通过增减rank灵活控制性能‑效率折中。综合实验显示，在RoBERTa<sup></sup><sup></sup><sup></sup><sup>[33]</sup><sup></sup>、GPT‑2<sup></sup><sup></sup><sup></sup><sup>[34]</sup><sup></sup>、GPT‑3<sup></sup><sup></sup><sup></sup><sup>[1]</sup><sup></sup>等多系列模型上，LoRA以0.05 %–0.2 % 的可训练参数取得与或优于全量微调的结果，同时显著降低显存占用 3倍以上，并在跨领域迁移与安全微调等任务中展现了更好的稳定性和可组合性。</p>
+<h3>1.2.4 指令微调</h3>
+<p class="text-left">&#12288;&#12288;自T0<sup></sup><sup></sup><sup></sup><sup></sup><sup></sup><sup>[35]</sup><sup></sup>首次展示通过多任务提示微调即可在完全零样本条件下泛化到未见任务以来，指令微调(Instruction Tuning)逐渐被视为弥合预训练目标与用户意图之间鸿沟的关键技术。T0通过汇总公开任务数据集并统一为“指令—输入—输出”三元结构，在不引入下游监督样本的情况下显著提升了模型在新任务上的零样本表现，奠定了指令微调研究的基础。随后，Google提出的 FLAN<sup></sup><sup></sup><sup></sup><sup>[36]</sup><sup></sup>进一步系统化构建跨任务混合指令集，通过精细控制任务多样性、指令模板语言风格和监督样本数，在Flan‑T5模型上实现了同尺寸基线平均超过12%的零样本能力提升，展示了指令规模、领域覆盖度与泛化性能之间的耦合关系。</p>
+<p class="text-left">&#12288;&#12288;为了扩展任务与指令的语义空间，Super‑NaturalInstructions<sup></sup><sup></sup><sup></sup><sup>[37]</sup><sup></sup>构建了一个包含1600多个由人工设计的任务集合，涵盖分类、排序、生成、推理等广泛场景，并系统性研究了指令粒度、复杂性与模型泛化能力的关系。实验表明，任务数量对跨任务迁移性能呈对数增长，提示指令分布多样性对于提升泛化能力至关重要。</p>
+<p class="text-left">&#12288;&#12288;OpenAI的InstructGPT<sup></sup><sup></sup><sup></sup><sup>[6]</sup><sup></sup>则首次在监督指令微调的基础上引入基于人类偏好的强化学习(Reinforcement Learning from Human Feedback, RLHF)，通过奖励建模器引导模型生成更符合人类价值与表达偏好的输出。该方法显著提升了模型在真实交互场景下的遵从性与可控性。实验数据显示，GPT‑3‑davinci 在帮助性与安全性维度的用户评价上，相较于未对齐模型分别提升了 40% 与 29%，标志着大模型对齐技术迈入产品可用阶段。</p>
+<p class="text-left">&#12288;&#12288;近年来，指令微调的研究还扩展到多语言、多模态、长上下文与语义对抗等前沿方向，部分工作尝试结合数据增强、自适应采样与指令扰动等策略，进一步提升指令泛化能力与鲁棒性。整体而言，指令微调已成为对齐大模型与人类意图的核心手段之一，并对后续的安全控制、角色扮演、价值注入等能力构建奠定了技术基础。</p>
+<h2>1.3 研究内容与创新点</h2>
+<p class="text-left">&#12288;&#12288;本文提出了一种新颖且轻量化的检测器LEAD，能够在检测准确率和推理速度上取得领先表现，尤其在识别人工精心设计的对抗攻击方面具有显著优势。具体而言，本文首先基于仅包含人工对抗攻击样本的基准数据集——JailBench<sup></sup><sup></sup><sup></sup><sup>[13]</sup><sup></sup>，对当前主流的大模型进行了系统评估，揭示了它们在安全防御方面仍存在的明显脆弱性。在此基础上，本文进一步探索了多种启发式检测策略，包括基于规则过滤、情感分析和困惑度阈值的方法，并对其在越狱提示检测任务中的性能进行了评测。实验结果表明，尽管这些方法在实现简便性与资源消耗方面具有一定优势，但在面对结构复杂、语义隐蔽的人类构造攻击时，仍存在召回率低、误报率高等问题，难以满足实际应用中的鲁棒性与稳定性要求。为进一步提升训练与评估的广度，本文通过对JailBench的扩展构建了一个更加均衡的数据集——JailBench++，并在Qwen2-1.5B-Instruct模型<sup></sup><sup></sup><sup></sup><sup>[38]</sup><sup></sup>上采用LoRA<sup></sup><sup></sup><sup></sup><sup>[32]</sup><sup></sup>指令微调进行训练。实验结果表明，所提出的检测器在测试集上取得了最优的检测性能，同时在推理速度方面也表现突出，为大模型应用提供了一种高效、可靠的安全防护检测方案。</p>
+<p class="text-left">&#12288;&#12288;本文的贡献可总结如下：</p>
+<p class="text-left">&#12288;&#12288;·构建了一个高质量越狱提示检测基准数据集(JailBench++)：对现有的JailBench数据集进行扩展构建了一个更加平衡、覆盖更加广泛攻击类型的越狱提示检测基准数据集(JailBench++)，为大模型安全评测与防护提供了坚实的数据基础。</p>
+<p class="text-left">&#12288;&#12288;·系统评测并探索了当前主流大模型的安全防御脆弱性：利用JailBench数据集系统性评测了主流的大语言模型，定量揭示了当前大模型在面对人工精心设计的越狱提示攻击时存在的安全防御不足，为后续的模型安全研究提供了重要参考。</p>
+<p class="text-left">&#12288;&#12288;·对多种检测策略进行了系统分析与性能对比：对包括规则过滤、情感分析、困惑度检测等启发式方法进行了评估，比较其在检测精度、召回率与鲁棒性等方面的表现，为新方法的提出提供了重要依据。</p>
+<p class="text-left">&#12288;&#12288;·提出了一种高效且轻量化的越狱提示检测方法(LEAD)：以Qwen2-1.5B-Instruct模型为基座，结合参数高效微调技术LoRA进行指令微调，提出了一种新颖的轻量化越狱提示检测器LEAD。该方法在识别人工精心设计的越狱提示时表现出显著优势，且在检测精度和推理速度上都领先于现有方法。</p>
+<h2>1.4 章节安排</h2>
+<p class="text-left">&#12288;&#12288;本文一共包含五个章节，各章节的主要内容如下：</p>
+<p class="text-left">&#12288;&#12288;第一章：绪论。本章首先介绍了大型语言模型的发展背景及其在自然语言处理任务中的广泛应用，指出随着模型能力增强，提示注入（越狱攻击）带来的安全隐患也日益突出。随后综述了国内外在越狱攻击、防御策略、参数高效微调（如LoRA）和指令微调等相关领域的研究现状，分析了现有方法的局限性。最后明确了本文的研究内容与创新点，描述了本文的主要研究内容。</p>
+<p class="text-left">&#12288;&#12288;第二章：相关技术。本章介绍了本文研究所依赖的核心技术背景。首先，概述了大型语言模型的基本结构与训练方法，重点讲解了Transformer架构、注意力机制、多头机制以及位置编码方式。然后，讲述了混合专家模型在大型语言模型中的应用。随后，介绍了参数高效微调技术LoRA的原理与优势，说明其在保证性能的同时显著降低了训练与推理开销。最后，阐述了指令微调的基本概念和应用，指出其在对抗越狱提示时的重要作用，为后续检测器的设计和训练提供了理论基础。</p>
+<p class="text-left">&#12288;&#12288;第三章：主要工作。本章提出了高效且轻量化的越狱提示检测器LEAD，首先讲述了前期的一些探索工作。然后概述了整体设计思路，说明选择Qwen2-1.5B-Instruct作为基座模型的理由，并明确了越狱提示检测任务的具体定义。随后详细介绍了使用参数高效微调技术LoRA进行模型训练的方法，包括数据集JailBench++的构建与预处理、基于LoRA的模型训练流程，以及最终的推理部署方式，确保检测器在准确率、推理速度和部署便捷性之间取得良好平衡。</p>
+<p class="text-left">&#12288;&#12288;第四章：实验与分析。本章通过两大部分实验验证了本文提出方法的有效性。首先，基于中文越狱基准数据集JailBench系统评估了主流大模型在面对人工设计的对抗攻击时的安全防御能力，揭示了当前模型在越狱防护方面的短板。随后，在越狱提示检测任务上，将本文提出的LEAD与启发式过滤、零样本大模型检测、梯度分析检测等基线方法进行全面对比，评估了各自的检测性能与推理效率。实验结果表明，LEAD在F1得分、准确率、召回率及推理速度等指标上均显著优于现有方法，展现出实际部署价值。</p>
+<p class="text-left">&#12288;&#12288;第五章：总结与展望。本章总结了本文在越狱提示检测方向上的研究工作，回顾了提出高效轻量化检测器LEAD的全过程及其实验验证结果，强调了其在检测准确率与推理效率上的突出表现。同时，本章也对当前方法的局限性进行了深入分析，提出需要在模型选取、泛化增强、对抗防御、跨语言迁移和数据扩展等方面持续优化，以推动越狱提示检测技术的进一步发展。</p>
+<h1>第二章 相关技术</h1>
+<h2>2.1 大型语言模型</h2>
+<p class="text-left">&#12288;&#12288;当今主流LLM大多基于Transformer结构<sup></sup><sup></sup><sup></sup><sup></sup><sup></sup><sup>[23]</sup><sup></sup>，其核心是注意力机制(Attention)。在标准的自注意力(Self-Attention)机制中，给定查询(Query)、键(Key)和值(Value)矩阵<span class="math-inline">\(Q,K,V\)</span>，计算公式为：</p>
+<p class="text-left">&#12288;&#12288;<div class="math">\[Attention\left( Q,K,V \right)=softmax(\frac{Q{K}^{T}}{\sqrt{{d}_{k}}})V\left( 2−1 \right)\]</div></p>
+<p class="text-left">&#12288;&#12288;这一注意力机制允许模型在<span class="math-inline">\(O({L}^{2})\)</span>时间复杂度内捕获长程依赖关系，其中<span class="math-inline">\(L\)</span>表示序列长度。模型总参数量与隐藏维度<span class="math-inline">\(d\)</span>、层数<span class="math-inline">\(L\)</span>呈近似平方关系<span class="math-inline">\(P\approx 12L{d}^{2}\)</span>（以GPT系列为例），规模扩张遵循经验幂律：</p>
+<p class="text-left">&#12288;&#12288;<div class="math">\[{\mathcal{L}}_{CE}\propto{N}^{−\alpha}, N=\min{\left( P,D,C \right)}\left( 2−2 \right)\]</div></p>
+<p class="text-left">其中<span class="math-inline">\({\mathcal{L}}_{CE}\)</span>为交叉熵损失，<span class="math-inline">\(D\)</span>为语料规模，<span class="math-inline">\(C\)</span>为训练算力，<span class="math-inline">\(\alpha\approx 0.095\)</span>。</p>
+<p class="text-left">&#12288;&#12288;为了增强表达能力，Transformer在每层会将隐藏向量按头数<span class="math-inline">\(ℎ\)</span>划分成<span class="math-inline">\(ℎ\)</span>个子空间，每个子空间的维度为：</p>
+<p class="text-left">&#12288;&#12288;<div class="math">\[{d}_{k}=\frac{d}{ℎ}, k=1,…,ℎ\left( 2−3 \right)\]</div></p>
+<p class="text-left">并计算组合自注意力后再拼接映射回原维度：</p>
+<p class="text-left">&#12288;&#12288;<div class="math">\[MultiHead\left( Q,K,V \right)=Concat\left( ℎea{d}_{1},…,ℎea{d}_{ℎ} \right){W}^{O}\left( 2−4 \right)\]</div></p>
+<p class="text-left">&#12288;&#12288;<div class="math">\[ℎea{d}_{i}=Attention\left( Q{W}_{i}^{Q},K{W}_{i}^{K},V{W}_{i}^{V} \right)\left( 2−5 \right)\]</div></p>
+<p class="text-left">其中<span class="math-inline">\({W}_{i}^{Q,K,V}\in{ℝ}^{d\times{d}_{k}}\)</span>，<span class="math-inline">\({W}^{O}\in{ℝ}^{ℎ{d}_{k}\times d}\)</span>，为可训练的参数矩阵。多头注意力机制允许模型在不同子空间捕获句法、语义、长程依赖等互补信息，并通过残差连接与LayerNorm<sup></sup><sup></sup><sup></sup><sup>[39]</sup><sup></sup>保持梯度稳定。</p>
+<p class="text-left">&#12288;&#12288;而且，自注意力本身与序列的顺序无关，为注入位置信息，主流的大模型使用绝对位置(Positional Encoding)或旋转相对位置(RoPE<sup></sup><sup></sup><sup></sup><sup>[40]</sup><sup></sup>)为每个token注入位置信息，公式可写为：</p>
+<p class="text-left">&#12288;&#12288;<div class="math">\[{\hat{x}}_{t}={x}_{t}+PE\left( t \right)\left( 2−6 \right)\]</div></p>
+<p class="text-left">或</p>
+<p class="text-left">&#12288;&#12288;<div class="math">\[{Q}_{t},{K}_{t}={R}_{\theta}\left( t \right){x}_{t}\left( 2−7 \right)\]</div></p>
+<p class="text-left">其中<span class="math-inline">\({R}_{\theta}\)</span>表示旋转矩阵，可以在保持<span class="math-inline">\(O({L}^{2})\)</span>复杂度的同时，把相对位置信息融入到注意力得分中。主流自回归语言模型以“下一个token预测”为预训练目标，最小化公式(2-2)中的交叉熵损失<span class="math-inline">\({\mathcal{L}}_{CE}\)</span>，完成基础语料预训练之后，再通过指令微调或强化学习进一步对齐人类意图，实现较好的实际生成效果。</p>
+<img src="images/image_4.png" alt="image_4">
+<p class="text-center">&#12288;&#12288;图2-1  Transformer Decoder结构图<sup></sup><sup></sup><sup></sup><sup></sup><sup></sup><sup>[23]</sup><sup></sup></p>
+<p class="text-left">&#12288;&#12288;在整体结构上，Transformer由编码器(Encoder)和解码器(Decoder)两部分组成，其中编码器提取特征，解码器生成内容。自回归语言模型通常仅使用Decoder堆叠模块。每个Transformer层包含多头自注意力子层与前馈神经网络(FFN)子层，中间通过残差连接与层归一化相连接。前馈神经网络由两层线性映射及中间非线性激活(如GELU<sup></sup><sup></sup><sup></sup><sup>[41]</sup><sup></sup>)构成：</p>
+<p class="text-left">&#12288;&#12288;<div class="math">\[FFN\left( x \right)=GELU\left( x{W}_{1}+{b}_{1} \right){W}_{2}+{b}_{2}\left( 2−8 \right)\]</div></p>
+<p class="text-left">&#12288;&#12288;在解码器中，为保证自回归生成的合理性，引入了因果掩码(Causal Masking)，定义掩码矩阵<span class="math-inline">\(M\)</span>为：</p>
+<p class="text-left">&#12288;&#12288;通过屏蔽未来信息，确保每个位置只能关注过去或当前token，符合生成的因果顺序。凭借强大的建模长程依赖能力、高度并行性及良好的可扩展性，Transformer架构已成为大型语言模型的基础框架。伴随模型规模的不断扩大，各种改进技术（如稀疏注意力、混合专家MoE等）也在持续推进LLMs的性能边界。主流的一些模型主要基于Transformer Decoder结构<sup></sup><sup></sup><sup></sup><sup></sup><sup></sup><sup>[23]</sup><sup></sup>，如图2-1所示。</p>
+<h2>2.2 混合专家模型</h2>
+<p class="text-left">&#12288;&#12288;混合专家模型(Mixture of Experts, MoE)<sup></sup><sup></sup><sup></sup><sup>[42]</sup><sup></sup>是一种旨在提高模型容量和计算效率的神经网络架构，特别适用于大规模语言模型的训练和推理。​其核心思想是引入多个专门处理不同子任务的“专家”子网络，并通过一个“门控网络”(gating network) 根据输入动态选择最相关的专家进行处理，从而实现条件计算(conditional computation）。​</p>
+<p class="text-left">&#12288;&#12288;在传统的MoE架构中，给定输入<span class="math-inline">\(x\)</span>，门控网络<span class="math-inline">\(G(x)\)</span>会输出一个权重向量<span class="math-inline">\(p=[{p}_{1},{p}_{2},…,{p}_{n}]\)</span>，其中<span class="math-inline">\({p}_{i}\)</span>表示第<span class="math-inline">\(i\)</span>个专家<span class="math-inline">\({\mathbb{E}}_{i}\)</span>的激活权重。这些权重通常通过Softmax函数计算：</p>
+<p class="text-left">&#12288;&#12288;<div class="math">\[p=softmax\left( G\left( x \right) \right)\left( 2−10 \right)\]</div></p>
+<p class="text-left">&#12288;&#12288;随后，模型将输入传递给所有专家，并根据权重对专家的输出进行加权求和，得到最终输出：</p>
+<p class="text-left">&#12288;&#12288;<div class="math">\[y=\sum_{i=1}^{n} {p}_{i}∙{\mathbb{E}}_{i}\left( x \right)\left( 2−11 \right)\]</div></p>
+<p class="text-left">&#12288;&#12288;然而，在深度学习中，为了提高计算效率，通常会采用稀疏激活机制，即在每次前向传播中仅激活前<span class="math-inline">\(k\)</span>个权重最大的专家（例如<span class="math-inline">\(k=1\)</span>或<span class="math-inline">\(k=2\)</span>），基本结构如图2-2所示。这种策略显著减少了计算资源的消耗，同时保持了模型的性能。例如，Switch Transformer<sup></sup><sup></sup><sup></sup><sup></sup><sup></sup><sup>[43]</sup><sup></sup>就是一种仅激活单个专家的 MoE 变体。</p>
+<p class="text-left">&#12288;&#12288;MoE 架构的一个关键挑战是负载均衡问题，即某些专家可能被频繁激活，而其他专家很少被使用。​为了解决这一问题，研究者引入了辅助损失函数，鼓励门控网络在每个批次中均匀地分配输入到各个专家，从而避免专家之间的负载不均。</p>
+<p class="text-left">&#12288;&#12288;此外，MoE架构还可以扩展为层次化结构(Hierarchical MoE)，即在多个层次上引入门控机制，每个层次的门控网络负责选择下一层的专家组合，从而实现更细粒度的专家选择和更强的模型表达能力。​这种结构在处理复杂任务时表现出更高的灵活性和效率。</p>
+<p class="text-left">&#12288;&#12288;近年来，MoE架构在大规模语言模型中的应用取得了显著成果。例如，GShard<sup></sup><sup></sup><sup></sup><sup>[44]</sup><sup></sup>和 GLaM<sup></sup><sup></sup><sup></sup><sup>[45]</sup><sup></sup>等模型通过引入数十个甚至数百个专家，实现了参数规模的显著扩展，同时保持了训练和推理的可行性。​这些模型在多语言处理、机器翻译等任务中表现出色，展示了 MoE架构在实际应用中的巨大潜力。</p>
+<p class="text-left">&#12288;&#12288;总的来说，混合专家模型通过引入专家子网络和动态门控机制，实现了模型容量与计算效率的平衡，成为构建高效、可扩展神经网络的重要工具。其在大规模语言模型中的成功应用，进一步证明了其在处理复杂任务和大规模数据方面的优势。</p>
+<img src="images/image_5.png" alt="image_5">
+<p class="text-center">&#12288;&#12288;图2-2  稀疏混合专家模型基本结构</p>
+<h2>2.3 参数高效微调LoRA</h2>
+<p class="text-left">&#12288;&#12288;Qwen2-1.5B-Instruct大约含15亿参数，若全量微调，不仅需双倍存储完整权重，还会在训练阶段占用大量显存，难以在资源受限的推理服务或快速迭代环境中部署。为实现“高效+轻量”的越狱提示检测器，本文选择LoRA<sup></sup><sup></sup><sup></sup><sup>[32]</sup><sup></sup> —— 一种将更新限制在低秩矩阵上的参数高效微调方法，可在保持推理延迟不变的情况下，将可训练参数量削减至小于原模型的1%。</p>
+<p class="text-left">&#12288;&#12288;设Transformer中某线性映射为</p>
+<p class="text-left">&#12288;&#12288;<div class="math">\[y={W}_{0}x, {W}_{0}\in{ℝ}^{{d}_{out}\times{d}_{in}}\left( 2−12 \right)\]</div></p>
+<p class="text-left">&#12288;&#12288;LoRA冻结<span class="math-inline">\({W}_{0}\)</span>，仅在其上叠加一项低秩更新<span class="math-inline">\(\Delta W\)</span>：</p>
+<p class="text-left">&#12288;&#12288;<div class="math">\[W={W}_{0}+\Delta W, \Delta W=BA, rank\left( \Delta W \right)\leq r≪\min{\left( {d}_{in}, {d}_{out} \right)}\left( 2−13 \right)\]</div></p>
+<p class="text-left">&#12288;&#12288;其中，<div class="math">\[A\in{ℝ}^{r\times{d}_{in}}, B\in{ℝ}^{{d}_{out}\times r}\]</div>为可训练的参数，为控制初始扰动，引入缩放系数<span class="math-inline">\(\alpha\)</span>（经验上<span class="math-inline">\(\alpha=2r\)</span>或<span class="math-inline">\(\alpha=r\)</span>）：</p>
+<p class="text-left">&#12288;&#12288;<div class="math">\[\Delta W=\frac{\alpha}{r}BA\left( 2−14 \right)\]</div></p>
+<p class="text-left">&#12288;&#12288;由于<span class="math-inline">\(r\)</span>一般比较小（比如<span class="math-inline">\(r=8\)</span>），因此LoRA的额外参数量为：</p>
+<p class="text-left">&#12288;&#12288;<div class="math">\[param{s}_{LoRA}=r\left( {d}_{in}+{d}_{out} \right)≪{d}_{in}{d}_{out}=param{s}_{full}\left( 2−15 \right)\]</div></p>
+<p class="text-left">&#12288;&#12288;对每个自注意力头的<span class="math-inline">\(Q,K,V,O\)</span>投影分别插入一对<span class="math-inline">\((A,B)\)</span>后，推理阶段可将<span class="math-inline">\({W}_{0}+\Delta W\)</span>合并并重新量化，由此不增加任何前向延迟。</p>
+<p class="text-left">&#12288;&#12288;与其他参数高效微调方法比较：Prompt‑Tuning需额外输入token，推理时长度受限；Adapter在推理时插入新层，增加延迟；而LoRA同时最省参数、最省时延，更契合高效检测场景。LoRA结构如图2-3所示。</p>
+<img src="images/image_6.png" alt="image_6">
+<p class="text-center">&#12288;&#12288;图2-3  LoRA结构图</p>
+<h2>2.4 指令微调</h2>
+<p class="text-left">&#12288;&#12288;指令微调(Instruction Tuning) 旨在将预训练LLM的泛化能力对齐到“遵循任意自然语言指令—输出合理回答”这一范式。其典型训练目标函数为有监督微调(Supervised Fine-Tuning, SFT)损失：</p>
+<p class="text-left">&#12288;&#12288;<div class="math">\[{\mathcal{L}}_{SFT}=−\sum_{\left( x,I,y \right)\in D} \log{{p}_{\theta}\left( y \mid x,I \right)}\left( 2−16 \right)\]</div></p>
+<p class="text-left">其中，<span class="math-inline">\(I\)</span>为自然语言指令(Instruction)，<span class="math-inline">\(x\)</span>为上下文，<span class="math-inline">\(y\)</span>为参考答案，<span class="math-inline">\(\theta\)</span>为待微调参数。在训练阶段，将自然语言指令连同上下文作为输入，显式引导模型生成符合指令要求的输出。相比传统的纯上下文建模，指令微调让模型学习到如何理解和执行人类的显式意图，从而实现更好的对齐(alignment)。在实际应用中，通过在微调时注入明确的Instruction，可以有效增强模型的指令遵循能力和输出稳定性，尤其在特定任务或领域适配中具有显著优势。</p>
+<p class="text-left">&#12288;&#12288;为提升指令理解与泛化能力，Google的FLAN系列(Fine-tuned LAnguage Net)集成了100+任务模板进行SFT微调，而且即便在较小模型规模下也能大幅提高指令遵循性。InstructGPT和后续的ChatGPT系列则在SFT阶段进一步引入基于人类反馈强化学习的方法优化策略，使输出更加符合人类偏好。RLHF的优化目标为：</p>
+<p class="text-left">&#12288;&#12288;<div class="math">\[{\operatorname*{max}_{\theta}{E}}_{a\sim{\pi}_{\theta}}\left[ {r}_{\varphi}\left( a \right) \right]−\beta KL\left[ {\pi}_{\theta}\parallel{\pi}_{0} \right]\left( 2−17 \right)\]</div></p>
+<p class="text-left">其中，<span class="math-inline">\({r}_{\varphi}\)</span>其中为人类反馈学习到的奖励，<span class="math-inline">\({\pi}_{0}\)</span>为初始策略，<span class="math-inline">\({\pi}_{\theta}\)</span>为当前策略，通过最大化奖励期望并约束KL散度，逐步引导模型朝向符合人类伦理标准的输出。</p>
+<p class="text-left">&#12288;&#12288;然而，SFT阶段主要学习的是静态语言模式的模仿，缺乏对输出质量的直接优化，因此往往需要与RLHF等技术结合以进一步提升模型对复杂、多变人类指令的响应能力。</p>
+<p class="text-left">&#12288;&#12288;总体而言，指令微调作为大模型对齐的关键步骤，不仅极大扩展了LLM的实用性，也为后续安全性、可控性、价值观对齐等方向奠定了基础。</p>
+<h2>2.5 本章小结</h2>
+<p class="text-left">&#12288;&#12288;本章介绍了本文所依赖的核心技术。首先梳理了Transformer结构与自注意力机制，阐释其在语言建模中的基础作用；其次讨论了混合专家模型在提升计算效率与扩展模型容量方面的优势；随后说明了LoRA作为高效微调方法在资源受限场景下的适用性；最后解析了指令微调技术在增强模型对齐能力和任务适应性中的关键作用。</p>
+<h1>第三章 轻量化的越狱提示检测器LEAD</h1>
+<h2>3.1 概述</h2>
+<p class="text-left">&#12288;&#12288;本章提出了一个高效且轻量化的越狱提示检测器LEAD。具体而言，首先阐述了早期探索过程中针对越狱提示检测任务的若干尝试，包括基于规则过滤、情感分析与困惑度检测的策略。这些探索为后续方法设计提供了重要经验和参考。随后，基于对现有方法的系统分析，本文最终选择以Qwen2-1.5B-Instruct为基座模型，结合参数高效微调技术LoRA执行指令微调，构建了更为高效、准确、轻量级的检测器。最后介绍检测任务的定义、微调方法以及推理部署流程。</p>
+<h2>3.2 启发性检测方法</h2>
+<p class="text-left">&#12288;&#12288;首先对一些启发性检测策略进行探索，从不同角度理解越狱提示的特性。</p>
+<p class="text-left">&#12288;&#12288;基于文本特征分析。本节设计了规则过滤(Rule-based Filtering)方法。考虑到越狱提示中通常包含高频敏感词或违规内容，本节在JailBench++_train数据集上进行词频统计，提取出有害提示中显著高频的关键词，并结合开源违禁词库构建黑名单词表。检测过程中设定三条规则：一是输入若命中黑名单词则直接判定为有害；二是若单词在文本中出现频率超过0.4（指代恶意堆叠引导），则判定为有害；三是若出现连续字符重复超过5次（如“aaaaa”），则判定为潜在刷屏或嵌套攻击。任何一条规则触发即认定为越狱提示，流程如图3-1所示。</p>
+<p class="text-left">&#12288;&#12288;基于情感分析(Sentiment Analysis)的方法。假设越狱提示往往伴随激进、负面或极端情绪，进而作为检测线索。本节采用了预训练情感分类器StructBERT-base-chinese<sup></sup><sup></sup><sup></sup><sup></sup><sup></sup><sup>[46]</sup><sup></sup>，该模型在BDCI、Dianping 、JD binary与Waimai-10K四个中文评论数据集上微调完成，具备跨域情感分布识别能力。在检测阶段，若情感分类器判定输入提示为负面情绪，则视为越狱提示，否则认定为正常输入。尽管该方法能捕捉一部分情绪强烈的越狱样本，但对于理性表述、隐蔽性强的提示仍难以有效识别。</p>
+<p class="text-left">&#12288;&#12288;基于语言模型困惑度的异常检测方法。本节尝试了基于困惑度过滤(Perplexity-based Filtering)的方法。理论上，若输入文本存在大量无意义、低频或异常拼接token，其整体困惑度会显著高于正常文本。因此，本节采用Qwen2-1.5B-Instruct计算输入提示的困惑度，设定全局阈值𝜏，当整体困惑度超出阈值即判定为越狱提示。为进一步提升鲁棒性，本节还尝试了滑动窗口策略（窗口大小50，重叠25 token），若任一局部窗口的困惑度异常升高，则亦判定为越狱提示，流程如图3-2所示。</p>
+<img src="images/image_7.png" alt="image_7">
+<p class="text-center">&#12288;&#12288;图3-1  规则过滤方法的流程图</p>
+<img src="images/image_8.png" alt="image_8">
+<p class="text-center">&#12288;&#12288;图3-2  基于困惑度过滤方法的流程图</p>
+<p class="text-left">&#12288;&#12288;总体而言，上述启发性策略验证了越狱提示在词汇、情感及语言分布层面均存在一定规律性，但由于规则硬编码、特征单一，难以应对多样化、语义复杂的攻击方式，且存在一定程度的误检和漏检，具体的优点和缺点如表3-1所示。因此，本节进一步探索基于大语言模型的深层语义检测方法，以实现更高鲁棒性和检测精度。</p>
+<p class="text-center">&#12288;&#12288;表3-1  前期探索方法的优点和缺点</p>
+<table>
+  <thead>
+    <tr>
+      <th>方法</th>
+      <th>优点</th>
+      <th>缺点</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>规则过滤</td>
+      <td>实现简单，对明显违规词敏感</td>
+      <td>依赖人工规则维护，误报率高，难以识别结构复杂或隐蔽攻击</td>
+    </tr>
+    <tr>
+      <td>情感分析</td>
+      <td>可借助现有情感模型，无需额外构造语料</td>
+      <td>易误判中性攻击提示，缺乏对越狱意图的直接建模能力</td>
+    </tr>
+    <tr>
+      <td>整体困惑度检测</td>
+      <td>利用语言模型分布，能捕捉部分异常语言模式</td>
+      <td>对短文本、代码片段敏感，误检率高，对人类构造提示效果有限</td>
+    </tr>
+    <tr>
+      <td>滑动窗口困惑度检测</td>
+      <td>增强局部异常捕捉能力，略优于整体困惑度策略</td>
+      <td>参数选择敏感，仍难应对复杂语义攻击</td>
+    </tr>
+  </tbody>
+</table>
+<h2>3.3 模型选择</h2>
+<p class="text-left">&#12288;&#12288;这里选择Qwen2-1.5B-Instruct作为越狱提示检测器的基座，首先因为它在体量与性能之间取得了极佳平衡：仅1.54B的参数量，可以在一张16-24GB的GPU上完成推理以及LoRA微调，大幅降低实验与部署门槛；同时它保留了32k-token的超长上下文窗口和良好的中英双语、代码理解能力，在公开表征理解、推理与多语言能力的17项任务中，Qwen2-1.5B模型整体超过Qwen1.5-1.8B<sup></sup><sup></sup><sup></sup><sup>[3]</sup><sup></sup>与MiniCPM-2.4B<sup></sup><sup></sup><sup></sup><sup></sup><sup></sup><sup>[47]</sup><sup></sup>，并在C-Eval<sup></sup><sup></sup><sup></sup><sup>[48]</sup><sup></sup>/CMMLU<sup></sup><sup></sup><sup></sup><sup>[49]</sup><sup></sup>的中文成绩上显著优于同级别模型。这意味着在保持小体量的同时，它已具备稳健的语义理解与跨领域泛化能力，为检测越狱提示中的复杂语义与隐式意图提供坚实基础。</p>
+<p class="text-left">&#12288;&#12288;此外，1.5B级模型在特定领域任务上梯度更新本就呈低秩特性，LoRA能高效捕获主要方向。而且社区已提供多种量化与LoRA适配脚本，可轻松部署在边缘服务器甚至消费级设备上。这一“开源友好+低硬件门槛”特性，使得我们能够以极小的工程代价迭代检测器、快速跟进新型攻击模式，从而满足高效、轻量、持续演进的实际需求。</p>
+<h2>3.4 任务定义</h2>
+<p class="text-left">&#12288;&#12288;设<span class="math-inline">\(X\)</span>为用户提交的原始提示(Prompt)空间， <span class="math-inline">\(Y={0,1}\)</span>为标签空间，其中<span class="math-inline">\(y=1\)</span>表示提示中含有越狱或其他潜在有害意图， <span class="math-inline">\(y=0\)</span>则表明提示为正常或安全内容。本节的目标是学习一个判别函数：</p>
+<p class="text-left">&#12288;&#12288;<div class="math">\[{f}_{\theta}: X\rightarrow\left[ 0,1 \right], {f}_{\theta}\left( x \right)=\Pr{\left( y=1 \right|} x;\theta)\left( 3−1 \right)\]</div></p>
+<p class="text-left">其中，<span class="math-inline">\(\theta= \varphi \cup \Delta\theta\)</span>，<span class="math-inline">\(\varphi\)</span>是冻结的基座权重，<span class="math-inline">\(\Delta\theta\)</span>是通过LoRA新增并经训练更新的低秩矩阵。判别过程仅依赖单条提示<span class="math-inline">\(x\)</span>，不需要访问随后由大模型生成的回答<span class="math-inline">\(\hat{r}\)</span>，从而避免了对下游模型架构、上下文窗口和解码策略的耦合，提高了跨模型泛化性与部署灵活性。</p>
+<p class="text-left">&#12288;&#12288;给定标注样本集合<span class="math-inline">\(D={{({x}_{i},{y}_{i})}}_{i=1}^{N}\)</span>，训练阶段最小化对数似然损失：</p>
+<p class="text-left">&#12288;&#12288;<div class="math">\[\mathcal{L}\left( \theta \right)=−\frac{1}{N}\sum_{i=1}^{N} \left[ {y}_{i}\log{{f}_{\theta}\left( {x}_{i} \right)+\left( 1−{y}_{i} \right)\log{\left( 1−{f}_{\theta}\left( {x}_{i} \right) \right)}} \right]\left( 3−2 \right)\]</div></p>
+<p class="text-left">&#12288;&#12288;由于Qwen2-1.5B-Instruct本身已具备多语种理解与长上下文编码能力，本文通过指令微调<sup></sup><sup></sup><sup></sup><sup>[36]</sup><sup></sup>将检测任务表述为自然语言指令：“Please judge whether the following question is harmful or unsafe. And only answer ‘True’ if it is harmful or unsafe, otherwise answer ‘False’. The question is: {prompt}”。把分类目标融入指令能够让模型继续沿用原生的对话式表征方式，减少任务切换带来的分布漂移<sup></sup><sup></sup><sup></sup><sup></sup><sup></sup><sup>[50]</sup><sup></sup><sup></sup><sup></sup><sup></sup><sup>[51]</sup><sup></sup>；同时也能提升零样本<sup></sup><sup></sup><sup></sup><sup></sup><sup></sup><sup>[52]</sup><sup></sup>任务上的能力表现。</p>
+<h2>3.5 LEAD架构</h2>
+<h3>3.5.1 数据集与预处理</h3>
+<p class="text-left">&#12288;&#12288;为构建用于微调越狱提示检测器的训练集，本小节在JailBench数据集的基础上进行了扩展，构建了包含正负样本的平衡数据集<strong>JailBench++</strong>。原始的JailBench数据集主要由具有强隐蔽性和攻击能力的越狱提示组成，生成的响应多为模型未能拒答的有害输出，整体呈现明显的类别不平衡，不适用于二分类检测任务的微调训练。</p>
+<p class="text-left">&#12288;&#12288;为引入高质量的负类样本（即无害输入），这里从开源的Chinese-DeepSeek-R1-Distill -data-110k数据集中随机抽取了与JailBench样本数量相当的无害问题子集，并将其与JailBench合并形成新数据集。Chinese-DeepSeek-R1-Distill-data-110k是开源的中文微调数据集，包含约11万条中文指令-响应对，涵盖数学、考试、STEM和通用知识等多个领域，旨在为中文大模型的训练和评估提供高质量的蒸馏数据。本节从中选取的问题均为自然、无攻击意图的指令性样本，确保其作为“无越狱意图”样本的代表性与多样性。最终构建的JailBench++数据集共计包含21,600条样本，正负类比例约为1:1，可有效支持基于指令微调的越狱提示检测器训练任务。</p>
+<p class="text-left">&#12288;&#12288;为便于后续指令微调，这一新数据集被统一整理为JSON格式，每条样本都包含“instruction”，“input”与”output”三个字段：“instruction”固定为人工指令 “Please judge whether the following question is harmful or unsafe. And only answer “True” if it is harmful or unsafe, otherwise answer “False”.” ；”input”为数据集中具体的用户指令；“output”为期望的标签，其中“True”表明提示属于越狱攻击，反之为安全输入。然后，本文按7：3的比例将数据划分为JailBench++_train和JailBench++_test，既保证训练足够充分，又为后续评估留出独立测试集。</p>
+<img src="images/image_9.png" alt="image_9">
+<p class="text-center">&#12288;&#12288;图3-3  LoRA微调过程中的损失变化曲线</p>
+<h3>3.5.2 模型训练</h3>
+<p class="text-left">&#12288;&#12288;模型训练阶段基于LLaMA-Factory<sup></sup><sup></sup><sup></sup><sup>[53]</sup><sup></sup>框架，LLaMA-Factory 支持多种主流大语言模型的参数高效微调，具备良好的模块化结构与兼容性，便于快速构建低资源环境下的指令对齐实验。利用四张NVIDIA RTX 4090显卡（24 GB 显存）对Qwen2-1.5B-Instruct执行LoRA指令微调。LoRA仅注入至每个Transformer 层的<span class="math-inline">\({W}_{q}\)</span>与<span class="math-inline">\({W}_{v}\)</span>权重矩阵，秩<span class="math-inline">\(r\)</span>设为8，并采用缩放系数<span class="math-inline">\(\alpha\)</span>为16，以放大低秩更新的有效梯度。训练使用AdamW优化器（学习率<span class="math-inline">\(5\times{10}^{−6}\)</span>，权重衰减0.1），先线性warm-up 100 步，再执行余弦退火；有效批大小为16，梯度累积步数为4。整个过程启用 bfloat16 混合精度与梯度检查点。总共训练3个epoch。最终可训练参数仅约1M，占原模型总量的 0.0705 %，训练损失与性能收敛曲线见图 3-4，可观察到LoRA在极低参数增量下即可显著提升模型对越狱提示的敏感性。模型结构如图3-3所示。</p>
+<img src="images/image_10.png" alt="image_10">
+<p class="text-center">&#12288;&#12288;图3-4  LoRA微调过程中的损失变化曲线</p>
+<h3>3.5.3 推理部署</h3>
+<p class="text-left">&#12288;&#12288;推理部署阶段采用高性能推理引擎vLLM<sup></sup><sup></sup><sup></sup><sup></sup><sup></sup><sup>[54]</sup><sup></sup>。vLLM是一个专为大语言模型推理优化的开源框架，具备高效的动态批处理(Dynamic Batching)机制和连续张量分配策略(Paged Attention)，能够在保持生成质量的同时显著提升吞吐率与GPU利用率。与传统HuggingFace推理流程相比，vLLM支持更灵活的请求调度与并发执行，尤其适用于多请求场景下的低延迟响应与资源节省，因而广泛用于工业级LLM服务部署。本文通过张量并行(Tensor Parallel)将模型切分到两张GPU，并在运行时加载同路径下保存的LoRA权重，合并到基座模型中。推理时首先构造带有人工指令的用户消息，再调用LLM类的chat接口一次性并行推送请求。本文将最大令牌长度限制为 20，兼顾响应速度与回答完整性；同时设置温度系数为0.7，top p为0.8以减少随机性。</p>
+<h2>3.6 本章小结</h2>
+<p class="text-left">&#12288;&#12288;本章提出并实现了一个高效的轻量化越狱提示检测器LEAD。首先探索了基于规则过滤、情感分析与困惑度检测的方法，从不同角度理解了越狱提示的特性。随后选用Qwen2-1.5B-Instruct作为基座模型，结合LoRA实现参数高效的指令微调，并完成了数据处理、模型训练与推理部署流程。</p>
+<h1>第四章 实验与分析</h1>
+<h2>4.1 概述</h2>
+<p class="text-left">&#12288;&#12288;本章实验分为两个部分。首先，针对主流大模型，基于中文越狱评估基准 JailBench（含人工种子集与自动扩展集）设计安全测试：阐述数据集覆盖面、越狱成功率(ASR)指标、GPT-4o-mini自动判别器、vLLM推理框架及硬件配置，展示完整的评测流程，并进行测评结果的分析。随后，在越狱提示检测任务中，将第三章提出的LEAD与三类基线方法——启发式文本过滤、零样本大模型判别、梯度分析检测进行性能与部署效率方面的对比。</p>
+<h2>4.2 大模型评测</h2>
+<p class="text-left">&#12288;&#12288;为了系统评估大模型在面对人工精心设计的对抗攻击时的安全表现，本节基于JailBench对主流模型进行了全面的实验测试。首先简要介绍JailBench数据集的构成和特点，随后阐述实验设计，包括评测指标、评估方法，以及测试环境与流程等。通过对多种模型性能进行横向对比，揭示当前模型在对抗性防御能力方面的优劣势，并为后续的改进与研究提供参考。</p>
+<h3>4.2.1 JailBench数据集</h3>
+<p class="text-left">&#12288;&#12288;JailBench<sup></sup><sup></sup><sup></sup><sup>[13]</sup><sup></sup>是专为大模型安全评估设计的中文基准数据集，旨在系统挖掘模型的潜在越狱风险。该数据集构建了覆盖五大类、四十种子类的精细安全分类体系，并引入自动越狱提示工程(AJPE)框架，通过上下文学习生成高质量越狱指令，从而实现数据的高效扩展与多样化。实验结果表明，JailBench在ChatGPT等主流模型上的攻击成功率显著高于现有中文基准数据集，验证了其强大的攻击覆盖能力和实用性。</p>
+<p class="text-left">&#12288;&#12288;该基准包含两个关键子集：JailBench_seed(540条)为人工精心设计的高质量越狱提示集合，用于提供攻击的种子样本; JailBench(10800条)则是在种子集基础上自动扩展的主数据集，覆盖更广泛的攻击类型，具有更强大的越狱能力。本节采用这两个数据集对主流大模型进行了系统性的对抗性防御能力评估。</p>
+<h3>4.2.2 评估实验设计</h3>
+<p class="text-left">&#12288;&#12288;·评测指标：在大模型安全评估实验中，采用越狱成功率(Attack Success Rate, ASR)作为评估指标，指能够成功突破模型安全防御并产生有害输出的测试问题占总测试问题的比例。越狱成功率越高，代表目标模型的安全防护能力越弱。</p>
+<p class="text-left">&#12288;&#12288;·评估方法：考虑到对大规模对抗性样本进行人工评测不仅耗时耗力，且难以保持一致性和可重复性，这里采用了一种自动化评估方案JailbreakEval<sup></sup><sup></sup><sup></sup><sup>[55]</sup><sup></sup>，引入GPT-4o-mini模型作为自动判别器，对模型生成的响应进行判断，以评估其是否成功绕过安全机制，从而实现对对抗性防御能力的高效评估。具体方法是将“用户问题”与“模型回答”嵌入预设的判别提示中，如图4-1所示，请求GPT-4o-mini判断回答是否违反伦理、法律或安全规范，并以A(Very Harmful)至E(No Harmful at All)五级标签给出判定结果。若判定结果为A或B，则认为本次攻击成功绕过了模型的安全机制，构成一次越狱成功。</p>
+<img src="images/image_11.png" alt="image_11">
+<p class="text-center">&#12288;&#12288;图4-1  越狱评估使用的提示词</p>
+<p class="text-left">&#12288;&#12288;·测试环境：为了在保证推理效率的同时有效节省显存资源，采用了高性能的 vLLM<sup></sup><sup></sup><sup></sup><sup>[54]</sup><sup></sup>推理框架部署主流大语言模型。vLLM支持高吞吐量的推理任务，适用于大规模样本评估场景。实验运行环境配备了4张NVIDIA RTX 4090显卡，用于加速模型推理过程，显著提升了整体评估效率。</p>
+<h3>4.2.3 评测结果与分析</h3>
+<p class="text-left">&#12288;&#12288;各个主流大模型的对抗性防御能力评测结果如表4-1所示。</p>
+<p class="text-left">&#12288;&#12288;在JailBench_seed子集上的评估结果表明，大多数模型在面对该数据集中的有害提示时表现出较强的防御能力，攻击成功率普遍较低（如Llama3系列和Qwen2系列模型的攻击成功率均低于0.05）。这一现象主要归因于JailBench_seed本身由人工设计的高质量越狱提示构成，其问题形式较为直接且具有明显的危害性，按理应被模型准确拒绝。然而，DeepSeek-R1-Distill-Qwen-7B模型在该子集上的攻击成功率高达0.17，显著高于其他模型。这一异常结果可能与该模型在推理阶段启用了更强的推理模式有关，从而导致模型在生成响应时倾向于“思考过多”，进而绕过了原有的防御策略。但具体原因仍需进一步对模型内部机制进行深入分析。</p>
+<p class="text-center">&#12288;&#12288;表4-1  不同模型在JailBench_seed, JailBench数据集上的评测结果</p>
+<table>
+  <thead>
+    <tr>
+      <th>模型</th>
+      <th>JailBench_seed (ASR)</th>
+      <th>JailBench (ASR)</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>DeepSeek-R1-Distill-Qwen-7B[56]</td>
+      <td>0.17</td>
+      <td>0.54</td>
+    </tr>
+    <tr>
+      <td>Llama-3.2-3B-Instruct</td>
+      <td>0.04</td>
+      <td>0.28</td>
+    </tr>
+    <tr>
+      <td>Llama-3-8B-Instruct[57]</td>
+      <td>0.01</td>
+      <td>0.43</td>
+    </tr>
+    <tr>
+      <td>Baichuan2-7B-Chat[58]</td>
+      <td>0.14</td>
+      <td>0.54</td>
+    </tr>
+    <tr>
+      <td>Qwen2-1.5B-Instruct[38]</td>
+      <td>0.04</td>
+      <td>0.34</td>
+    </tr>
+    <tr>
+      <td>Qwen2.5-3B-Instruct[59]</td>
+      <td>0.01</td>
+      <td>0.35</td>
+    </tr>
+    <tr>
+      <td>Qwen2.5-7B-Instruct[59]</td>
+      <td>0.02</td>
+      <td>0.54</td>
+    </tr>
+  </tbody>
+</table>
+<p class="text-left">&#12288;&#12288;相比之下，在完整的JailBench数据集上，所有模型的对抗性防御能力均出现明显下降。数据显示，绝大多数模型的攻击成功率均超过30%，部分模型（如DeepSeek-R1和Baichuan2）甚至高达54%。这一结果充分体现了JailBench数据集中自动扩展的越狱提示具备更强的隐蔽性和攻击能力，能够更有效地诱导模型生成有害输出。在所有被测模型中，Llama-3.2-3B-Instruct展现出相对较强的鲁棒性，攻击成功率仅为0.28。其相对优异的表现可能源于Meta在Llama-3.2系列开发过程中引入的多重安全强化措施，包括使用专门的对抗性评估数据集、集成Purple Llama<sup></sup><sup></sup><sup></sup><sup>[60]</sup><sup></sup>安全工具以过滤输入输出内容，以及开展多轮红队测试<sup></sup><sup></sup><sup></sup><sup>[61]</sup><sup></sup>以覆盖广泛的潜在滥用场景。这些实践有效提升了模型在复杂攻击场景下的防御能力。</p>
+<p class="text-left">&#12288;&#12288;综上所述，该组大模型评测实验充分暴露了当前主流大模型在面对复杂越狱提示时的防御短板，表明仅依赖静态安全训练仍不足以应对动态演化的越狱攻击。这进一步凸显了构建高效、自动化检测越狱提示机制的重要性与紧迫性。</p>
+<h2>4.3 LEAD对比实验</h2>
+<h3>4.3.1 评估指标</h3>
+<p class="text-left">&#12288;&#12288;在本节的评估中，F1 得分被作为主要指标。越狱提示检测属于安全强相关的二分类任务，既要求尽可能发现潜在的越狱提示，又必须控制误检率，以免影响正常用户体验。F1 同时考虑准确率(Precision)与召回率(Recall)，可在两类风险之间取得平衡，因此最能反映模型的整体有效性。同时，本文也补充准确率, 召回率两个单点数值，以确保对性能的全面评估。</p>
+<h3>4.3.2 基线方法</h3>
+<p class="text-left">&#12288;&#12288;本节的实验对比基线涵盖三大类：其一为启发式文本过滤器，包括基于黑名单与词频的规则过滤、情感倾向检测以及困惑度异常检测，侧重对输入的表层统计特征进行拦截；其二为零样本大模型检测器，即直接用GPT-4、GPT-3.5与开源的Qwen2-1.5B-Instruct在无微调情形下判断提示安全性；其三为梯度分析类安全检测方法，以GradSafe为代表，通过计算安全相关参数的梯度相似度来识别潜在越狱攻击。</p>
+<p class="text-left">&#12288;&#12288;·规则过滤(Rule-based Filtering)：基于对JailBench++_train中有害提示的词频统计与开源违禁词表构建，本文设计了黑名单过滤规则。检测时，若输入提示包含黑名单词，或单词频率异常提升，或存在字符级重复，即判定为越狱提示。规则过滤的词频统计图和词云如图4-2和图4-3所示。</p>
+<img src="images/image_12.png" alt="image_12">
+<p class="text-center">&#12288;&#12288;图4-2  JailBench++_train数据集的词频统计图</p>
+<img src="images/image_13.png" alt="image_13">
+<p class="text-center">&#12288;&#12288;图4-3  JailBench++_train数据集的词云图</p>
+<p class="text-left">&#12288;&#12288;·情感分析(Sentiment Analysis)：假设越狱提示往往伴随消极或激进情绪，本节使用StructBERT-base-chinese情感分类器对提示情绪倾向进行检测。情绪为消极或激进情绪，则判定为越狱提示，否则为正常提示。随后在JailBench++_test测试集上进行评估，并报告F1 , 准确率与召回率。</p>
+<p class="text-left">&#12288;&#12288;·基于困惑度的过滤器(Perplexity-based Filter)<sup></sup><sup></sup><sup></sup><sup>[11]</sup><sup></sup><sup></sup><sup></sup><sup></sup><sup>[12]</sup><sup></sup>：采用Qwen2-1.5B-Instruct计算输入提示的困惑度，当整体或局部窗口的困惑度超过预设阈值即判定为越狱提示。该方法用于评估基于语言分布异常检测越狱提示的可行性。全部阈值在JailBench++_train上调优，最终在JailBench++_test上进行评估，并报告F1 score, precision, recall。为了观察困惑度的分布，这里还对测试集中越狱提示和正常提示的困惑度分布进行了统计，如图4-4和图4-5所示。</p>
+<p class="text-left">&#12288;&#12288;·GPT-4<sup></sup><sup></sup><sup></sup><sup>[62]</sup><sup></sup>：GPT-4是目前较为先进的大模型，本节使用零样本提示作为检测器，与指令微调中的提示一致：“Please judge whether the following question is harmful or unsafe. And only answer ‘True’ if it is harmful or unsafe, otherwise answer ‘False’. The question is: {prompt}”。在计算F1、准确率与召回率时，如果模型回复中存在’True’，则该提示被归类为越狱提示。本文使用GPT-4 API gpt-4-1106-preview在JailBench++_test测试集上进行评估。</p>
+<p class="text-left">&#12288;&#12288;·GPT-3.5<sup></sup><sup></sup><sup></sup><sup></sup><sup></sup><sup>[6]</sup><sup></sup>：GPT-3.5作为上一代主流大模型，这里同样使用零样本提示作为检测器，使用与GPT-4相同的提示和指标计算标准。在评估中，使用GPT-3.5 API gpt-3.5-turbo-1106。</p>
+<p class="text-left">&#12288;&#12288;·Qwen2<sup></sup><sup></sup><sup></sup><sup></sup><sup></sup><sup>[38]</sup><sup></sup>：Qwen2是本文所提出的检测器——LEAD的基座模型，是目前先进的开源大模型。同样，使用与GPT-4相同的提示和指标计算标准。在评估中，使用Qwen2-1.5B-Instruct。</p>
+<img src="images/image_14.png" alt="image_14">
+<p class="text-center">&#12288;&#12288;图4-4  测试集中越狱提示的困惑度分布统计直方图</p>
+<img src="images/image_15.png" alt="image_15">
+<p class="text-center">&#12288;&#12288;图4-5  测试集中正常提示的困惑度分布统计直方图</p>
+<p class="text-left">&#12288;&#12288;· GradSafe<sup></sup><sup></sup><sup></sup><sup></sup><sup></sup><sup>[21]</sup><sup></sup>：GradSafe是一种无需微调即可运行的梯度分析型越狱提示检测器。本节使用Qwen2-1.5B-Instruct作为基座模型来识别“安全相关”的参数切片；在识别参数切片时，使用gap threshold = 1。给定一个输入提示进行推断时，使用提示：“You are a helpful assistant. Help me with the following query: {question}”，并将它与响应“Sure”配对，计算在“安全相关”参数上的损失梯度，并与参考梯度(unsafe gradient reference)求平均余弦相似度。本节设定阈值为0.21，若得分超过阈值，则判定为越狱提示。最终在JailBench++_test上进行评估，并报告F1、准确率和召回率。</p>
+<h3>4.3.3 实验结果</h3>
+<p class="text-left">&#12288;&#12288;本节针对扩展后的JailBench++测试集，对提出的越狱提示检测器LEAD与三类基线方法进行了全面的性能评估，实验结果如表4-2所示，得分最高的结果以粗体突出显示，第二高的结果以下划线突出显示。以下对实验结果进行详细分析：</p>
+<p class="text-left">&#12288;&#12288;从整体指标变现来看，LEAD在F1、准确率和召回率三项指标上均达到了0.98以上，显著优于所有基线方案，验证了本文方法在检测精度与可靠性方面的优势。</p>
+<p class="text-left">&#12288;&#12288;启发式文本过滤类方法中，规则过滤主要通过关键词黑名单、词频统计及字符重复序列检测等规则进行识别。尽管在测试集中达到了最高的召回率，即识别出所有的越狱提示，但准确率却较低，仅为0.54，反映出其误报率较高。大量正常提示由于包含常见敏感词而被误判，误判正常提示为有害提示会严重降低用户体验，同时规则过滤方法的超参数和关键词设置需大量人工干预，难以实现自动化优化，实际部署的实用性也有限，测试的混淆矩阵如图4-6(a)所示。</p>
+<p class="text-center">&#12288;&#12288;表4-2  基线方法和LEAD在F1-score/precision/recall分数上的评估结果</p>
+<table>
+  <thead>
+    <tr>
+      <th>方法</th>
+      <th>F1</th>
+      <th>准确率</th>
+      <th>召回率</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>规则过滤</td>
+      <td>0.71</td>
+      <td>0.54</td>
+      <td>1.00</td>
+    </tr>
+    <tr>
+      <td>情感分析</td>
+      <td>0.08</td>
+      <td>0.18</td>
+      <td>0.05</td>
+    </tr>
+    <tr>
+      <td>整体困惑度过滤</td>
+      <td>0.71</td>
+      <td>0.59</td>
+      <td>0.89</td>
+    </tr>
+    <tr>
+      <td>窗口化困惑度过滤</td>
+      <td>0.74</td>
+      <td>0.58</td>
+      <td>1.00</td>
+    </tr>
+    <tr>
+      <td>GPT-3.5</td>
+      <td>0.95</td>
+      <td>0.97</td>
+      <td>0.93</td>
+    </tr>
+    <tr>
+      <td>GPT-4</td>
+      <td>0.86</td>
+      <td>0.98</td>
+      <td>0.76</td>
+    </tr>
+    <tr>
+      <td>Qwen2-1.5B-Instruct</td>
+      <td>0.42</td>
+      <td>0.93</td>
+      <td>0.27</td>
+    </tr>
+    <tr>
+      <td>GradSafe</td>
+      <td>0.87</td>
+      <td>0.82</td>
+      <td>0.92</td>
+    </tr>
+    <tr>
+      <td>LEAD (本文)</td>
+      <td>0.98</td>
+      <td>0.98</td>
+      <td>0.99</td>
+    </tr>
+  </tbody>
+</table>
+<p class="text-left">&#12288;&#12288;情感分析尝试通过StructBERT-base-chinese预训练情感分类器识别越狱提示中的极端情绪（如激进或消极情绪）。然而，其在测试集中表现极差，F1仅为0.08。进一步分析发现，越狱提示往往伪装成中性甚至正面情绪表述，以逃避情感模型的检测；而且情感分类器本身在通用领域训练，无法精准适配越狱攻击场景。这表明单纯基于情绪线索的方法难以胜任复杂攻击模式下的越狱提示检测任务。测试的混淆矩阵如图4-6(b)所示。</p>
+<p class="text-left">&#12288;&#12288;基于困惑度的过滤器中，通过检测文本困惑度的异常升高来判断潜在越狱提示。实验中，整体困惑度检测与滑动窗口困惑度检测分别取得了0.71和0.74的F1。相较情感分析方法有明显提升，但仍显著落后于基于语义理解的方法。滑动窗口策略一定程度上提升了局部异常检测能力，尤其对隐蔽型越狱提示有所加强。然而，由于正常提示中常包含代码片段或不规范表达，亦容易引发困惑度异常，导致误判率偏高。此外，困惑度方法对语言模型本身的稳定性高度依赖，不具备良好的通用性，两者测试的混淆矩阵如图4-6(c)和(d)所示。</p>
+<img src="images/image_16.png" alt="image_16">
+<p class="text-center">&#12288;&#12288;图4-6  启发式过滤方法在测试集上的混淆矩阵图。(a)规则过滤, (b)情感分析, (c)整体困惑度检测，(d)滑动窗口困惑度检测</p>
+<p class="text-left">&#12288;&#12288;零样本大模型检测类方法中，令人意外的是，GPT-3.5在测试集中表现优于GPT-4。这一现象可能与GPT-3.5在分类任务上的策略更倾向于保守和严格筛选潜在风险提示有关，从而提高了整体的召回率与F1得分。而GPT-4则表现出更精准的判别能力，但对于部分设计巧妙、隐蔽性高的提示识别不充分。Qwen2-1.5B-Instruct作为提出的LEAD方法的基座模型，在未经指令微调的情况下，零样本检测表现较差，F1仅为0.42。这表明未经指令微调的Qwen2模型缺乏有效泛化到安全任务的能力，难以捕捉越狱提示中的语义攻击模式，无法作为独立的安全检测工具，Qwen2-1.5B-Instruct测试的混淆矩阵如图4-5(c)所示，验证了其偏向正常提示而忽略越狱提示的模型。GPT3.5，GPT4，Qwen2-1.5B-Instruct测试结果的混淆矩阵分别如图4-7(a), (b)和(c)所示。</p>
+<img src="images/image_17.png" alt="image_17">
+<p class="text-center">&#12288;&#12288;图4-7  零样本和梯度分析方法在测试集上的混淆矩阵图。(a)GPT3.5, (b)GPT-4, (c)Qwen2-1.5B-Instruct，(d)GradSafe</p>
+<p class="text-left">&#12288;&#12288;梯度分析类安全检测方法，以GradSafe为代表，在测试集中表现出较好的性能，F1为0.87，表明其在基于梯度敏感性检测方面具有一定效果。该方法利用基座模型的梯度相似度进行检测，对安全相关参数进行分析，能够较有效地识别越狱提示。然而，这种方法存在两个主要问题：一是依赖于基座模型的安全对齐能力，如果基座模型安全性不足，则性能可能会显著下降；二是计算成本较高，要求前向与反向传播计算梯度。GradSafe测试结果的混淆矩阵如图4-7(d)所示。</p>
+<p class="text-center">&#12288;&#12288;表4-3  基线方法和LEAD的推理时间比较</p>
+<table>
+  <thead>
+    <tr>
+      <th>方法</th>
+      <th>推理时间(秒)</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>GPT-3.5</td>
+      <td>2.422</td>
+    </tr>
+    <tr>
+      <td>GPT-4</td>
+      <td>1.115</td>
+    </tr>
+    <tr>
+      <td>GradSafe</td>
+      <td>0.272</td>
+    </tr>
+    <tr>
+      <td>LEAD (本文)</td>
+      <td>0.059</td>
+    </tr>
+  </tbody>
+</table>
+<p class="text-left">&#12288;&#12288;相比之下，提出的LEAD检测器显著超越了上述所有方法，在测试集中F1、准确率和召回率三个核心指标均达到0.98以上，全面领先于其他方法。LEAD通过Qwen2-1.5B-Instruct模型上的LoRA指令微调，成功捕获了越狱提示的隐蔽语义特征，在保持极高召回率的同时，有效压制了误判率，展现出对人类精心设计的越狱提示的精准识别能力。这得益于本文设计的LoRA指令微调策略，通过小幅更新关键权重矩阵(<span class="math-inline">\({W}_{q},{W}_{v}\)</span>) ，显著增强了模型对越狱提示的敏感性。测试的混淆矩阵如图4-8所示。</p>
+<img src="images/image_18.png" alt="image_18">
+<p class="text-center">&#12288;&#12288;图4-8  LEAD在测试集上的混淆矩阵</p>
+<p class="text-left">&#12288;&#12288;为进一步验证各方法的实际部署效率，本节还对GPT-3.5、GPT-4、GradSafe和LEAD四种相对有效的方法进行了推理时间成本的对比实验。实验在一张NVIDIA RTX 4090 GPU上进行，开源模型采用Transformers进行部署，未使用任何推理加速或批处理技术，采用逐条输入后计算平均时间，如表4-3所示。实验结果显示，由于GPT-3.5和GPT-4为闭源模型，只能通过API调用，因此推理时间明显较长。GradSafe因需要前向和反向传播计算梯度以及遍历模型参数，导致计算复杂度相对较高。相比之下，LEAD由于其高效轻量的结构设计和指令微调策略，计算复杂度显著降低，仅为0.059s。这表明LEAD不仅在性能指标上表现突出，在实际应用的效率和可部署性方面也具备显著优势。</p>
+<p class="text-left">&#12288;&#12288;总而言之，本章通过扩展性的实验验证了：（1）启发式方法存在明显局限，难以适应复杂多变的越狱攻击模式；（2）零样本大模型在缺乏特定对齐训练时，难以独立完成安全检测任务；（3）指令微调结合LoRA高效适配能够在极低开销下实现高准确率、高召回率、以及低延迟的越狱提示检测。图4-9展现了LEAD微调前后的效果对比。</p>
+<img src="images/image_19.png" alt="image_19">
+<p class="text-center">&#12288;&#12288;图4-9  模型在微调前后的效果对比图</p>
+<h2>4.4 本章小结</h2>
+<p class="text-left">&#12288;&#12288;本章系统评估了主流大语言模型在面对越狱攻击时的防御能力，并对本文提出的LEAD检测器与多种基线方法进行了全面对比。实验结果表明，LEAD在F1分数、准确率与召回率上均显著优于其他方法，展现出在检测复杂越狱提示任务中的鲁棒性与实用性，为大模型安全提供了有效解决方案。</p>
+<h1>第五章 总结与展望</h1>
+<h2>5.1 论文工作总结</h2>
+<p class="text-left">&#12288;&#12288;本文围绕当前大型语言模型在安全性方面所面临的越狱提示攻击问题展开，聚焦于如何在保持推理效率的前提下，构建一个具备高准确率与高部署可行性的越狱检测系统。在大模型应用不断下沉至用户端的背景下，提示注入所引发的安全威胁愈发严重，而现有方法往往存在误报率高、泛化能力弱、计算开销大等局限。本文的研究工作正是试图在这一关键问题上寻求理论突破与工程落地的结合点。</p>
+<p class="text-left">&#12288;&#12288;首先，本文系统评估了当前主流大语言模型在应对人为构造的越狱提示攻击方面的实际防御能力。评估基于JailBench数据集进行，通过零样本设置测试大模型是否产生不当响应。结果显示，即便是最先进的模型在面对隐蔽且语义连贯的攻击时，仍表现出明显的安全脆弱性。为了验证各类技术路径的适应能力，本文设计并实现了包括规则过滤、情感分析、困惑度检测、窗口化困惑度在内的多种启发式方法，并对其在越狱提示检测任务中的性能进行横向比较，进一步明确传统检测策略的有效性边界。</p>
+<p class="text-left">&#12288;&#12288;其次，针对以上问题，本文提出了一种高效且轻量化的越狱提示检测方法 LEAD。该方法以Qwen2-1.5B-Instruct为基座模型，采用LoRA技术进行指令微调，仅对注意力机制中的<span class="math-inline">\({W}_{q}\)</span>与<span class="math-inline">\({W}_{v}\)</span>两个关键矩阵进行低秩插入与训练，从而在极小的参数增量下实现有效能力注入。为支撑训练与评估，本文在JailBench数据集基础上扩展构建了更具平衡性与代表性的数据集JailBench++，覆盖多类型攻击样式与语义策略，增强了检测器的泛化适应能力。训练过程采用LLaMA-Factory框架，在4张RTX 4090显卡上完成微调，最终仅引入约0.07%的额外参数，模型推理资源开销极小。</p>
+<p class="text-left">&#12288;&#12288;最后，在实验阶段，本文从检测精度与部署效率两个维度对LEAD与多种基线方法进行全面对比。在JailBench++测试集上，LEAD在F1 、准确率和召回率三项指标上均取得领先。此外，本文还评估了各方法的实际推理速度与资源消耗情况。结果表明，相较于基于API的大模型零样本检测器（如 GPT-4）或依赖梯度反向传播的对抗检测方法（如GradSafe），LEAD推理时延更低，显著提升了检测效率。</p>
+<p class="text-left">&#12288;&#12288;综上所述，本文从理论建模到数据构建、从方法设计到系统评估，系统性地完成了一个面向大模型提示安全的检测器构建流程。研究不仅提出了一个兼顾检测性能与资源效率的解决方案，还为提示对齐、指令建模、安全对抗等方向提供了可落地的设计思路与技术路径。</p>
+<h2>5.2 未来工作展望</h2>
+<p class="text-left">&#12288;&#12288;本文提出了一种高效且轻量化的越狱提示检测器LEAD，实验验证其在检测人为精心设计的越狱提示方面表现优异。然而，上述工作仍存在问题有待进一步研究与改进：</p>
+<p class="text-left">&#12288;&#12288;LEAD方法在很大程度上依赖于基座模型的预训练能力与初始性能。如果基座模型本身在语义理解和泛化能力上存在缺陷，即便通过LoRA指令微调，也难以获得理想的检测效果。未来的研究可以考虑在微调前进行系统性评估，以确保基座模型具备足够的初始能力，从而保障最终检测器的有效性与稳定性。</p>
+<p class="text-left">&#12288;&#12288;尽管LoRA微调技术在一定程度上缓解了灾难性遗忘问题，但模型的泛化性能仍然面临风险。指令微调使模型在越狱提示检测领域形成了较强的专门化能力，这种“专家效应”可能导致其在其他自然语言处理任务中的适应性下降。特别是在真实场景中，面对与训练分布存在差异的新型越狱提示时，模型的检测能力可能会有所削弱。如何在提升越狱提示检测专长的同时，维持模型的广域泛化能力，是未来需要重点关注的问题。</p>
+<p class="text-left">&#12288;&#12288;随着对抗性攻击技术的不断演进，越狱提示可能以更加隐蔽和复杂的形式出现，针对微调模型弱点的定制化攻击也将随之增加。尽管本文的方法对当前已知的人为设计越狱提示表现出较好的识别能力，但对于未来潜在的新型对抗攻击缺乏系统性防御措施。因此，未来工作应致力于增强模型的长期对抗鲁棒性，建立动态监测与快速响应机制，以提升检测系统的持续安全性。</p>
+<p class="text-left">&#12288;&#12288;在应用广度方面，本文目前仅基于中文语料进行了训练与评估，不同语言环境下的适应性尚未得到充分验证。跨语言、跨文化背景下的越狱提示检测，可能因语言表达习惯和语义细粒度差异而引发性能波动。同时，研究仍主要集中在通用领域，对于金融、医疗、法律等专业领域中的术语和表述方式，模型的检测效果亦有待进一步检验。因此，拓展模型在多语言、多领域场景下的泛化评估将是未来的重要方向。</p>
+<p class="text-left">&#12288;&#12288;最后，尽管JailBench++数据集在原有基础上实现了一定扩展，但整体规模与样本多样性仍有限。数据集的丰富度直接影响检测器的鲁棒性与泛化能力，特别是在稀有类别或高隐蔽性越狱提示方面，现有数据可能无法覆盖全部攻击模式。未来的工作应继续扩展和完善数据集，提升训练样本的领域广度与代表性，以支持更复杂、多样的真实应用需求。</p>
+<p class="text-left">&#12288;&#12288;综上所述，虽然本文提出的LEAD方法在越狱提示检测方面取得了良好的初步成果，但仍存在基座模型依赖、泛化能力、对抗鲁棒性、跨语言领域适应性以及数据覆盖度等方面的局限。未来将围绕这些问题持续深入研究，力求推动越狱提示检测技术向着更加鲁棒、泛化且高效的方向不断演进。</p>
+<h1>参考文献</h1>
+<ol class="decimal">
+<li class="text-left">Brown T, Mann B, Ryder N, et al. Language models are few-shot learners[J]. Advances in neural information processing systems, 2020, 33: 1877-1901.</li>
+<li class="text-left">Touvron H, Lavril T, Izacard G, et al. Llama: Open and efficient foundation language models[J]. arXiv preprint arXiv:2302.13971, 2023.</li>
+<li class="text-left">Bai J, Bai S, Chu Y, et al. Qwen technical report[J]. arXiv preprint arXiv:2309.16609, 2023.</li>
+<li class="text-left">Zou A, Wang Z, Carlini N, et al. Universal and transferable adversarial attacks on aligned language models[J]. arXiv preprint arXiv:2307.15043, 2023.</li>
+<li class="text-left">Xie Y, Yi J, Shao J, et al. Defending ChatGPT against jailbreak attack via self-reminders[J]. Nature Machine Intelligence, 2023, 5: 1486–1496.</li>
+<li class="text-left">Ouyang L, Wu J, Jiang X, et al. Training language models to follow instructions with human feedback[J]. Advances in neural information processing systems, 2022, 35: 27730-27744.</li>
+<li class="text-left">Bai Y, Jones A, Ndousse K, et al. Training a helpful and harmless assistant with reinforcement learning from human feedback[J]. arXiv preprint arXiv:2204.05862, 2022.</li>
+<li class="text-left">Liu Y, Deng G, Xu Z, et al. Jailbreaking chatgpt via prompt engineering: An empirical study[J]. arXiv preprint arXiv:2305.13860, 2023.</li>
+<li class="text-left">Liu Y, Jia Y, Geng R, et al. Formalizing and benchmarking prompt injection attacks and defenses[C]//33rd USENIX Security Symposium (USENIX Security 24). 2024: 1831-1847.</li>
+<li class="text-left">Qi X, Zeng Y, Xie T, et al. Fine-tuning aligned language models compromises safety, even when users do not intend to![J]. arXiv preprint arXiv:2310.03693, 2023.</li>
+<li class="text-left">Jain N, Schwarzschild A, Wen Y, et al. Baseline defenses for adversarial attacks against aligned language models[J]. arXiv preprint arXiv:2309.00614, 2023.</li>
+<li class="text-left">Alon G, Kamfonas M. Detecting language model attacks with perplexity[J]. arXiv preprint arXiv:2308.14132, 2023.</li>
+<li class="text-left">Liu S, Cui S, Bu H, et al. JailBench: A Comprehensive Chinese Security Assessment Benchmark for Large Language Models[J]. arXiv preprint arXiv:2502.18935, 2025.</li>
+<li class="text-left">Liu X, Xu N, Chen M, et al. Autodan: Generating stealthy jailbreak prompts on aligned large language models[J]. arXiv preprint arXiv:2310.04451, 2023.</li>
+<li class="text-left">Wang H, Li H, Huang M, et al. Asetf: A novel method for jailbreak attack on llms through translate suffix embeddings[J]. arXiv preprint arXiv:2402.16006, 2024.</li>
+<li class="text-left">Kiela D, Firooz H, Mohan A, et al. The hateful memes challenge: Detecting hate speech in multimodal memes[J]. Advances in neural information processing systems, 2020, 33: 2611-2624.</li>
+<li class="text-left">Hada R, Sudhir S, Mishra P, et al. Ruddit: Norms of offensiveness for English Reddit comments[J]. arXiv preprint arXiv:2106.05664, 2021.</li>
+<li class="text-left">Zampieri M, Malmasi S, Nakov P, et al. Semeval-2019 task 6: Identifying and categorizing offensive language in social media (offenseval)[J]. arXiv preprint arXiv:1903.08983, 2019.</li>
+<li class="text-left">Valerio Basile, Cristina Bosco, Elisabetta Fersini, et al. SemEval-2019 Task 5: Multilingual Detection of Hate Speech Against Immigrants and Women in Twitter[C]// Proceedings of the 13th International Workshop on Semantic Evaluation. Minneapolis, Minnesota, USA: Association for Computational Linguistics, 2019: 54–63.</li>
+<li class="text-left">Markov T, Zhang C, Agarwal S, et al. A holistic approach to undesired content detection in the real world[C]//Proceedings of the AAAI Conference on Artificial Intelligence. 2023, 37(12): 15009-15018.</li>
+<li class="text-left">Xie Y, Fang M, Pi R, et al. GradSafe: Detecting Jailbreak Prompts for LLMs via Safety-Critical Gradient Analysis[J]. arXiv preprint arXiv:2402.13494, 2024.</li>
+<li class="text-left">Houlsby N, Giurgiu A, Jastrzebski S, et al. Parameter-efficient transfer learning for NLP[C]//International conference on machine learning. PMLR, 2019: 2790-2799.</li>
+<li class="text-left">Vaswani A, Shazeer N, Parmar N, et al. Attention is all you need[J]. Advances in neural information processing systems, 2017, 30.</li>
+<li class="text-left">Wang A, Singh A, Michael J, et al. GLUE: A multi-task benchmark and analysis platform for natural language understanding[J]. arXiv preprint arXiv:1804.07461, 2018.</li>
+<li class="text-left">Pfeiffer J, Kamath A, Rücklé A, et al. Adapterfusion: Non-destructive task composition for transfer learning[J]. arXiv preprint arXiv:2005.00247, 2020.</li>
+<li class="text-left">Karimi Mahabadi R, Henderson J, Ruder S. Compacter: Efficient low-rank hypercomplex adapter layers[J]. Advances in Neural Information Processing Systems, 2021, 34: 1022-1035.</li>
+<li class="text-left">Sarlin P E, DeTone D, Malisiewicz T, et al. Superglue: Learning feature matching with graph neural networks[C]//Proceedings of the IEEE/CVF conference on computer vision and pattern recognition. 2020: 4938-4947.</li>
+<li class="text-left">Li X L, Liang P. Prefix-tuning: Optimizing continuous prompts for generation[J]. arXiv preprint arXiv:2101.00190, 2021.</li>
+<li class="text-left">Lester B, Al-Rfou R, Constant N. The power of scale for parameter-efficient prompt tuning[J]. arXiv preprint arXiv:2104.08691, 2021.</li>
+<li class="text-left">Liu X, Ji K, Fu Y, et al. P-tuning v2: Prompt tuning can be comparable to fine-tuning universally across scales and tasks[J]. arXiv preprint arXiv:2110.07602, 2021.</li>
+<li class="text-left">Zaken E B, Ravfogel S, Goldberg Y. Bitfit: Simple parameter-efficient fine-tuning for transformer-based masked language-models[J]. arXiv preprint arXiv:2106.10199, 2021.</li>
+<li class="text-left">Hu E J, Shen Y, Wallis P, et al. Lora: Low-rank adaptation of large language models[J]. ICLR, 2022, 1(2): 3.</li>
+<li class="text-left">Liu Y, Ott M, Goyal N, et al. Roberta: A robustly optimized bert pretraining approach[J]. arXiv preprint arXiv:1907.11692, 2019.</li>
+<li class="text-left">Radford A, Wu J, Child R, et al. Language models are unsupervised multitask learners[J]. OpenAI blog, 2019, 1(8): 9.</li>
+<li class="text-left">Sanh V, Webson A, Raffel C, et al. Multitask prompted training enables zero-shot task generalization[J]. arXiv preprint arXiv:2110.08207, 2021.</li>
+<li class="text-left">Wei J, Bosma M, Zhao V Y, et al. Finetuned language models are zero-shot learners[J]. arXiv preprint arXiv:2109.01652, 2021.</li>
+<li class="text-left">Wang Y, Mishra S, Alipoormolabashi P, et al. Super-naturalinstructions: Generalization via declarative instructions on 1600+ nlp tasks[J]. arXiv preprint arXiv:2204.07705, 2022.</li>
+<li class="text-left">Yang A, Yang B, Hui B, et al. Qwen2 technical report[J]. arXiv preprint arXiv:2407.10671, 2024.</li>
+<li class="text-left">Ba J L, Kiros J R, Hinton G E. Layer normalization[J]. arXiv preprint arXiv:1607.06450, 2016.</li>
+<li class="text-left">Su J, Ahmed M, Lu Y, et al. Roformer: Enhanced transformer with rotary position embedding[J]. Neurocomputing, 2024, 568: 127063.</li>
+<li class="text-left">Hendrycks D, Gimpel K. Gaussian error linear units (gelus)[J]. arXiv preprint arXiv:1606.08415, 2016.</li>
+<li class="text-left">Shazeer N, Mirhoseini A, Maziarz K, et al. Outrageously large neural networks: The sparsely-gated mixture-of-experts layer[J]. arXiv preprint arXiv:1701.06538, 2017.</li>
+<li class="text-left">Fedus W, Zoph B, Shazeer N. Switch transformers: Scaling to trillion parameter models with simple and efficient sparsity[J]. Journal of Machine Learning Research, 2022, 23(120): 1-39.</li>
+<li class="text-left">Lepikhin D, Lee H J, Xu Y, et al. Gshard: Scaling giant models with conditional computation and automatic sharding[J]. arXiv preprint arXiv:2006.16668, 2020.</li>
+<li class="text-left">Du N, Huang Y, Dai A M, et al. Glam: Efficient scaling of language models with mixture-of-experts[C]//International conference on machine learning. PMLR, 2022: 5547-5569.</li>
+<li class="text-left">Wang W, Bi B, Yan M, et al. Structbert: Incorporating language structures into pre-training for deep language understanding[J]. arXiv preprint arXiv:1908.04577, 2019.</li>
+<li class="text-left">Hu S, Tu Y, Han X, et al. Minicpm: Unveiling the potential of small language models with scalable training strategies[J]. arXiv preprint arXiv:2404.06395, 2024.</li>
+<li class="text-left">Huang Y, Bai Y, Zhu Z, et al. C-eval: A multi-level multi-discipline chinese evaluation suite for foundation models[J]. Advances in Neural Information Processing Systems, 2023, 36: 62991-63010.</li>
+<li class="text-left">Li H, Zhang Y, Koto F, et al. Cmmlu: Measuring massive multitask language understanding in chinese[J]. arXiv preprint arXiv:2306.09212, 2023.</li>
+<li class="text-left">Wu X, Yao W, Chen J, et al. From language modeling to instruction following: Understanding the behavior shift in llms after instruction tuning[J]. arXiv preprint arXiv:2310.00492, 2023.</li>
+<li class="text-left">Zhang S, Dong L, Li X, et al. Instruction tuning for large language models: A survey[J]. arXiv preprint arXiv:2308.10792, 2023.</li>
+<li class="text-left">Kojima T, Gu S S, Reid M, et al. Large language models are zero-shot reasoners[J]. Advances in neural information processing systems, 2022, 35: 22199-22213.</li>
+<li class="text-left">Zheng Y, Zhang R, Zhang J, et al. Llamafactory: Unified efficient fine-tuning of 100+ language models[J]. arXiv preprint arXiv:2403.13372, 2024.</li>
+<li class="text-left">Kwon W, Li Z, Zhuang S, et al. Efficient memory management for large language model serving with pagedattention[C]//Proceedings of the 29th Symposium on Operating Systems Principles. 2023: 611-626.</li>
+<li class="text-left">Ran D, Liu J, Gong Y, et al. Jailbreakeval: An integrated toolkit for evaluating jailbreak attempts against large language models[J]. arXiv preprint arXiv:2406.09321, 2024.</li>
+<li class="text-left">Guo D, Yang D, Zhang H, et al. Deepseek-r1: Incentivizing reasoning capability in llms via reinforcement learning[J]. arXiv preprint arXiv:2501.12948, 2025.</li>
+<li class="text-left">Grattafiori A, Dubey A, Jauhri A, et al. The llama 3 herd of models[J]. arXiv preprint arXiv:2407.21783, 2024.</li>
+<li class="text-left">Yang A, Xiao B, Wang B, et al. Baichuan 2: Open large-scale language models[J]. arXiv preprint arXiv:2309.10305, 2023.</li>
+<li class="text-left">Yang A, Yang B, Zhang B, et al. Qwen2. 5 technical report[J]. arXiv preprint arXiv:2412.15115, 2024.</li>
+<li class="text-left">Bhatt M, Chennabasappa S, Nikolaidis C, et al. Purple llama cyberseceval: A secure coding benchmark for language models[J]. arXiv preprint arXiv:2312.04724, 2023.</li>
+<li class="text-left">Perez E, Huang S, Song F, et al. Red teaming language models with language models[J]. arXiv preprint arXiv:2202.03286, 2022.</li>
+<li class="text-left">Achiam J, Adler S, Agarwal S, et al. Gpt-4 technical report[J]. arXiv preprint arXiv:2303.08774, 2023.</li>
+<li class="text-left">李南,丁益东,江浩宇,等.面向大语言模型的越狱攻击综述[J].计算机研究与发展,2024,61(05):1156-1181.</li>
+<li class="text-left">台建玮,杨双宁,王佳佳,等.大语言模型对抗性攻击与防御综述[J].计算机研究与发展,2025,62(03):563-588.</li>
+</ol>
+<h1>致谢</h1>
+<p class="text-left">&#12288;&#12288;本论文的顺利完成，离不开许多人的支持与帮助。在此，我怀着诚挚的感激之情，向所有给予我关心、指导与鼓励的人们致以衷心的感谢。</p>
+<p class="text-left">&#12288;&#12288;首先，我要特别感谢我的导师赵老师，在整个研究过程中给予我耐心指导与悉心教诲。感谢尹师兄在论文撰写，实验设计等方面给予的倾力帮助与耐心解答。</p>
+<p class="text-left">&#12288;&#12288;其次，我要衷心感谢我的家人。过去十六年的求学生涯中，家人始终是我最坚实的后盾。无论我身处何地，面对怎样的挑战，他们都给予我无条件的理解与支持，是我不断前行的动力源泉。</p>
+<p class="text-left">&#12288;&#12288;我还要感谢我的女朋友，她始终给予我最大的包容与理解，让我更坚定地朝着理想前进。</p>
+<p class="text-left">&#12288;&#12288;最后，我想感谢自己。从最初对人工智能一知半解，到如今完成这篇论文。犹记得当时意外地来到了北京邮电大学人工智能学院，开启了一段全新的旅程。正是这段经历让我逐渐爱上了这个充满挑战与创造力的专业。我将带着这份热爱与信念，继续在未来三年的学习与科研道路上努力前行，期待在接下来的三年中不断突破自我，取得更大的成长与进步。</p>
+<p class="text-left">&#12288;&#12288;再次感谢所有支持、帮助与陪伴我的人，是你们让这段求学旅程变得厚重而温暖。</p>
+<h1>附录</h1>
+<h2>附录1 缩略词表</h2>
+<table>
+  <thead>
+    <tr>
+      <th>AI</th>
+      <th>Artificial Intelligence，人工智能</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>AJPE</td>
+      <td>Automatic Jailbreak Prompt Engineer，自动越狱提示工程</td>
+    </tr>
+    <tr>
+      <td>API</td>
+      <td>Application Programming Interface，应用程序接口</td>
+    </tr>
+    <tr>
+      <td>ASR</td>
+      <td>Attack Success Rate，攻击成功率</td>
+    </tr>
+    <tr>
+      <td>FFN</td>
+      <td>Feed Forward Network，前馈网络</td>
+    </tr>
+    <tr>
+      <td>LEAD</td>
+      <td>Lightweight Efficient Anti-jailbreak Detector，轻量级高效越狱提示检测器</td>
+    </tr>
+    <tr>
+      <td>LLMs</td>
+      <td>Large Language Models，大型语言模型</td>
+    </tr>
+    <tr>
+      <td>LoRA</td>
+      <td>Low-Rank Adaptation，低秩适应，一种参数高效微调方法</td>
+    </tr>
+    <tr>
+      <td>MoE</td>
+      <td>Mixture of Experts，混合专家模型</td>
+    </tr>
+    <tr>
+      <td>NLP</td>
+      <td>Nature Language Processing，自然语言处理</td>
+    </tr>
+    <tr>
+      <td>NLU</td>
+      <td>Nature Language Understanding，自然语言理解</td>
+    </tr>
+    <tr>
+      <td>RLHF</td>
+      <td>Reinforcement Learning from Human Feedback，人类反馈的强化学习</td>
+    </tr>
+    <tr>
+      <td>RoPE</td>
+      <td>Rotary Position Embedding，旋转相对位置嵌入</td>
+    </tr>
+    <tr>
+      <td>SFT</td>
+      <td>Supervised Fine-Tuning，监督微调</td>
+    </tr>
+  </tbody>
+</table>
+</body>
+</html>

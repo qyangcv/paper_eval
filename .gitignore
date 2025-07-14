@@ -10,7 +10,24 @@ venv/
 .ipynb_checkpoints/
 
 # VSCode settings
-.vscode/ 
+.vscode/
+
+# Node.js / npm
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+package-lock.json
+yarn.lock
+.npm
+.yarn-integrity
+.pnpm-debug.log*
+
+# Build outputs
+dist/
+build/
+*.tgz
+*.tar.gz
 
 # macOS specific
 **/.DS_Store
@@ -29,11 +46,5 @@ venv/
 !**/README.md
 
 # 数据目录
-./backend/hard_criteria/data/output/
-./backend/hard_criteria/data/processed/
-./backend/hard_criteria/logs/
-./backend/multimodal/downloaded_images/
-./backend/multimodal/images/
-./backend/multimodal/tables/
-
-!./backend/hard_criteria/data/raw/docx/
+/data/
+/logs/
