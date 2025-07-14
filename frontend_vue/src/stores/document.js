@@ -13,6 +13,8 @@ export const useDocumentStore = defineStore('document', () => {
     gemini: '',
     gpt: ''
   })
+  const imageCache = ref(new Map()) // 图片缓存
+  const imageList = ref([]) // 当前任务的图片列表
 
   // 计算属性
   const isProcessing = computed(() => {
@@ -60,7 +62,7 @@ export const useDocumentStore = defineStore('document', () => {
 
       const requestData = {
         task_id: currentTask.value.task_id,
-        model_settings: {
+        model_config: {
           model_name: modelName,
           api_key: apiKey
         }
@@ -87,7 +89,8 @@ export const useDocumentStore = defineStore('document', () => {
 
         if (response.data.status === 'completed') {
           clearInterval(pollInterval)
-          await fetchResult()
+          // 直接从状态响应获取结果，不需要额外的API调用
+          documentResult.value = response.data.result
         } else if (response.data.status === 'error') {
           clearInterval(pollInterval)
         }
@@ -98,22 +101,11 @@ export const useDocumentStore = defineStore('document', () => {
     }, 1000) // 每秒轮询一次
   }
 
-  const fetchResult = async () => {
-    if (!currentTask.value) return
-
-    try {
-      const response = await api.getResult(currentTask.value.task_id)
-      documentResult.value = response.data
-    } catch (error) {
-      console.error('获取结果失败:', error)
-      throw error
-    }
-  }
-
   const resetState = () => {
     currentTask.value = null
     processingStatus.value = null
     documentResult.value = null
+    clearImageCache()
   }
 
   const setApiKey = (model, key) => {
@@ -128,6 +120,135 @@ export const useDocumentStore = defineStore('document', () => {
     documentResult.value = result
   }
 
+  // 图片相关方法
+  const getImageUrl = async (imageName) => {
+    // 如果是测试模式，直接返回public文件夹中的图片路径
+    if (documentResult.value?.isTestMode) {
+      return `/images/${imageName}`
+    }
+
+    if (!currentTask.value) return null
+
+    const cacheKey = `${currentTask.value.task_id}_${imageName}`
+
+    // 检查缓存
+    if (imageCache.value.has(cacheKey)) {
+      return imageCache.value.get(cacheKey)
+    }
+
+    try {
+      const response = await api.getDocumentImage(currentTask.value.task_id, `images/${imageName}`)
+      const imageBlob = response.data
+      const imageUrl = URL.createObjectURL(imageBlob)
+
+      // 缓存图片URL
+      imageCache.value.set(cacheKey, imageUrl)
+      return imageUrl
+    } catch (error) {
+      console.error('获取图片失败:', error)
+      return null
+    }
+  }
+
+  const clearImageCache = () => {
+    // 释放所有缓存的图片URL
+    imageCache.value.forEach(url => {
+      URL.revokeObjectURL(url)
+    })
+    imageCache.value.clear()
+    imageList.value = []
+  }
+
+  // 加载测试文件
+  const loadTestFile = async () => {
+    try {
+      // 加载test_file.html内容
+      const response = await fetch('/test_file.html')
+      if (!response.ok) {
+        throw new Error('无法加载测试文件')
+      }
+
+      const htmlContent = await response.text()
+
+      // 提取HTML body内容
+      const bodyMatch = htmlContent.match(/<body[^>]*>([\s\S]*?)<\/body>/i)
+      const bodyContent = bodyMatch ? bodyMatch[1] : htmlContent
+
+      // 生成简单的目录结构
+      const tocItems = []
+      const headingRegex = /<h([1-6])[^>]*>(.*?)<\/h[1-6]>/gi
+      let match
+      let index = 0
+
+      while ((match = headingRegex.exec(bodyContent)) !== null) {
+        const level = parseInt(match[1])
+        const text = match[2].replace(/<[^>]*>/g, '').trim()
+        if (text) {
+          tocItems.push({
+            level,
+            text,
+            index: index++
+          })
+        }
+      }
+
+      // 设置文档结果
+      documentResult.value = {
+        filename: 'test_file.docx',
+        html_content: bodyContent,
+        toc_items: tocItems,
+        isTestMode: true,
+        evaluation: {
+          // 模拟评估数据
+          dimensions: {
+            研究内容: { score: 85, weight: 0.3 },
+            研究方法: { score: 78, weight: 0.25 },
+            论文结构: { score: 92, weight: 0.2 },
+            语言表达: { score: 88, weight: 0.15 },
+            创新性: { score: 75, weight: 0.1 }
+          }
+        }
+      }
+
+      console.log('测试文件加载成功')
+      return true
+    } catch (error) {
+      console.error('加载测试文件失败:', error)
+      return false
+    }
+  }
+
+  const preloadImages = async () => {
+    if (!documentResult.value?.html_content) return
+
+    // 如果是测试模式，不需要预加载
+    if (documentResult.value?.isTestMode) {
+      console.log('测试模式：跳过图片预加载')
+      return
+    }
+
+    if (!currentTask.value) return
+
+    const htmlContent = documentResult.value.html_content
+    const imgRegex = /<img[^>]+src=["']images\/([^"']+)["'][^>]*>/g
+    const imageNames = []
+    let match
+
+    while ((match = imgRegex.exec(htmlContent)) !== null) {
+      imageNames.push(match[1])
+    }
+
+    // 预加载所有图片
+    const preloadPromises = imageNames.map(imageName => getImageUrl(imageName))
+
+    try {
+      await Promise.all(preloadPromises)
+      console.log('图片预加载完成')
+    } catch (error) {
+      console.error('图片预加载失败:', error)
+    }
+  }
+
   return {
     // 状态
     currentTask,
@@ -135,6 +256,8 @@ export const useDocumentStore = defineStore('document', () => {
     documentResult,
     selectedModel,
     apiKeys,
+    imageCache,
+    imageList,
 
     // 计算属性
     isProcessing,
@@ -144,10 +267,13 @@ export const useDocumentStore = defineStore('document', () => {
     // 方法
     uploadDocument,
     startProcessing,
-    fetchResult,
     resetState,
     setApiKey,
     setSelectedModel,
-    setProcessingResult
+    setProcessingResult,
+    getImageUrl,
+    clearImageCache,
+    preloadImages,
+    loadTestFile
   }
 })

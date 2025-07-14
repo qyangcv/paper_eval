@@ -511,6 +511,25 @@
 
                 <!-- 问题详情区域 -->
                 <div class="issues-details-section">
+                  <!-- 问题严重程度统计 -->
+                  <div class="severity-stats-bar">
+                    <div class="severity-summary-text">
+                      <span class="severity-stat-item total">
+                        <span class="severity-label">总</span>
+                        <span class="severity-count">{{ analysisData.issue_list?.summary?.total_issues || 0 }}</span>
+                      </span>
+                      <span
+                        v-for="(count, severity) in analysisData.issue_list?.summary?.severity_distribution"
+                        :key="severity"
+                        class="severity-stat-item"
+                        :class="severity"
+                      >
+                        <span class="severity-label">{{ severity }}</span>
+                        <span class="severity-count">{{ count }}</span>
+                      </span>
+                    </div>
+                  </div>
+
                   <div class="issues-nav enhanced-issues-nav">
                     <el-tabs
                       v-model="activeIssueTab"
@@ -664,6 +683,8 @@ import {
   Menu as ElMenu
 } from '@element-plus/icons-vue'
 import { useDocumentStore } from '../stores/document'
+import { useRoute } from 'vue-router'
+import api from '../services/api'
 
 // 注册ECharts组件
 use([
@@ -714,6 +735,7 @@ export default {
   },
   setup () {
     const documentStore = useDocumentStore()
+    const route = useRoute()
 
     const activeIssueTab = ref('')
     const activeDimension = ref(0)
@@ -730,8 +752,23 @@ export default {
     const loadAnalysisData = async () => {
       try {
         loading.value = true
-        const response = await fetch('/data_exhibit.json')
-        analysisData.value = await response.json()
+
+        // 获取task_id，优先从路由参数获取，否则使用默认值
+        const taskId = route.params.taskId || route.query.taskId || 'demo-task-id'
+
+        console.log('正在加载数据分析数据，task_id:', taskId)
+
+        try {
+          // 使用API服务加载所有分析数据
+          analysisData.value = await api.loadAllAnalysisData(taskId)
+          console.log('API数据加载成功:', analysisData.value)
+        } catch (apiError) {
+          console.warn('API数据加载失败，降级到静态数据:', apiError)
+          // 降级到静态JSON文件
+          const response = await fetch('/data_exhibit.json')
+          analysisData.value = await response.json()
+          console.log('静态数据加载成功')
+        }
 
         // 设置第一个章节为默认选中的问题标签页
         const chapters = Object.keys(analysisData.value.issue_list?.by_chapter || {})
@@ -3639,6 +3676,64 @@ export default {
   max-height: 600px; /* 最大高度 */
   min-width: 0; /* 允许收缩 */
   overflow: hidden; /* 防止内容溢出 */
+}
+
+/* 严重程度统计栏样式 */
+.severity-stats-bar {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 16px 20px;
+  background: linear-gradient(135deg, #f8fafc 0%, #ffffff 100%);
+  border-radius: 12px;
+  margin-bottom: 16px;
+  border: 1px solid rgba(0, 0, 0, 0.05);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+
+.severity-stat-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 12px;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 14px;
+  transition: all 0.3s ease;
+}
+
+.severity-stat-item.total {
+  background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+  color: white;
+  box-shadow: 0 2px 8px rgba(99, 102, 241, 0.3);
+}
+
+.severity-stat-item.高 {
+  background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+  color: white;
+  box-shadow: 0 2px 8px rgba(239, 68, 68, 0.3);
+}
+
+.severity-stat-item.中 {
+  background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+  color: white;
+  box-shadow: 0 2px 8px rgba(245, 158, 11, 0.3);
+}
+
+.severity-stat-item.低 {
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  color: white;
+  box-shadow: 0 2px 8px rgba(16, 185, 129, 0.3);
+}
+
+.severity-label {
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.severity-count {
+  font-size: 16px;
+  font-weight: 700;
 }
 
 .issues-stats-card, .enhanced-issues-nav {

@@ -36,17 +36,17 @@ export default {
         {
           name: '首页',
           path: '/',
-          icon: 'House'
+          icon: House
         },
         {
           name: '论文预览',
           path: '/preview',
-          icon: 'Document'
+          icon: Document
         },
         {
           name: '数据分析',
           path: '/analysis',
-          icon: 'DataAnalysis'
+          icon: DataAnalysis
         }
       ]
     }
