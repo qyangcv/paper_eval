@@ -41,10 +41,11 @@ build/
 *.log
 
 # Markdown文件 (除了README.md)
-*.md
+# *.md
 !README.md
 !**/README.md
 
 # 数据目录
 /data/
 /logs/
+backend_fastapi/data/
