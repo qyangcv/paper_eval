@@ -5,7 +5,7 @@ DOCX转HTML工具
 功能特性：
 - 保持文档结构完整性（标题、段落、表格等）
 - 自动提取并保存嵌入图像
-- 支持数学公式转换（OMML -> LaTeX）
+- 支持数学公式转换（OMML -> 图片）
 - 表格格式化为HTML表格
 - 按文档顺序处理所有元素
 - 支持UTF-8编码输出
@@ -14,7 +14,13 @@ DOCX转HTML工具
 - 后处理2：去除所有斜体标签
 
 依赖要求：
-    pip install python-docx
+    pip install python-docx matplotlib pdf2image
+
+新增功能：
+    1.4.0: 将数学公式转换为图片（PDF转PNG）
+    1.4.1: 修复XML父节点访问错误
+    1.4.2: 添加poppler路径配置选项，增强公式错误处理
+    1.4.3: 修复行内公式图片换行问题，优化公式图片样式
 
 使用方法：
     python docx2html.py <docx文件路径> [选项]
@@ -24,6 +30,7 @@ DOCX转HTML工具
     -o, --output        输出的HTML文件路径（可选，默认为输入文件名.html）
     -i, --image_dir     图像保存目录（可选，默认为'images'）
     -c, --css           自定义CSS文件路径（可选）
+    -p, --poppler_path  poppler工具路径（可选）
 
 使用示例：
     # 基本用法
@@ -34,11 +41,14 @@ DOCX转HTML工具
     
     # 添加自定义CSS样式
     python docx2html.py document.docx -c styles.css
+    
+    # 指定poppler路径
+    python docx2html.py document.docx -p "C:\\path\\to\poppler\\bin"
 
 输出结果：
 - 完整的HTML5文档
 - 图像文件保存在指定目录中
-- 数学公式转换为LaTeX格式
+- 数学公式转换为PNG图片或回退到LaTeX显示
 - 表格转换为标准HTML表格格式
 - 默认包含基础CSS样式，支持自定义样式
 - 满足特定条件下自动去除段首空格
@@ -47,29 +57,40 @@ DOCX转HTML工具
 注意事项：
 - 确保输入文件为有效的DOCX格式
 - 图像目录将自动创建（如果不存在）
-- 复杂的数学公式可能需要手动调整
-- 某些Word特有的格式可能无法完美转换
+- 需要安装额外的依赖：matplotlib, pdf2image
+- 在Linux系统上需要安装poppler-utils：sudo apt-get install poppler-utils
+- 在Windows系统上需要下载poppler并添加到PATH：https://github.com/oschwartz10612/poppler-windows/releases/
 
 作者: PaperEval Team
-版本: 1.3.0
+版本: 1.4.3
 新增功能：
     1.2.0: 后处理去除特定条件下段落的段首空格
     1.3.0: 后处理去除所有斜体标签
+    1.4.0: 将数学公式转换为图片（PDF转PNG）
+    1.4.1: 修复XML父节点访问错误
+    1.4.2: 添加poppler路径配置选项，增强公式错误处理
+    1.4.3: 修复行内公式图片换行问题，优化公式图片样式
 """
 
+from omml_to_latex import convert_omml_to_latex
+from docx.oxml.ns import qn
+from docx.enum.text import WD_ALIGN_PARAGRAPH
+from docx.text.paragraph import Paragraph
+from docx.table import _Cell, Table
+from docx.oxml.text.paragraph import CT_P
+from docx.oxml.table import CT_Tbl
+from docx.document import Document as _Document
+from docx import Document
+from pdf2image import convert_from_bytes
+from io import BytesIO
+import matplotlib.pyplot as plt
 import os
 import argparse
 import re
 import base64
-from docx import Document
-from docx.document import Document as _Document
-from docx.oxml.table import CT_Tbl
-from docx.oxml.text.paragraph import CT_P
-from docx.table import _Cell, Table
-from docx.text.paragraph import Paragraph
-from docx.enum.text import WD_ALIGN_PARAGRAPH
-from docx.oxml.ns import qn
-from .omml_to_latex import convert_omml_to_latex
+import tempfile
+import matplotlib
+matplotlib.use('Agg')  # 使用非交互式后端
 
 # 默认CSS样式 - 增强列表样式
 DEFAULT_CSS = """
@@ -197,7 +218,30 @@ img {
     box-shadow: 0 2px 5px rgba(0,0,0,0.1);
 }
 
-/* 数学公式样式 */
+/* 数学公式图片样式 */
+.math-formula-block {
+    text-align: center;
+    margin: 10px 0;
+}
+
+.math-formula-block img {
+    display: block;
+    margin: 0 auto;
+    max-height: 30px;   /* 新增：限制最大高度 */
+    width: auto;        /* 宽度自动调整，保持比例 */
+}
+
+/* 行内公式样式 - 修复换行问题 */
+.math-formula-inline {
+    display: inline-block; /* 改为行内块元素 */
+    vertical-align: middle;
+    height: 1.2em; /* 保持行内公式与文字高度一致 */
+    margin: 0; /* 去除默认外边距 */
+    padding: 0; /* 去除默认内边距 */
+    line-height: 1; /* 保持行高一致 */
+}
+
+/* LaTeX公式样式 */
 .math {
     margin: 1em 0;
     text-align: center;
@@ -465,7 +509,193 @@ def get_list_numbering_format(paragraph):
     return num_format, start
 
 
-def process_paragraph_with_math(paragraph, image_dir, image_id_counter, relationship_map):
+def render_formula_to_image(latex_str, is_block, image_dir, image_id_counter, dpi=300, poppler_path=None):
+    """
+    将LaTeX公式渲染为PNG图片
+
+    Args:
+        latex_str (str): LaTeX格式的公式
+        is_block (bool): 是否为块级公式
+        image_dir (str): 图片保存目录
+        image_id_counter (list): 图片ID计数器
+        dpi (int): 图片分辨率，默认为300
+        poppler_path (str): poppler工具路径，可选
+
+    Returns:
+        tuple: (图片路径, 图片文件名)
+    """
+    try:
+        # 设置不同的字体大小
+        fontsize = 20 if is_block else 12
+
+        # 创建图形
+        fig = plt.figure(figsize=(0.1, 0.1))  # 初始小图，会自动调整大小
+        fig.patch.set_alpha(0.0)  # 透明背景
+
+        # 添加公式文本
+        # 处理可能的语法错误
+        try:
+            plt.text(0.5, 0.5, f'${latex_str}$',
+                     fontsize=fontsize,
+                     ha='center',
+                     va='center',
+                     usetex=False)  # 使用mathtext渲染
+        except Exception as e:
+            # 如果公式语法错误，尝试简化处理
+            print(f"公式语法错误: {latex_str} - {e}")
+            plt.text(0.5, 0.5, f'${latex_str}$',
+                     fontsize=fontsize,
+                     ha='center',
+                     va='center',
+                     usetex=False)
+
+        # 关闭坐标轴
+        plt.axis('off')
+
+        # 生成图片路径
+        image_id = image_id_counter[0]
+        image_id_counter[0] += 1
+        image_filename = f"formula_{image_id}.png"
+        image_path = os.path.join(image_dir, image_filename)
+
+        # 保存为PDF字节流
+        pdf_buffer = BytesIO()
+        plt.savefig(pdf_buffer, format='pdf', bbox_inches='tight',
+                    pad_inches=0.0, transparent=True)
+        plt.close(fig)
+
+        # 将PDF转换为PNG
+        pdf_buffer.seek(0)
+
+        # 尝试使用poppler_path如果提供
+        try:
+            images = convert_from_bytes(
+                pdf_buffer.read(), dpi=dpi, poppler_path=poppler_path)
+        except Exception as e:
+            # 如果poppler_path无效，尝试不使用路径
+            print(f"使用poppler_path失败: {e}，尝试不使用路径")
+            try:
+                images = convert_from_bytes(pdf_buffer.read(), dpi=dpi)
+            except Exception as e2:
+                print(f"PDF转PNG失败: {e2}")
+                return None, None
+
+        # 保存PNG图片
+        if images:
+            images[0].save(image_path, 'PNG')
+            return image_path, image_filename
+
+        return None, None
+    except Exception as e:
+        print(f"公式渲染失败: {latex_str} - {e}")
+        return None, None
+
+
+def process_paragraph_element_recursively(element, image_dir, image_id_counter, poppler_path=None):
+    """递归处理段落元素以按正确顺序提取文本和数学公式"""
+    result_parts = []
+
+    # 按顺序处理所有子元素
+    for child in element:
+        tag = child.tag.split('}')[-1] if '}' in child.tag else child.tag
+
+        if tag == 'r':  # 文本运行元素
+            # 处理运行内容
+            run_text = process_run_element(child)
+            if run_text:
+                result_parts.append(run_text)
+
+        elif tag == 'oMath':  # 数学元素
+            # 判断是行内公式还是块级公式
+            # 修复: 使用getparent()而不是parent属性
+            parent = child.getparent()
+            parent_tag = parent.tag.split(
+                '}')[-1] if parent is not None else ''
+            is_block = (parent_tag == 'oMathPara')  # 块级公式
+
+            latex_formula = omml_to_latex_basic(child)
+            if latex_formula and latex_formula != "[Math Formula]":
+                # 渲染公式为图片
+                image_path, image_filename = render_formula_to_image(
+                    latex_formula, is_block, image_dir, image_id_counter, dpi=300, poppler_path=poppler_path)
+
+                if image_filename:
+                    # 使用相对路径
+                    relative_image_path = os.path.join(
+                        os.path.basename(image_dir), image_filename).replace('\\', '/')
+
+                    if is_block:
+                        result_parts.append(
+                            f'<div class="math-formula-block"><img src="{relative_image_path}" alt="formula"></div>')
+                    else:
+                        # 行内公式直接嵌入文本流，不添加额外标签
+                        result_parts.append(
+                            f'<img class="math-formula-inline" src="{relative_image_path}" alt="formula">')
+                else:
+                    # 渲染失败时回退到显示LaTeX代码
+                    # 使用原始字符串避免转义警告
+                    if is_block:
+                        result_parts.append(
+                            r'<div class="math">\[{}\]</div>'.format(latex_formula))
+                    else:
+                        result_parts.append(
+                            r'<span class="math-inline">\({}\)</span>'.format(latex_formula))
+
+        else:
+            # 递归处理其他元素
+            child_text = process_paragraph_element_recursively(
+                child, image_dir, image_id_counter, poppler_path)
+            if child_text:
+                result_parts.append(child_text)
+
+    return ''.join(result_parts)
+
+
+def process_run_element(run_element):
+    """处理运行元素以提取文本和内联数学公式"""
+    result_parts = []
+
+    for child in run_element:
+        tag = child.tag.split('}')[-1] if '}' in child.tag else child.tag
+
+        if tag == 't':  # 文本元素
+            if child.text:
+                result_parts.append(child.text)
+
+        else:
+            # 递归处理其他元素
+            child_text = process_run_element(child)
+            if child_text:
+                result_parts.append(child_text)
+
+    # 处理文本格式（粗体、斜体等）
+    formatted_text = ''.join(result_parts)
+
+    # 检查运行格式（仅当存在rPr属性时）
+    if hasattr(run_element, 'rPr'):
+        run_format = run_element.rPr
+
+        # 使用显式检查避免 FutureWarning
+        if run_format is not None:
+            # 粗体
+            if getattr(run_format, 'b', None) is not None or getattr(run_format, 'bCs', None) is not None:
+                formatted_text = f'<strong>{formatted_text}</strong>'
+            # 下划线
+            if getattr(run_format, 'u', None) is not None:
+                formatted_text = f'<u>{formatted_text}</u>'
+            # 上标
+            if (getattr(run_format, 'vertAlign', None) is not None and
+                    getattr(run_format.vertAlign, 'val', None) == 'superscript'):
+                formatted_text = f'<sup>{formatted_text}</sup>'
+            # 下标
+            if (getattr(run_format, 'vertAlign', None) is not None and
+                    getattr(run_format.vertAlign, 'val', None) == 'subscript'):
+                formatted_text = f'<sub>{formatted_text}</sub>'
+
+    return formatted_text
+
+
+def process_paragraph_with_math(paragraph, image_dir, image_id_counter, relationship_map, poppler_path=None):
     """处理可能包含文本、图像和数学公式的段落"""
     # 首先检查标题样式
     if paragraph.style.name.startswith('Heading'):
@@ -487,7 +717,7 @@ def process_paragraph_with_math(paragraph, image_dir, image_id_counter, relation
 
         # 获取列表项内容
         list_content = process_paragraph_element_recursively(
-            paragraph._element)
+            paragraph._element, image_dir, image_id_counter, poppler_path)
 
         # 获取对齐方式
         alignment = get_paragraph_alignment(paragraph)
@@ -499,10 +729,11 @@ def process_paragraph_with_math(paragraph, image_dir, image_id_counter, relation
 
     # 处理引用
     if paragraph.style.name == 'Quote':
-        return [f'<blockquote>{process_paragraph_element_recursively(paragraph._element)}</blockquote>']
+        return [f'<blockquote>{process_paragraph_element_recursively(paragraph._element, image_dir, image_id_counter, poppler_path)}</blockquote>']
 
     # 处理普通段落
-    para_content = process_paragraph_element_recursively(paragraph._element)
+    para_content = process_paragraph_element_recursively(
+        paragraph._element, image_dir, image_id_counter, poppler_path)
 
     # 处理段落中的图像
     image_content = []
@@ -510,13 +741,13 @@ def process_paragraph_with_math(paragraph, image_dir, image_id_counter, relation
         if image_id in relationship_map:
             rel = relationship_map[image_id]
             image_filename = save_image(rel, image_dir, image_id_counter[0])
-        if image_filename:
-            # 使用相对路径
-            image_path = os.path.join(
-                image_dir, image_filename).replace('\\', '/')
-            image_content.append(
-                f'<img src="{image_path}" alt="image_{image_id_counter[0]}">')
-            image_id_counter[0] += 1
+            if image_filename:
+                # 使用相对路径
+                image_path = os.path.join(
+                    os.path.basename(image_dir), image_filename).replace('\\', '/')
+                image_content.append(
+                    f'<img src="{image_path}" alt="image_{image_id_counter[0]}">')
+                image_id_counter[0] += 1
 
     # 获取对齐方式
     alignment = get_paragraph_alignment(paragraph)
@@ -530,94 +761,6 @@ def process_paragraph_with_math(paragraph, image_dir, image_id_counter, relation
     result.extend(image_content)
 
     return result
-
-
-def process_paragraph_element_recursively(element):
-    """递归处理段落元素以按正确顺序提取文本和数学公式"""
-    result_parts = []
-
-    # 按顺序处理所有子元素
-    for child in element:
-        tag = child.tag.split('}')[-1] if '}' in child.tag else child.tag
-
-        if tag == 'r':  # 文本运行元素
-            # 处理运行内容
-            run_text = process_run_element(child)
-            if run_text:
-                result_parts.append(run_text)
-
-        elif tag == 'oMath':  # 数学元素
-            latex_formula = omml_to_latex_basic(child)
-            if latex_formula and latex_formula != "[Math Formula]":
-                # 确定是行内公式还是块级公式
-                if len(latex_formula) > 50 or any(cmd in latex_formula for cmd in ['\\frac', '\\sum', '\\int', '\\prod']):
-                    result_parts.append(
-                        f'<div class="math">\[{latex_formula}\]</div>')
-                else:
-                    result_parts.append(
-                        f'<span class="math-inline">\({latex_formula}\)</span>')
-
-        else:
-            # 递归处理其他元素
-            child_text = process_paragraph_element_recursively(child)
-            if child_text:
-                result_parts.append(child_text)
-
-    return ''.join(result_parts)
-
-
-def process_run_element(run_element):
-    """处理运行元素以提取文本和内联数学公式"""
-    result_parts = []
-
-    for child in run_element:
-        tag = child.tag.split('}')[-1] if '}' in child.tag else child.tag
-
-        if tag == 't':  # 文本元素
-            if child.text:
-                result_parts.append(child.text)
-
-        elif tag == 'oMath':  # 运行中的内联数学
-            latex_formula = omml_to_latex_basic(child)
-            if latex_formula and latex_formula != "[Math Formula]":
-                result_parts.append(
-                    f'<span class="math-inline">\({latex_formula}\)</span>')
-
-        else:
-            # 递归处理其他元素
-            child_text = process_run_element(child)
-            if child_text:
-                result_parts.append(child_text)
-
-    # 处理文本格式（粗体、斜体等）
-    formatted_text = ''.join(result_parts)
-
-    # 检查运行格式（仅当存在rPr属性时）
-    if hasattr(run_element, 'rPr'):
-        run_format = run_element.rPr
-
-        # 使用显式检查避免 FutureWarning
-        if run_format is not None:
-            # 粗体
-            if getattr(run_format, 'b', None) is not None or getattr(run_format, 'bCs', None) is not None:
-                formatted_text = f'<strong>{formatted_text}</strong>'
-            # 斜体
-            # 注释掉斜体处理，因为最后会统一移除所有斜体标签
-            # if getattr(run_format, 'i', None) is not None or getattr(run_format, 'iCs', None) is not None:
-            #     formatted_text = f'<em>{formatted_text}</em>'
-            # 下划线
-            if getattr(run_format, 'u', None) is not None:
-                formatted_text = f'<u>{formatted_text}</u>'
-            # 上标
-            if (getattr(run_format, 'vertAlign', None) is not None and
-                    getattr(run_format.vertAlign, 'val', None) == 'superscript'):
-                formatted_text = f'<sup>{formatted_text}</sup>'
-            # 下标
-            if (getattr(run_format, 'vertAlign', None) is not None and
-                    getattr(run_format.vertAlign, 'val', None) == 'subscript'):
-                formatted_text = f'<sub>{formatted_text}</sub>'
-
-    return formatted_text
 
 
 def remove_leading_space_after_math(html_content):
@@ -640,7 +783,7 @@ def remove_leading_space_after_math(html_content):
     # 遍历每一行
     for i, line in enumerate(lines):
         # 检查是否为块级数学公式结束标签
-        if '</div>' in line and '<div class="math">' in line:
+        if '</div>' in line and ('math-formula-block' in line or 'math' in line):
             # 标记前一个区块是数学公式
             prev_was_math = True
             processed_lines.append(line)
@@ -689,7 +832,7 @@ def remove_italic_tags(html_content):
     return html_content
 
 
-def docx_to_html(docx_path, output_html_path, image_dir="images", css_file=None):
+def docx_to_html(docx_path, output_html_path, image_dir="images", css_file=None, poppler_path=None):
     """
     将DOCX文件转换为HTML格式，保持文本、图像、表格和数学公式的顺序
 
@@ -698,7 +841,7 @@ def docx_to_html(docx_path, output_html_path, image_dir="images", css_file=None)
     2. 解析Word文档结构
     3. 按顺序处理段落和表格
     4. 提取并保存图像
-    5. 转换数学公式为LaTeX格式
+    5. 转换数学公式为图片
     6. 生成完整的HTML文档
     7. 后处理1：去除特定条件下段落的段首空格
     8. 后处理2：去除所有斜体标签
@@ -708,11 +851,12 @@ def docx_to_html(docx_path, output_html_path, image_dir="images", css_file=None)
         output_html_path (str): 输出的HTML文件路径
         image_dir (str): 图像保存目录，默认为"images"
         css_file (str): 自定义CSS文件路径，可选
+        poppler_path (str): poppler工具路径，可选
 
     注意：
         - 自动创建图像目录（如果不存在）
         - 支持UTF-8编码，处理中文内容
-        - 数学公式转换为LaTeX格式
+        - 数学公式转换为图片
         - 生成完整的HTML5文档结构
         - 后处理满足特定条件的段落
         - 后处理移除所有斜体标签
@@ -742,7 +886,7 @@ def docx_to_html(docx_path, output_html_path, image_dir="images", css_file=None)
     for block in iter_block_items(doc):
         if isinstance(block, Paragraph):
             para_content = process_paragraph_with_math(
-                block, image_dir, image_id_counter, relationship_map)
+                block, image_dir, image_id_counter, relationship_map, poppler_path)
 
             # 处理列表 - 增强有序列表处理
             if block.style.name.startswith('List'):
@@ -857,6 +1001,11 @@ def main():
             python docx2html.py document.docx
             python docx2html.py document.docx -o output.html -i my_images
             python docx2html.py document.docx -c custom.css
+            
+            系统依赖：
+            - Linux: sudo apt-get install poppler-utils
+            - Windows: 下载poppler并添加到PATH: https://github.com/oschwartz10612/poppler-windows/releases/
+            或在命令行中使用 -p 参数指定poppler路径
         """
     )
     parser.add_argument('docx_file', help='输入的DOCX文件路径')
@@ -864,6 +1013,7 @@ def main():
     parser.add_argument('-i', '--image_dir',
                         default='images', help='图像保存目录（默认：images）')
     parser.add_argument('-c', '--css', help='自定义CSS文件路径（可选）')
+    parser.add_argument('-p', '--poppler_path', help='poppler工具路径（可选）')
 
     args = parser.parse_args()
 
@@ -871,7 +1021,15 @@ def main():
     output_path = args.output if args.output else os.path.splitext(docx_path)[
         0] + '.html'
 
-    docx_to_html(docx_path, output_path, args.image_dir, args.css)
+    # 如果提供了poppler_path，检查路径是否存在
+    poppler_path = args.poppler_path
+    if poppler_path:
+        if not os.path.exists(poppler_path):
+            print(f"警告: 指定的poppler路径不存在: {poppler_path}")
+            poppler_path = None
+
+    docx_to_html(docx_path, output_path,
+                 args.image_dir, args.css, poppler_path)
     print(f"转换完成! HTML文件已保存至: {output_path}")
 
 
