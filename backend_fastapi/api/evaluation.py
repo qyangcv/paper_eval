@@ -4,15 +4,20 @@
 """
 
 import uuid
+import asyncio
 from datetime import datetime
 from fastapi import APIRouter, HTTPException, BackgroundTasks
 from pydantic import BaseModel
 from typing import Dict, Any, Optional
+from pathlib import Path
+import sys
 
-from ..tools.logger import get_logger
-from ..pipeline.paper_evaluation import full_paper_evaluation
-from ..api.document import document_storage
-from ..api.task import task_storage
+sys.path.insert(0, str(Path(__file__).parent.parent))
+
+from tools.logger import get_logger
+from pipeline.paper_evaluation import full_paper_evaluation
+from utils.task_storage import get_task_storage
+from utils.redis_client import get_redis_manager
 
 logger = get_logger(__name__)
 router = APIRouter()
@@ -42,9 +47,9 @@ class EvaluationResponse(BaseModel):
     task_id: Optional[str] = None
     result: Optional[Dict[str, Any]] = None
 
-def run_evaluation_task(task_id: str, document_id: str, model_name: str):
+async def run_evaluation_task_async(task_id: str, document_id: str, model_name: str):
     """
-    运行评估任务的后台函数
+    运行评估任务的异步版本
 
     Args:
         task_id: 任务ID
@@ -52,30 +57,50 @@ def run_evaluation_task(task_id: str, document_id: str, model_name: str):
         model_name: 模型名称
     """
     try:
+        storage = await get_task_storage()
+        
         # 更新任务状态
-        task_storage[task_id] = {
+        await storage.set_task(task_id, {
             'status': 'running',
             'progress': 0.0,
             'message': '开始评估...',
             'created_at': datetime.now().isoformat(),
             'updated_at': datetime.now().isoformat()
-        }
+        })
+
+        # 获取Redis管理器
+        redis_mgr = await get_redis_manager()
 
         # 获取文档数据
-        if document_id not in document_storage:
+        document_info = await redis_mgr.get_document(document_id)
+        if document_info is None:
             raise Exception("文档不存在")
 
-        document_info = document_storage[document_id]
-        if document_info['status'] != 'processed':
+        if document_info.get('status') != 'processed':
             raise Exception("文档尚未处理完成")
 
         # 进度回调函数
         def progress_callback(progress: float, message: str):
-            task_storage[task_id].update({
-                'progress': progress,
-                'message': message,
-                'updated_at': datetime.now().isoformat()
-            })
+            # 创建异步任务来更新进度
+            try:
+                import asyncio
+                loop = asyncio.get_event_loop()
+                if loop.is_running():
+                    # 如果事件循环正在运行，创建任务
+                    loop.create_task(storage.update_task(task_id, {
+                        'progress': progress,
+                        'message': message,
+                        'updated_at': datetime.now().isoformat()
+                    }))
+                else:
+                    # 如果没有运行中的事件循环，同步运行
+                    loop.run_until_complete(storage.update_task(task_id, {
+                        'progress': progress,
+                        'message': message,
+                        'updated_at': datetime.now().isoformat()
+                    }))
+            except Exception as e:
+                logger.warning(f"更新任务进度失败: {e}")
 
         # 获取文档内容
         file_content = document_info['content']
@@ -91,7 +116,7 @@ def run_evaluation_task(task_id: str, document_id: str, model_name: str):
             raise Exception(result.get('error', '评估失败'))
 
         # 更新任务状态为完成
-        task_storage[task_id].update({
+        await storage.update_task(task_id, {
             'status': 'completed',
             'progress': 1.0,
             'message': '评估完成',
@@ -101,13 +126,32 @@ def run_evaluation_task(task_id: str, document_id: str, model_name: str):
 
     except Exception as e:
         logger.error(f"评估任务失败: {e}")
-        task_storage[task_id].update({
-            'status': 'failed',
-            'progress': 0.0,
-            'message': '评估失败',
-            'error': str(e),
-            'updated_at': datetime.now().isoformat()
-        })
+        try:
+            storage = await get_task_storage()
+            await storage.update_task(task_id, {
+                'status': 'failed',
+                'progress': 0.0,
+                'message': '评估失败',
+                'error': str(e),
+                'updated_at': datetime.now().isoformat()
+            })
+        except Exception as update_error:
+            logger.error(f"更新失败状态时出错: {update_error}")
+
+def run_evaluation_task_sync(task_id: str, document_id: str, model_name: str):
+    """
+    运行评估任务的同步包装器
+
+    Args:
+        task_id: 任务ID
+        document_id: 文档ID
+        model_name: 模型名称
+    """
+    # 使用新的事件循环运行异步函数
+    try:
+        asyncio.run(run_evaluation_task_async(task_id, document_id, model_name))
+    except Exception as e:
+        logger.error(f"同步包装器执行失败: {e}")
 
 @router.post("/start", response_model=EvaluationResponse)
 async def start_evaluation(request: EvaluationRequest, background_tasks: BackgroundTasks):
@@ -124,12 +168,15 @@ async def start_evaluation(request: EvaluationRequest, background_tasks: Backgro
     try:
         logger.info(f"开始评估文档: {request.document_id}, 模型: {request.model_name}")
 
+        # 获取Redis管理器
+        redis_mgr = await get_redis_manager()
+
         # 检查文档是否存在
-        if request.document_id not in document_storage:
+        document_info = await redis_mgr.get_document(request.document_id)
+        if document_info is None:
             raise HTTPException(status_code=404, detail="文档不存在")
 
-        document_info = document_storage[request.document_id]
-        if document_info['status'] != 'processed':
+        if document_info.get('status') != 'processed':
             raise HTTPException(status_code=400, detail="文档尚未处理完成")
 
         # 生成任务ID
@@ -137,7 +184,7 @@ async def start_evaluation(request: EvaluationRequest, background_tasks: Backgro
 
         # 添加后台任务
         background_tasks.add_task(
-            run_evaluation_task,
+            run_evaluation_task_sync,
             task_id,
             request.document_id,
             request.model_name
@@ -169,12 +216,15 @@ async def evaluate_chapter(request: ChapterEvaluationRequest):
     try:
         logger.info(f"开始评估章节: 文档{request.document_id}, 章节{request.chapter_index}")
 
+        # 获取Redis管理器
+        redis_mgr = await get_redis_manager()
+
         # 检查文档是否存在
-        if request.document_id not in document_storage:
+        document_info = await redis_mgr.get_document(request.document_id)
+        if document_info is None:
             raise HTTPException(status_code=404, detail="文档不存在")
 
-        document_info = document_storage[request.document_id]
-        if document_info['status'] != 'processed':
+        if document_info.get('status') != 'processed':
             raise HTTPException(status_code=400, detail="文档尚未处理完成")
 
         # 获取章节数据
@@ -243,10 +293,11 @@ async def get_evaluation_result(task_id: str):
         EvaluationResponse: 评估结果
     """
     try:
-        if task_id not in task_storage:
+        storage = await get_task_storage()
+        task_info = await storage.get_task(task_id)
+        
+        if task_info is None:
             raise HTTPException(status_code=404, detail="任务不存在")
-
-        task_info = task_storage[task_id]
 
         if task_info['status'] == 'completed':
             return EvaluationResponse(
@@ -286,10 +337,11 @@ async def get_evaluation_progress(task_id: str):
         dict: 进度信息
     """
     try:
-        if task_id not in task_storage:
+        storage = await get_task_storage()
+        task_info = await storage.get_task(task_id)
+        
+        if task_info is None:
             raise HTTPException(status_code=404, detail="任务不存在")
-
-        task_info = task_storage[task_id]
 
         return {
             'success': True,
@@ -306,3 +358,4 @@ async def get_evaluation_progress(task_id: str):
     except Exception as e:
         logger.error(f"获取评估进度失败: {e}")
         raise HTTPException(status_code=500, detail=f"获取评估进度失败: {str(e)}")
+

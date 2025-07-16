@@ -7,13 +7,26 @@ from fastapi import APIRouter, HTTPException, Query
 from pydantic import BaseModel
 from typing import Dict, Any, Optional, List
 import json
-from datetime import datetime
+import os
+import sys
+import time
+from pathlib import Path
+from datetime import datetime, timedelta
 
-from ..tools.logger import get_logger
-from ..api.document import document_storage
-from ..api.task import task_storage
+sys.path.insert(0, str(Path(__file__).parent.parent))
+
+from tools.logger import get_logger
+from utils.redis_client import get_redis_manager
+from utils.task_storage import get_task_storage
+from api.eval_module import (
+    hard_eval,
+    soft_eval,
+    ref_eval,
+    img_eval
+)
 
 logger = get_logger(__name__)
+
 router = APIRouter()
 
 # 响应模型
@@ -30,7 +43,12 @@ class ChartDataResponse(BaseModel):
     data: Dict[str, Any]
     options: Optional[Dict[str, Any]] = None
 
-def find_evaluation_result_for_document(document_id: str) -> Optional[Dict[str, Any]]:
+class IssuesResponse(BaseModel):
+    """问题分析响应模型"""
+    summary: Dict[str, Any]
+    by_chapter: Dict[str, List[Dict[str, str]]]
+
+async def find_evaluation_result_for_document(document_id: str) -> Optional[Dict[str, Any]]:
     """
     查找文档的评估结果
 
@@ -40,14 +58,21 @@ def find_evaluation_result_for_document(document_id: str) -> Optional[Dict[str, 
     Returns:
         Optional[Dict[str, Any]]: 评估结果，如果没有找到则返回None
     """
-    for task_info in task_storage.values():
-        if task_info.get('status') == 'completed':
-            result = task_info.get('result', {})
-            # 这里需要根据实际的结果结构来判断是否匹配文档ID
-            # 暂时返回第一个完成的评估结果
-            if result:
-                return result
-    return None
+    try:
+        storage = await get_task_storage()
+        all_tasks = await storage.get_all_tasks()
+        
+        for task_info in all_tasks.values():
+            if task_info.get('status') == 'completed':
+                result = task_info.get('result', {})
+                # 这里需要根据实际的结果结构来判断是否匹配文档ID
+                # 暂时返回第一个完成的评估结果
+                if result:
+                    return result
+        return None
+    except Exception as e:
+        logger.error(f"查找评估结果失败: {e}")
+        return None
 
 @router.get("/summary/{document_id}", response_model=AnalysisResponse)
 async def get_analysis_summary(document_id: str):
@@ -63,11 +88,13 @@ async def get_analysis_summary(document_id: str):
     try:
         logger.info(f"获取文档分析摘要: {document_id}")
 
+        # 获取Redis管理器
+        redis_mgr = await get_redis_manager()
+        
         # 检查文档是否存在
-        if document_id not in document_storage:
+        document_info = await redis_mgr.get_document(document_id)
+        if document_info is None:
             raise HTTPException(status_code=404, detail="文档不存在")
-
-        document_info = document_storage[document_id]
 
         # 获取文档基本信息
         pkl_data = document_info.get('pkl_data', {})
@@ -79,7 +106,7 @@ async def get_analysis_summary(document_id: str):
         total_images = sum(len(chapter.get('images', [])) for chapter in chapters)
 
         # 查找评估结果
-        evaluation_result = find_evaluation_result_for_document(document_id)
+        evaluation_result = await find_evaluation_result_for_document(document_id)
 
         # 计算平均分数
         average_score = 0
@@ -126,12 +153,16 @@ async def get_radar_chart_data(document_id: str):
     try:
         logger.info(f"获取雷达图数据: {document_id}")
 
+        # 获取Redis管理器
+        redis_mgr = await get_redis_manager()
+        
         # 检查文档是否存在
-        if document_id not in document_storage:
+        document_info = await redis_mgr.get_document(document_id)
+        if document_info is None:
             raise HTTPException(status_code=404, detail="文档不存在")
 
         # 查找评估结果
-        evaluation_result = find_evaluation_result_for_document(document_id)
+        evaluation_result = await find_evaluation_result_for_document(document_id)
 
         if not evaluation_result:
             # 如果没有评估结果，返回默认数据
@@ -194,16 +225,19 @@ async def get_bar_chart_data(document_id: str):
     try:
         logger.info(f"获取柱状图数据: {document_id}")
 
+        # 获取Redis管理器
+        redis_mgr = await get_redis_manager()
+        
         # 检查文档是否存在
-        if document_id not in document_storage:
+        document_info = await redis_mgr.get_document(document_id)
+        if document_info is None:
             raise HTTPException(status_code=404, detail="文档不存在")
 
-        document_info = document_storage[document_id]
         pkl_data = document_info.get('pkl_data', {})
         chapters = pkl_data.get('chapters', [])
 
         # 查找评估结果
-        evaluation_result = find_evaluation_result_for_document(document_id)
+        evaluation_result = await find_evaluation_result_for_document(document_id)
 
         categories = []
         scores = []
@@ -261,11 +295,14 @@ async def get_document_statistics(document_id: str):
     try:
         logger.info(f"获取文档统计信息: {document_id}")
 
+        # 获取Redis管理器
+        redis_mgr = await get_redis_manager()
+        
         # 检查文档是否存在
-        if document_id not in document_storage:
+        document_info = await redis_mgr.get_document(document_id)
+        if document_info is None:
             raise HTTPException(status_code=404, detail="文档不存在")
 
-        document_info = document_storage[document_id]
         pkl_data = document_info.get('pkl_data', {})
 
         # 基本统计信息
@@ -287,17 +324,22 @@ async def get_document_statistics(document_id: str):
         average_chapter_length = total_words / total_chapters if total_chapters > 0 else 0
 
         # 查找评估信息
-        evaluation_result = find_evaluation_result_for_document(document_id)
+        evaluation_result = await find_evaluation_result_for_document(document_id)
         evaluation_time = None
         model_used = None
 
         if evaluation_result:
             # 从任务存储中查找评估时间和使用的模型
-            for task_info in task_storage.values():
-                if task_info.get('result') == evaluation_result:
-                    evaluation_time = task_info.get('updated_at')
-                    # 模型信息可能需要从其他地方获取
-                    break
+            try:
+                storage = await get_task_storage()
+                all_tasks = await storage.get_all_tasks()
+                for task_info in all_tasks.values():
+                    if task_info.get('result') == evaluation_result:
+                        evaluation_time = task_info.get('updated_at')
+                        # 模型信息可能需要从其他地方获取
+                        break
+            except Exception as e:
+                logger.warning(f"获取评估时间失败: {e}")
 
         statistics = {
             'total_words': total_words,
@@ -345,12 +387,15 @@ async def export_analysis_report(
     try:
         logger.info(f"导出分析报告: {document_id}, 格式: {format}")
 
+        # 获取Redis管理器
+        redis_mgr = await get_redis_manager()
+        
         # 检查文档是否存在
-        if document_id not in document_storage:
+        document_info = await redis_mgr.get_document(document_id)
+        if document_info is None:
             raise HTTPException(status_code=404, detail="文档不存在")
 
-        document_info = document_storage[document_id]
-        evaluation_result = find_evaluation_result_for_document(document_id)
+        evaluation_result = await find_evaluation_result_for_document(document_id)
 
         if format == "json":
             # 导出完整的JSON数据
@@ -411,3 +456,19 @@ async def export_analysis_report(
     except Exception as e:
         logger.error(f"导出分析报告失败: {e}")
         raise HTTPException(status_code=500, detail=f"导出分析报告失败: {str(e)}")
+    
+@router.get("/{task_id}/reference-stats")
+async def get_ref_stats(document_id: str):
+    return await ref_eval(document_id)
+
+@router.get("/{task_id}/evaluation")
+async def get_soft_eval(document_id: str):
+    return await soft_eval(document_id)
+
+@router.get("/{task_id}/issues")
+async def get_hard_eval(document_id: str):
+    return await hard_eval(document_id)
+
+@router.get("{task_id}/image")
+async def get_img_eval(document_id: str):
+    return await img_eval(document_id)

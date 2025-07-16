@@ -6,9 +6,14 @@
 import json
 import logging
 from typing import List, Dict, Any, Optional, Callable
-from ..models.model_manager import request_model
-from ..prompts.overall_prompt import p_overall_assessment
-from ..tools.logger import get_logger
+from pathlib import Path
+import sys
+
+sys.path.insert(0, str(Path(__file__).parent.parent))
+
+from models.model_manager import request_model
+from prompts.overall_prompt import p_overall_assessment
+from tools.logger import get_logger
 
 logger = get_logger(__name__)
 

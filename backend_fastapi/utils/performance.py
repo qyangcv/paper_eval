@@ -3,6 +3,8 @@
 提供系统性能监控、内存管理、并发控制等功能
 """
 
+
+
 import time
 import psutil
 import asyncio
@@ -10,7 +12,14 @@ import threading
 from typing import Dict, Any, List, Optional, Callable
 from collections import defaultdict, deque
 from datetime import datetime, timedelta
-from ..tools.logger import get_logger
+
+import sys
+from pathlib import Path
+
+# 添加项目路径
+project_root = Path(__file__).parent.parent
+sys.path.insert(0, str(project_root))
+from tools.logger import get_logger
 
 logger = get_logger(__name__)
 

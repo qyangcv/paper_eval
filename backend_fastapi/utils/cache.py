@@ -9,7 +9,12 @@ from typing import Any, Optional, Dict, Callable
 from collections import OrderedDict
 from datetime import datetime, timedelta
 
-from ..tools.logger import get_logger
+import sys
+from pathlib import Path
+# 添加项目路径
+project_root = Path(__file__).parent
+sys.path.insert(0, str(project_root))
+from tools.logger import get_logger
 
 logger = get_logger(__name__)
 

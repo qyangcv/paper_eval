@@ -8,8 +8,13 @@ from datetime import datetime, timedelta
 from fastapi import APIRouter, HTTPException, Query
 from pydantic import BaseModel
 from typing import Dict, Any, Optional, List
+from pathlib import Path
+import sys
 
-from ..tools.logger import get_logger
+sys.path.insert(0, str(Path(__file__).parent.parent))
+
+from tools.logger import get_logger
+from utils.task_storage import get_task_storage
 
 logger = get_logger(__name__)
 router = APIRouter()
@@ -42,9 +47,7 @@ class TaskSummaryResponse(BaseModel):
     success: bool
     summary: Dict[str, Any]
 
-# 内存存储（生产环境应使用数据库或Redis）
-# 这个存储会被其他模块导入和使用
-task_storage = {}
+# Redis任务存储（替代内存存储）
 
 def calculate_task_duration(task_info: Dict[str, Any]) -> Optional[float]:
     """
@@ -87,10 +90,12 @@ async def get_task_status(task_id: str):
         TaskStatusResponse: 任务状态
     """
     try:
-        if task_id not in task_storage:
+        storage = await get_task_storage()
+        task_info = await storage.get_task(task_id)
+        
+        if task_info is None:
             raise HTTPException(status_code=404, detail="任务不存在")
 
-        task_info = task_storage[task_id]
         duration = calculate_task_duration(task_info)
 
         return TaskStatusResponse(
@@ -130,12 +135,15 @@ async def list_tasks(
         TaskListResponse: 任务列表
     """
     try:
+        storage = await get_task_storage()
+        all_tasks_dict = await storage.get_all_tasks()
+        
         all_tasks = []
         active_count = 0
         completed_count = 0
         failed_count = 0
 
-        for task_id, task_info in task_storage.items():
+        for task_id, task_info in all_tasks_dict.items():
             task_status = task_info.get('status', 'unknown')
             duration = calculate_task_duration(task_info)
 
@@ -194,15 +202,19 @@ async def cancel_task(task_id: str):
         dict: 取消结果
     """
     try:
-        if task_id not in task_storage:
-            raise HTTPException(status_code=404, detail="任务不存在")
+        storage = await get_task_storage()
+        task_info = await storage.get_task(task_id)
         
-        task_info = task_storage[task_id]
+        if task_info is None:
+            raise HTTPException(status_code=404, detail="任务不存在")
         
         # 如果任务正在运行，标记为取消
         if task_info.get('status') in ['running', 'pending']:
-            task_info['status'] = 'cancelled'
-            task_info['message'] = '任务已取消'
+            await storage.update_task(task_id, {
+                'status': 'cancelled',
+                'message': '任务已取消',
+                'updated_at': datetime.now().isoformat()
+            })
         
         return {
             'success': True,
@@ -225,20 +237,13 @@ async def clear_completed_tasks():
         dict: 清理结果
     """
     try:
-        completed_statuses = ['completed', 'failed', 'cancelled']
-        tasks_to_remove = []
-        
-        for task_id, task_info in task_storage.items():
-            if task_info.get('status') in completed_statuses:
-                tasks_to_remove.append(task_id)
-        
-        for task_id in tasks_to_remove:
-            del task_storage[task_id]
+        storage = await get_task_storage()
+        cleared_count = await storage.clear_completed_tasks()
         
         return {
             'success': True,
-            'message': f'清理了{len(tasks_to_remove)}个已完成的任务',
-            'cleared_count': len(tasks_to_remove)
+            'message': f'清理了{cleared_count}个已完成的任务',
+            'cleared_count': cleared_count
         }
 
     except Exception as e:
@@ -254,7 +259,10 @@ async def get_task_summary():
         TaskSummaryResponse: 任务摘要
     """
     try:
-        total_tasks = len(task_storage)
+        storage = await get_task_storage()
+        all_tasks_dict = await storage.get_all_tasks()
+        
+        total_tasks = len(all_tasks_dict)
         status_counts = {
             'pending': 0,
             'running': 0,
@@ -266,7 +274,7 @@ async def get_task_summary():
         total_duration = 0
         completed_tasks = 0
 
-        for task_info in task_storage.values():
+        for task_info in all_tasks_dict.values():
             status = task_info.get('status', 'unknown')
             if status in status_counts:
                 status_counts[status] += 1
@@ -283,7 +291,7 @@ async def get_task_summary():
         # 获取最近的任务
         recent_tasks = []
         sorted_tasks = sorted(
-            task_storage.items(),
+            all_tasks_dict.items(),
             key=lambda x: x[1].get('created_at', ''),
             reverse=True
         )
@@ -326,27 +334,15 @@ async def cleanup_old_tasks(days: int = Query(7, description="清理多少天前
         dict: 清理结果
     """
     try:
+        storage = await get_task_storage()
+        cleared_count = await storage.clear_old_tasks(days)
+        
         cutoff_time = datetime.now() - timedelta(days=days)
-        tasks_to_remove = []
-
-        for task_id, task_info in task_storage.items():
-            created_at = task_info.get('created_at')
-            if created_at:
-                try:
-                    created_time = datetime.fromisoformat(created_at)
-                    if created_time < cutoff_time:
-                        tasks_to_remove.append(task_id)
-                except ValueError:
-                    # 如果时间格式有问题，也删除
-                    tasks_to_remove.append(task_id)
-
-        for task_id in tasks_to_remove:
-            del task_storage[task_id]
 
         return {
             'success': True,
-            'message': f'清理了{len(tasks_to_remove)}个{days}天前的任务',
-            'cleared_count': len(tasks_to_remove),
+            'message': f'清理了{cleared_count}个{days}天前的任务',
+            'cleared_count': cleared_count,
             'cutoff_date': cutoff_time.isoformat()
         }
 

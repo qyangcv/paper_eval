@@ -16,3 +16,1068 @@
 2025-06-30 19:54:09 [INFO] frontend.services.document_processor: 文档分析结果: 目录开始=54, 目录结束=100, 正文开始=101
 2025-06-30 19:54:09 [INFO] frontend.services.document_processor: 共提取 8 个主章节, 1 个子章节
 2025-06-30 19:54:15 [INFO] frontend.services.document_processor: 使用文件 /var/folders/_0/glfw9bp519b2s6r5c1v78k2m0000gn/T/tmpb9peomm7.docx 进行论文评估
+2025-07-15 18:01:10 [INFO] backend_fastapi.middleware.logging_middleware: [IN] POST /api/document/upload - 127.0.0.1
+2025-07-15 18:01:10 [INFO] api.document: 开始上传文档: 龚礼盛-本科毕业论文.docx
+2025-07-15 18:01:10 [INFO] api.document: 文档上传成功: 龚礼盛-本科毕业论文.docx, ID: 37750e05-2ccb-4f2b-b421-3b1638866510
+2025-07-15 18:01:10 [INFO] backend_fastapi.middleware.logging_middleware: [OUT] POST /api/document/upload - 200 - 0.0322s - 127.0.0.1
+2025-07-15 18:01:21 [INFO] backend_fastapi.middleware.logging_middleware: [IN] POST /api/document/upload - 127.0.0.1
+2025-07-15 18:01:21 [INFO] api.document: 开始上传文档: 龚礼盛-本科毕业论文.docx
+2025-07-15 18:01:21 [INFO] api.document: 文档上传成功: 龚礼盛-本科毕业论文.docx, ID: 7e2b3434-11df-44ec-bcbf-3e6d13b9c72c
+2025-07-15 18:01:21 [INFO] backend_fastapi.middleware.logging_middleware: [OUT] POST /api/document/upload - 200 - 0.0680s - 127.0.0.1
+2025-07-15 18:01:36 [INFO] backend_fastapi.middleware.logging_middleware: [IN] POST /api/document/upload - 127.0.0.1
+2025-07-15 18:01:36 [INFO] api.document: 开始上传文档: 龚礼盛-本科毕业论文.docx
+2025-07-15 18:01:36 [INFO] api.document: 文档上传成功: 龚礼盛-本科毕业论文.docx, ID: 7360de55-6ad0-4cd9-a524-ebcc6f80a366
+2025-07-15 18:01:36 [INFO] backend_fastapi.middleware.logging_middleware: [OUT] POST /api/document/upload - 200 - 0.0353s - 127.0.0.1
+2025-07-15 18:01:51 [INFO] backend_fastapi.middleware.logging_middleware: [IN] POST /api/document/upload - 127.0.0.1
+2025-07-15 18:01:51 [INFO] api.document: 开始上传文档: 龚礼盛-本科毕业论文.docx
+2025-07-15 18:01:51 [INFO] api.document: 文档上传成功: 龚礼盛-本科毕业论文.docx, ID: d04f8d86-159b-4ae5-a7a6-d70cf0be5c41
+2025-07-15 18:01:51 [INFO] backend_fastapi.middleware.logging_middleware: [OUT] POST /api/document/upload - 200 - 0.0264s - 127.0.0.1
+2025-07-15 18:01:52 [INFO] backend_fastapi.middleware.logging_middleware: [IN] POST /api/document/upload - 127.0.0.1
+2025-07-15 18:01:52 [INFO] api.document: 开始上传文档: 龚礼盛-本科毕业论文.docx
+2025-07-15 18:01:52 [INFO] api.document: 文档上传成功: 龚礼盛-本科毕业论文.docx, ID: bd601c52-1ad7-413f-aec0-26da85135125
+2025-07-15 18:01:52 [INFO] backend_fastapi.middleware.logging_middleware: [OUT] POST /api/document/upload - 200 - 0.0220s - 127.0.0.1
+2025-07-15 18:06:32 [INFO] backend_fastapi.middleware.logging_middleware: [IN] POST /api/document/process/bd601c52-1ad7-413f-aec0-26da85135125 - 127.0.0.1
+2025-07-15 18:06:32 [INFO] api.document: 开始处理文档: bd601c52-1ad7-413f-aec0-26da85135125
+2025-07-15 18:06:32 [INFO] api.document: 转换文档为Markdown: bd601c52-1ad7-413f-aec0-26da85135125
+2025-07-15 18:06:32 [INFO] api.document: 转换为结构化数据: bd601c52-1ad7-413f-aec0-26da85135125
+2025-07-15 18:06:32 [INFO] api.document: 文档处理完成: bd601c52-1ad7-413f-aec0-26da85135125
+2025-07-15 18:06:32 [INFO] backend_fastapi.middleware.logging_middleware: [OUT] POST /api/document/process/bd601c52-1ad7-413f-aec0-26da85135125 - 200 - 0.2121s - 127.0.0.1
+2025-07-15 18:38:44 [INFO] backend_fastapi.middleware.logging_middleware: [IN] POST /api/document/upload - 127.0.0.1
+2025-07-15 18:38:44 [INFO] api.document: 开始上传文档: 龚礼盛-本科毕业论文.docx
+2025-07-15 18:38:44 [INFO] api.document: 文档上传成功: 龚礼盛-本科毕业论文.docx, ID: bba8a58c-03fb-4d8b-be64-60fd120ad80e
+2025-07-15 18:38:44 [INFO] backend_fastapi.middleware.logging_middleware: [OUT] POST /api/document/upload - 200 - 0.0275s - 127.0.0.1
+2025-07-15 18:38:46 [INFO] backend_fastapi.middleware.logging_middleware: [IN] POST /api/document/process/bba8a58c-03fb-4d8b-be64-60fd120ad80e - 127.0.0.1
+2025-07-15 18:38:46 [INFO] api.document: 开始处理文档: bba8a58c-03fb-4d8b-be64-60fd120ad80e
+2025-07-15 18:38:46 [INFO] api.document: 转换文档为Markdown: bba8a58c-03fb-4d8b-be64-60fd120ad80e
+2025-07-15 18:38:46 [INFO] api.document: 转换为结构化数据: bba8a58c-03fb-4d8b-be64-60fd120ad80e
+2025-07-15 18:38:46 [INFO] api.document: 文档处理完成: bba8a58c-03fb-4d8b-be64-60fd120ad80e
+2025-07-15 18:38:46 [INFO] backend_fastapi.middleware.logging_middleware: [OUT] POST /api/document/process/bba8a58c-03fb-4d8b-be64-60fd120ad80e - 200 - 0.1790s - 127.0.0.1
+2025-07-15 18:38:48 [INFO] backend_fastapi.middleware.logging_middleware: [IN] GET /api/analysis/get_md/bba8a58c-03fb-4d8b-be64-60fd120ad80e - 127.0.0.1
+2025-07-15 18:38:48 [WARNING] backend_fastapi.middleware.logging_middleware: [WARN] GET /api/analysis/get_md/bba8a58c-03fb-4d8b-be64-60fd120ad80e - 404 - 0.0032s - 127.0.0.1
+2025-07-15 18:39:04 [INFO] backend_fastapi.middleware.logging_middleware: [IN] GET /api/analysis/get_md/bba8a58c-03fb-4d8b-be64-60fd120ad80e - 127.0.0.1
+2025-07-15 18:39:04 [WARNING] backend_fastapi.middleware.logging_middleware: [WARN] GET /api/analysis/get_md/bba8a58c-03fb-4d8b-be64-60fd120ad80e - 404 - 0.0055s - 127.0.0.1
+2025-07-15 18:39:16 [INFO] backend_fastapi.middleware.logging_middleware: [IN] GET /api/analysis/get_md/bba8a58c-03fb-4d8b-be64-60fd120ad80e - 127.0.0.1
+2025-07-15 18:39:16 [WARNING] backend_fastapi.middleware.logging_middleware: [WARN] GET /api/analysis/get_md/bba8a58c-03fb-4d8b-be64-60fd120ad80e - 404 - 0.0022s - 127.0.0.1
+2025-07-15 18:44:15 [INFO] backend_fastapi.middleware.logging_middleware: [IN] GET /api/analysis/get_md/bba8a58c-03fb-4d8b-be64-60fd120ad80e - 127.0.0.1
+2025-07-15 18:44:15 [WARNING] backend_fastapi.middleware.logging_middleware: [WARN] GET /api/analysis/get_md/bba8a58c-03fb-4d8b-be64-60fd120ad80e - 404 - 0.0133s - 127.0.0.1
+2025-07-15 18:46:14 [INFO] backend_fastapi.middleware.logging_middleware: [IN] GET /api/analysis/get_md/bba8a58c-03fb-4d8b-be64-60fd120ad80e - 127.0.0.1
+2025-07-15 18:46:14 [INFO] api.analysis: 获取文档 bba8a58c-03fb-4d8b-be64-60fd120ad80e 的Markdown内容
+2025-07-15 18:46:14 [WARNING] backend_fastapi.middleware.logging_middleware: [WARN] GET /api/analysis/get_md/bba8a58c-03fb-4d8b-be64-60fd120ad80e - 404 - 0.0137s - 127.0.0.1
+2025-07-15 18:48:39 [INFO] backend_fastapi.middleware.logging_middleware: [IN] POST /api/document/upload - 127.0.0.1
+2025-07-15 18:48:39 [INFO] api.document: 开始上传文档: 龚礼盛-本科毕业论文.docx
+2025-07-15 18:48:39 [INFO] api.document: 文档上传成功: 龚礼盛-本科毕业论文.docx, ID: 8509e18b-e733-4c49-8daf-ac8e17ff7ce1
+2025-07-15 18:48:39 [INFO] backend_fastapi.middleware.logging_middleware: [OUT] POST /api/document/upload - 200 - 0.0353s - 127.0.0.1
+2025-07-15 18:48:41 [INFO] backend_fastapi.middleware.logging_middleware: [IN] GET /api/analysis/get_md/8509e18b-e733-4c49-8daf-ac8e17ff7ce1 - 127.0.0.1
+2025-07-15 18:48:41 [INFO] api.analysis: 获取文档 8509e18b-e733-4c49-8daf-ac8e17ff7ce1 的Markdown内容
+2025-07-15 18:48:41 [WARNING] backend_fastapi.middleware.logging_middleware: [WARN] GET /api/analysis/get_md/8509e18b-e733-4c49-8daf-ac8e17ff7ce1 - 404 - 0.0055s - 127.0.0.1
+2025-07-15 18:48:44 [INFO] backend_fastapi.middleware.logging_middleware: [IN] GET /api/analysis/get_md/8509e18b-e733-4c49-8daf-ac8e17ff7ce1 - 127.0.0.1
+2025-07-15 18:48:44 [INFO] api.analysis: 获取文档 8509e18b-e733-4c49-8daf-ac8e17ff7ce1 的Markdown内容
+2025-07-15 18:48:44 [WARNING] backend_fastapi.middleware.logging_middleware: [WARN] GET /api/analysis/get_md/8509e18b-e733-4c49-8daf-ac8e17ff7ce1 - 404 - 0.0019s - 127.0.0.1
+2025-07-15 18:50:14 [INFO] backend_fastapi.middleware.logging_middleware: [IN] POST /api/document/upload - 127.0.0.1
+2025-07-15 18:50:14 [INFO] api.document: 开始上传文档: 龚礼盛-本科毕业论文.docx
+2025-07-15 18:50:14 [INFO] api.document: 文档上传成功: 龚礼盛-本科毕业论文.docx, ID: 3ca2c71a-eb70-4c2e-a05e-d213ad7487af
+2025-07-15 18:50:14 [INFO] backend_fastapi.middleware.logging_middleware: [OUT] POST /api/document/upload - 200 - 0.0327s - 127.0.0.1
+2025-07-15 18:50:16 [INFO] backend_fastapi.middleware.logging_middleware: [IN] POST /api/document/upload - 127.0.0.1
+2025-07-15 18:50:16 [INFO] api.document: 开始上传文档: 龚礼盛-本科毕业论文.docx
+2025-07-15 18:50:16 [INFO] api.document: 文档上传成功: 龚礼盛-本科毕业论文.docx, ID: bd139baa-80ee-43cc-81cd-754b395ea8ce
+2025-07-15 18:50:16 [INFO] backend_fastapi.middleware.logging_middleware: [OUT] POST /api/document/upload - 200 - 0.0267s - 127.0.0.1
+2025-07-15 18:50:17 [INFO] backend_fastapi.middleware.logging_middleware: [IN] POST /api/document/upload - 127.0.0.1
+2025-07-15 18:50:18 [INFO] api.document: 开始上传文档: 龚礼盛-本科毕业论文.docx
+2025-07-15 18:50:18 [INFO] api.document: 文档上传成功: 龚礼盛-本科毕业论文.docx, ID: 4773988d-ed81-4fb1-ba89-d8d4598c1084
+2025-07-15 18:50:18 [INFO] backend_fastapi.middleware.logging_middleware: [OUT] POST /api/document/upload - 200 - 0.0251s - 127.0.0.1
+2025-07-15 18:50:19 [INFO] backend_fastapi.middleware.logging_middleware: [IN] GET /api/analysis/get_md/4773988d-ed81-4fb1-ba89-d8d4598c1084 - 127.0.0.1
+2025-07-15 18:50:19 [INFO] api.analysis: 获取文档 4773988d-ed81-4fb1-ba89-d8d4598c1084 的Markdown内容
+2025-07-15 18:50:19 [WARNING] backend_fastapi.middleware.logging_middleware: [WARN] GET /api/analysis/get_md/4773988d-ed81-4fb1-ba89-d8d4598c1084 - 404 - 0.0022s - 127.0.0.1
+2025-07-15 18:50:21 [INFO] backend_fastapi.middleware.logging_middleware: [IN] GET /api/analysis/get_md/4773988d-ed81-4fb1-ba89-d8d4598c1084 - 127.0.0.1
+2025-07-15 18:50:21 [INFO] api.analysis: 获取文档 4773988d-ed81-4fb1-ba89-d8d4598c1084 的Markdown内容
+2025-07-15 18:50:21 [WARNING] backend_fastapi.middleware.logging_middleware: [WARN] GET /api/analysis/get_md/4773988d-ed81-4fb1-ba89-d8d4598c1084 - 404 - 0.0017s - 127.0.0.1
+2025-07-15 18:50:22 [INFO] backend_fastapi.middleware.logging_middleware: [IN] GET /api/analysis/get_md/4773988d-ed81-4fb1-ba89-d8d4598c1084 - 127.0.0.1
+2025-07-15 18:50:22 [INFO] api.analysis: 获取文档 4773988d-ed81-4fb1-ba89-d8d4598c1084 的Markdown内容
+2025-07-15 18:50:22 [WARNING] backend_fastapi.middleware.logging_middleware: [WARN] GET /api/analysis/get_md/4773988d-ed81-4fb1-ba89-d8d4598c1084 - 404 - 0.0020s - 127.0.0.1
+2025-07-15 18:50:24 [INFO] backend_fastapi.middleware.logging_middleware: [IN] POST /api/document/process/4773988d-ed81-4fb1-ba89-d8d4598c1084 - 127.0.0.1
+2025-07-15 18:50:24 [INFO] api.document: 开始处理文档: 4773988d-ed81-4fb1-ba89-d8d4598c1084
+2025-07-15 18:50:24 [INFO] api.document: 转换文档为Markdown: 4773988d-ed81-4fb1-ba89-d8d4598c1084
+2025-07-15 18:50:24 [INFO] api.document: 转换为结构化数据: 4773988d-ed81-4fb1-ba89-d8d4598c1084
+2025-07-15 18:50:24 [INFO] api.document: 文档处理完成: 4773988d-ed81-4fb1-ba89-d8d4598c1084
+2025-07-15 18:50:24 [INFO] backend_fastapi.middleware.logging_middleware: [OUT] POST /api/document/process/4773988d-ed81-4fb1-ba89-d8d4598c1084 - 200 - 0.1809s - 127.0.0.1
+2025-07-15 18:50:26 [INFO] backend_fastapi.middleware.logging_middleware: [IN] GET /api/analysis/get_md/4773988d-ed81-4fb1-ba89-d8d4598c1084 - 127.0.0.1
+2025-07-15 18:50:26 [INFO] api.analysis: 获取文档 4773988d-ed81-4fb1-ba89-d8d4598c1084 的Markdown内容
+2025-07-15 18:50:26 [INFO] backend_fastapi.middleware.logging_middleware: [OUT] GET /api/analysis/get_md/4773988d-ed81-4fb1-ba89-d8d4598c1084 - 200 - 0.0020s - 127.0.0.1
+2025-07-15 18:50:48 [INFO] backend_fastapi.middleware.logging_middleware: [IN] GET /api/analysis/get_md/4773988d-ed81-4fb1-ba89-d8d4598c1084 - 127.0.0.1
+2025-07-15 18:50:48 [INFO] api.analysis: 获取文档 4773988d-ed81-4fb1-ba89-d8d4598c1084 的Markdown内容
+2025-07-15 18:50:48 [INFO] backend_fastapi.middleware.logging_middleware: [OUT] GET /api/analysis/get_md/4773988d-ed81-4fb1-ba89-d8d4598c1084 - 200 - 0.0068s - 127.0.0.1
+2025-07-15 18:51:07 [INFO] backend_fastapi.middleware.logging_middleware: [IN] GET /api/analysis/get_md/4773988d-ed81-4fb1-ba89-d8d4598c1084 - 127.0.0.1
+2025-07-15 18:51:07 [INFO] api.analysis: 获取文档 4773988d-ed81-4fb1-ba89-d8d4598c1084 的Markdown内容
+2025-07-15 18:51:07 [INFO] backend_fastapi.middleware.logging_middleware: [OUT] GET /api/analysis/get_md/4773988d-ed81-4fb1-ba89-d8d4598c1084 - 200 - 0.0134s - 127.0.0.1
+2025-07-15 18:51:31 [INFO] backend_fastapi.middleware.logging_middleware: [IN] GET /api/analysis/get_md/4773988d-ed81-4fb1-ba89-d8d4598c1084 - 127.0.0.1
+2025-07-15 18:51:31 [INFO] api.analysis: 获取文档 4773988d-ed81-4fb1-ba89-d8d4598c1084 的Markdown内容
+2025-07-15 18:51:31 [INFO] backend_fastapi.middleware.logging_middleware: [OUT] GET /api/analysis/get_md/4773988d-ed81-4fb1-ba89-d8d4598c1084 - 200 - 0.0149s - 127.0.0.1
+2025-07-15 19:03:33 [INFO] backend_fastapi.middleware.logging_middleware: [IN] POST /api/document/upload - 127.0.0.1
+2025-07-15 19:03:33 [INFO] backend_fastapi.middleware.logging_middleware: [IN] POST /api/document/upload - 127.0.0.1
+2025-07-15 19:03:33 [WARNING] backend_fastapi.middleware.logging_middleware: [WARN] POST /api/document/upload - 400 - 0.0135s - 127.0.0.1
+2025-07-15 19:03:33 [WARNING] backend_fastapi.middleware.logging_middleware: [WARN] POST /api/document/upload - 400 - 0.0115s - 127.0.0.1
+2025-07-15 19:03:40 [INFO] backend_fastapi.middleware.logging_middleware: [IN] POST /api/document/upload - 127.0.0.1
+2025-07-15 19:03:40 [INFO] api.document: 开始上传文档: 龚礼盛-本科毕业论文.docx
+2025-07-15 19:03:40 [INFO] api.document: 文档上传成功: 龚礼盛-本科毕业论文.docx, ID: 0a81c34e-aeaf-4e51-8123-cc87db466d96
+2025-07-15 19:03:40 [INFO] backend_fastapi.middleware.logging_middleware: [OUT] POST /api/document/upload - 200 - 0.0384s - 127.0.0.1
+2025-07-15 21:19:51 [INFO] utils.redis_init: 正在初始化Redis连接...
+2025-07-15 21:19:51 [INFO] utils.redis_client: Redis连接成功
+2025-07-15 21:19:51 [INFO] utils.redis_init: Redis连接初始化成功
+2025-07-15 21:29:42 [INFO] utils.redis_init: 正在关闭Redis连接...
+2025-07-15 21:29:42 [INFO] utils.redis_client: Redis连接已断开
+2025-07-15 21:29:42 [INFO] utils.redis_init: Redis连接已关闭
+2025-07-15 21:29:43 [INFO] utils.redis_init: 正在初始化Redis连接...
+2025-07-15 21:29:43 [INFO] utils.redis_client: Redis连接成功
+2025-07-15 21:29:43 [INFO] utils.redis_init: Redis连接初始化成功
+2025-07-15 21:29:50 [INFO] utils.redis_init: 正在关闭Redis连接...
+2025-07-15 21:29:50 [INFO] utils.redis_client: Redis连接已断开
+2025-07-15 21:29:50 [INFO] utils.redis_init: Redis连接已关闭
+2025-07-15 21:29:51 [INFO] utils.redis_init: 正在初始化Redis连接...
+2025-07-15 21:29:51 [INFO] utils.redis_client: Redis连接成功
+2025-07-15 21:29:51 [INFO] utils.redis_init: Redis连接初始化成功
+2025-07-15 21:30:05 [INFO] utils.redis_init: 正在关闭Redis连接...
+2025-07-15 21:30:05 [INFO] utils.redis_client: Redis连接已断开
+2025-07-15 21:30:05 [INFO] utils.redis_init: Redis连接已关闭
+2025-07-15 21:30:06 [INFO] utils.redis_init: 正在初始化Redis连接...
+2025-07-15 21:30:06 [INFO] utils.redis_client: Redis连接成功
+2025-07-15 21:30:06 [INFO] utils.redis_init: Redis连接初始化成功
+2025-07-15 21:30:17 [INFO] utils.redis_init: 正在关闭Redis连接...
+2025-07-15 21:30:17 [INFO] utils.redis_client: Redis连接已断开
+2025-07-15 21:30:17 [INFO] utils.redis_init: Redis连接已关闭
+2025-07-15 21:30:18 [INFO] utils.redis_init: 正在初始化Redis连接...
+2025-07-15 21:30:18 [INFO] utils.redis_client: Redis连接成功
+2025-07-15 21:30:18 [INFO] utils.redis_init: Redis连接初始化成功
+2025-07-15 21:30:30 [INFO] utils.redis_init: 正在关闭Redis连接...
+2025-07-15 21:30:30 [INFO] utils.redis_client: Redis连接已断开
+2025-07-15 21:30:30 [INFO] utils.redis_init: Redis连接已关闭
+2025-07-15 21:30:31 [INFO] utils.redis_init: 正在初始化Redis连接...
+2025-07-15 21:30:31 [INFO] utils.redis_client: Redis连接成功
+2025-07-15 21:30:31 [INFO] utils.redis_init: Redis连接初始化成功
+2025-07-15 21:30:39 [INFO] utils.redis_init: 正在关闭Redis连接...
+2025-07-15 21:30:39 [INFO] utils.redis_client: Redis连接已断开
+2025-07-15 21:30:39 [INFO] utils.redis_init: Redis连接已关闭
+2025-07-15 21:30:40 [INFO] utils.redis_init: 正在初始化Redis连接...
+2025-07-15 21:30:40 [INFO] utils.redis_client: Redis连接成功
+2025-07-15 21:30:40 [INFO] utils.redis_init: Redis连接初始化成功
+2025-07-15 21:31:11 [INFO] utils.redis_init: 正在关闭Redis连接...
+2025-07-15 21:31:11 [INFO] utils.redis_client: Redis连接已断开
+2025-07-15 21:31:11 [INFO] utils.redis_init: Redis连接已关闭
+2025-07-15 21:31:13 [INFO] utils.redis_init: 正在初始化Redis连接...
+2025-07-15 21:31:13 [INFO] utils.redis_client: Redis连接成功
+2025-07-15 21:31:13 [INFO] utils.redis_init: Redis连接初始化成功
+2025-07-15 21:31:28 [INFO] utils.redis_init: 正在关闭Redis连接...
+2025-07-15 21:31:28 [INFO] utils.redis_client: Redis连接已断开
+2025-07-15 21:31:28 [INFO] utils.redis_init: Redis连接已关闭
+2025-07-15 21:31:29 [INFO] utils.redis_init: 正在初始化Redis连接...
+2025-07-15 21:31:29 [INFO] utils.redis_client: Redis连接成功
+2025-07-15 21:31:29 [INFO] utils.redis_init: Redis连接初始化成功
+2025-07-15 21:31:38 [INFO] utils.redis_init: 正在关闭Redis连接...
+2025-07-15 21:31:38 [INFO] utils.redis_client: Redis连接已断开
+2025-07-15 21:31:38 [INFO] utils.redis_init: Redis连接已关闭
+2025-07-15 21:31:39 [INFO] utils.redis_init: 正在初始化Redis连接...
+2025-07-15 21:31:39 [INFO] utils.redis_client: Redis连接成功
+2025-07-15 21:31:39 [INFO] utils.redis_init: Redis连接初始化成功
+2025-07-15 21:31:48 [INFO] utils.redis_init: 正在关闭Redis连接...
+2025-07-15 21:31:48 [INFO] utils.redis_client: Redis连接已断开
+2025-07-15 21:31:48 [INFO] utils.redis_init: Redis连接已关闭
+2025-07-15 21:31:49 [INFO] utils.redis_init: 正在初始化Redis连接...
+2025-07-15 21:31:49 [INFO] utils.redis_client: Redis连接成功
+2025-07-15 21:31:49 [INFO] utils.redis_init: Redis连接初始化成功
+2025-07-15 21:31:58 [INFO] utils.redis_init: 正在关闭Redis连接...
+2025-07-15 21:31:58 [INFO] utils.redis_client: Redis连接已断开
+2025-07-15 21:31:58 [INFO] utils.redis_init: Redis连接已关闭
+2025-07-15 21:31:59 [INFO] utils.redis_init: 正在初始化Redis连接...
+2025-07-15 21:31:59 [INFO] utils.redis_client: Redis连接成功
+2025-07-15 21:31:59 [INFO] utils.redis_init: Redis连接初始化成功
+2025-07-15 21:32:12 [INFO] utils.redis_init: 正在关闭Redis连接...
+2025-07-15 21:32:12 [INFO] utils.redis_client: Redis连接已断开
+2025-07-15 21:32:12 [INFO] utils.redis_init: Redis连接已关闭
+2025-07-15 21:32:13 [INFO] utils.redis_init: 正在初始化Redis连接...
+2025-07-15 21:32:13 [INFO] utils.redis_client: Redis连接成功
+2025-07-15 21:32:13 [INFO] utils.redis_init: Redis连接初始化成功
+2025-07-15 21:32:25 [INFO] utils.redis_init: 正在关闭Redis连接...
+2025-07-15 21:32:25 [INFO] utils.redis_client: Redis连接已断开
+2025-07-15 21:32:25 [INFO] utils.redis_init: Redis连接已关闭
+2025-07-15 21:32:26 [INFO] utils.redis_init: 正在初始化Redis连接...
+2025-07-15 21:32:26 [INFO] utils.redis_client: Redis连接成功
+2025-07-15 21:32:26 [INFO] utils.redis_init: Redis连接初始化成功
+2025-07-15 21:33:47 [INFO] utils.redis_init: 正在关闭Redis连接...
+2025-07-15 21:33:47 [INFO] utils.redis_client: Redis连接已断开
+2025-07-15 21:33:47 [INFO] utils.redis_init: Redis连接已关闭
+2025-07-15 21:33:48 [INFO] utils.redis_init: 正在初始化Redis连接...
+2025-07-15 21:33:48 [INFO] utils.redis_client: Redis连接成功
+2025-07-15 21:33:48 [INFO] utils.redis_init: Redis连接初始化成功
+2025-07-15 21:33:58 [INFO] utils.redis_init: 正在关闭Redis连接...
+2025-07-15 21:33:58 [INFO] utils.redis_client: Redis连接已断开
+2025-07-15 21:33:58 [INFO] utils.redis_init: Redis连接已关闭
+2025-07-15 21:33:59 [INFO] utils.redis_init: 正在初始化Redis连接...
+2025-07-15 21:33:59 [INFO] utils.redis_client: Redis连接成功
+2025-07-15 21:33:59 [INFO] utils.redis_init: Redis连接初始化成功
+2025-07-15 21:34:07 [INFO] utils.redis_init: 正在关闭Redis连接...
+2025-07-15 21:34:07 [INFO] utils.redis_client: Redis连接已断开
+2025-07-15 21:34:07 [INFO] utils.redis_init: Redis连接已关闭
+2025-07-15 21:34:08 [INFO] utils.redis_init: 正在初始化Redis连接...
+2025-07-15 21:34:08 [INFO] utils.redis_client: Redis连接成功
+2025-07-15 21:34:08 [INFO] utils.redis_init: Redis连接初始化成功
+2025-07-15 21:34:23 [INFO] utils.redis_init: 正在关闭Redis连接...
+2025-07-15 21:34:23 [INFO] utils.redis_client: Redis连接已断开
+2025-07-15 21:34:23 [INFO] utils.redis_init: Redis连接已关闭
+2025-07-15 21:34:24 [INFO] utils.redis_init: 正在初始化Redis连接...
+2025-07-15 21:34:24 [INFO] utils.redis_client: Redis连接成功
+2025-07-15 21:34:24 [INFO] utils.redis_init: Redis连接初始化成功
+2025-07-15 21:34:41 [INFO] utils.redis_init: 正在关闭Redis连接...
+2025-07-15 21:34:41 [INFO] utils.redis_client: Redis连接已断开
+2025-07-15 21:34:41 [INFO] utils.redis_init: Redis连接已关闭
+2025-07-15 21:34:42 [INFO] utils.redis_init: 正在初始化Redis连接...
+2025-07-15 21:34:42 [INFO] utils.redis_client: Redis连接成功
+2025-07-15 21:34:42 [INFO] utils.redis_init: Redis连接初始化成功
+2025-07-15 21:34:59 [INFO] utils.redis_init: 正在关闭Redis连接...
+2025-07-15 21:34:59 [INFO] utils.redis_client: Redis连接已断开
+2025-07-15 21:34:59 [INFO] utils.redis_init: Redis连接已关闭
+2025-07-15 21:35:00 [INFO] utils.redis_init: 正在初始化Redis连接...
+2025-07-15 21:35:00 [INFO] utils.redis_client: Redis连接成功
+2025-07-15 21:35:00 [INFO] utils.redis_init: Redis连接初始化成功
+2025-07-15 21:35:12 [INFO] utils.redis_init: 正在关闭Redis连接...
+2025-07-15 21:35:12 [INFO] utils.redis_client: Redis连接已断开
+2025-07-15 21:35:12 [INFO] utils.redis_init: Redis连接已关闭
+2025-07-15 21:35:13 [INFO] utils.redis_init: 正在初始化Redis连接...
+2025-07-15 21:35:13 [INFO] utils.redis_client: Redis连接成功
+2025-07-15 21:35:13 [INFO] utils.redis_init: Redis连接初始化成功
+2025-07-15 21:36:00 [INFO] utils.redis_init: 正在关闭Redis连接...
+2025-07-15 21:36:00 [INFO] utils.redis_client: Redis连接已断开
+2025-07-15 21:36:00 [INFO] utils.redis_init: Redis连接已关闭
+2025-07-15 21:36:01 [INFO] utils.redis_init: 正在初始化Redis连接...
+2025-07-15 21:36:01 [INFO] utils.redis_client: Redis连接成功
+2025-07-15 21:36:01 [INFO] utils.redis_init: Redis连接初始化成功
+2025-07-15 22:10:34 [INFO] backend_fastapi.middleware.logging_middleware: [IN] POST /api/document/upload - 127.0.0.1
+2025-07-15 22:10:34 [INFO] api.document: 开始上传文档: 龚礼盛-本科毕业论文.docx
+2025-07-15 22:10:34 [INFO] utils.redis_client: 文档存储成功: 3a751e9f-0745-4ee9-8639-bf6f21e4bba6, 大小: 4507536 bytes
+2025-07-15 22:10:34 [INFO] api.document: 文档上传成功: 龚礼盛-本科毕业论文.docx, ID: 3a751e9f-0745-4ee9-8639-bf6f21e4bba6
+2025-07-15 22:10:34 [INFO] backend_fastapi.middleware.logging_middleware: [OUT] POST /api/document/upload - 200 - 0.1003s - 127.0.0.1
+2025-07-15 22:13:29 [INFO] backend_fastapi.middleware.logging_middleware: [IN] POST /api/document/upload - 127.0.0.1
+2025-07-15 22:13:29 [INFO] api.document: 开始上传文档: 龚礼盛-本科毕业论文.docx
+2025-07-15 22:13:29 [INFO] utils.redis_client: 文档存储成功: 4402b2dc-bac1-45e1-a44d-6aad07c52ecb, 大小: 4507536 bytes
+2025-07-15 22:13:29 [INFO] api.document: 文档上传成功: 龚礼盛-本科毕业论文.docx, ID: 4402b2dc-bac1-45e1-a44d-6aad07c52ecb
+2025-07-15 22:13:29 [INFO] backend_fastapi.middleware.logging_middleware: [OUT] POST /api/document/upload - 200 - 0.1717s - 127.0.0.1
+2025-07-16 10:45:17 [INFO] utils.redis_init: 正在关闭Redis连接...
+2025-07-16 10:45:17 [INFO] utils.redis_client: Redis连接已断开
+2025-07-16 10:45:17 [INFO] utils.redis_init: Redis连接已关闭
+2025-07-16 10:45:18 [INFO] utils.redis_init: 正在初始化Redis连接...
+2025-07-16 10:45:18 [INFO] utils.redis_client: Redis连接成功
+2025-07-16 10:45:18 [INFO] utils.redis_init: Redis连接初始化成功
+2025-07-16 10:57:06 [INFO] utils.redis_init: 正在关闭Redis连接...
+2025-07-16 10:57:06 [INFO] utils.redis_client: Redis连接已断开
+2025-07-16 10:57:06 [INFO] utils.redis_init: Redis连接已关闭
+2025-07-16 10:57:07 [INFO] utils.redis_init: 正在初始化Redis连接...
+2025-07-16 10:57:07 [INFO] utils.redis_client: Redis连接成功
+2025-07-16 10:57:07 [INFO] utils.redis_init: Redis连接初始化成功
+2025-07-16 10:58:00 [INFO] utils.redis_init: 正在关闭Redis连接...
+2025-07-16 10:58:00 [INFO] utils.redis_client: Redis连接已断开
+2025-07-16 10:58:00 [INFO] utils.redis_init: Redis连接已关闭
+2025-07-16 10:58:01 [INFO] utils.redis_init: 正在初始化Redis连接...
+2025-07-16 10:58:01 [INFO] utils.redis_client: Redis连接成功
+2025-07-16 10:58:01 [INFO] utils.redis_init: Redis连接初始化成功
+2025-07-16 10:58:49 [INFO] utils.redis_init: 正在关闭Redis连接...
+2025-07-16 10:58:49 [INFO] utils.redis_client: Redis连接已断开
+2025-07-16 10:58:49 [INFO] utils.redis_init: Redis连接已关闭
+2025-07-16 10:58:50 [INFO] utils.redis_init: 正在初始化Redis连接...
+2025-07-16 10:58:50 [INFO] utils.redis_client: Redis连接成功
+2025-07-16 10:58:50 [INFO] utils.redis_init: Redis连接初始化成功
+2025-07-16 10:59:08 [INFO] utils.redis_init: 正在关闭Redis连接...
+2025-07-16 10:59:08 [INFO] utils.redis_client: Redis连接已断开
+2025-07-16 10:59:08 [INFO] utils.redis_init: Redis连接已关闭
+2025-07-16 10:59:09 [INFO] utils.redis_init: 正在初始化Redis连接...
+2025-07-16 10:59:09 [INFO] utils.redis_client: Redis连接成功
+2025-07-16 10:59:09 [INFO] utils.redis_init: Redis连接初始化成功
+2025-07-16 10:59:26 [INFO] utils.redis_init: 正在关闭Redis连接...
+2025-07-16 10:59:26 [INFO] utils.redis_client: Redis连接已断开
+2025-07-16 10:59:26 [INFO] utils.redis_init: Redis连接已关闭
+2025-07-16 10:59:27 [INFO] utils.redis_init: 正在初始化Redis连接...
+2025-07-16 10:59:27 [INFO] utils.redis_client: Redis连接成功
+2025-07-16 10:59:27 [INFO] utils.redis_init: Redis连接初始化成功
+2025-07-16 11:02:11 [INFO] utils.redis_init: 正在关闭Redis连接...
+2025-07-16 11:02:11 [INFO] utils.redis_client: Redis连接已断开
+2025-07-16 11:02:11 [INFO] utils.redis_init: Redis连接已关闭
+2025-07-16 11:02:12 [INFO] utils.redis_init: 正在初始化Redis连接...
+2025-07-16 11:02:12 [INFO] utils.redis_client: Redis连接成功
+2025-07-16 11:02:12 [INFO] utils.redis_init: Redis连接初始化成功
+2025-07-16 11:02:25 [INFO] utils.redis_init: 正在关闭Redis连接...
+2025-07-16 11:02:25 [INFO] utils.redis_client: Redis连接已断开
+2025-07-16 11:02:25 [INFO] utils.redis_init: Redis连接已关闭
+2025-07-16 11:02:25 [INFO] utils.redis_init: 正在初始化Redis连接...
+2025-07-16 11:02:25 [INFO] utils.redis_client: Redis连接成功
+2025-07-16 11:02:25 [INFO] utils.redis_init: Redis连接初始化成功
+2025-07-16 11:03:07 [INFO] utils.redis_init: 正在关闭Redis连接...
+2025-07-16 11:03:07 [INFO] utils.redis_client: Redis连接已断开
+2025-07-16 11:03:07 [INFO] utils.redis_init: Redis连接已关闭
+2025-07-16 11:03:08 [INFO] utils.redis_init: 正在初始化Redis连接...
+2025-07-16 11:03:08 [INFO] utils.redis_client: Redis连接成功
+2025-07-16 11:03:08 [INFO] utils.redis_init: Redis连接初始化成功
+2025-07-16 11:04:01 [INFO] utils.redis_init: 正在关闭Redis连接...
+2025-07-16 11:04:01 [INFO] utils.redis_client: Redis连接已断开
+2025-07-16 11:04:01 [INFO] utils.redis_init: Redis连接已关闭
+2025-07-16 11:04:02 [INFO] utils.redis_init: 正在初始化Redis连接...
+2025-07-16 11:04:02 [INFO] utils.redis_client: Redis连接成功
+2025-07-16 11:04:02 [INFO] utils.redis_init: Redis连接初始化成功
+2025-07-16 11:04:39 [INFO] utils.redis_init: 正在关闭Redis连接...
+2025-07-16 11:04:39 [INFO] utils.redis_client: Redis连接已断开
+2025-07-16 11:04:39 [INFO] utils.redis_init: Redis连接已关闭
+2025-07-16 11:04:40 [INFO] utils.redis_init: 正在初始化Redis连接...
+2025-07-16 11:04:40 [INFO] utils.redis_client: Redis连接成功
+2025-07-16 11:04:40 [INFO] utils.redis_init: Redis连接初始化成功
+2025-07-16 11:04:49 [INFO] utils.redis_init: 正在关闭Redis连接...
+2025-07-16 11:04:49 [INFO] utils.redis_client: Redis连接已断开
+2025-07-16 11:04:49 [INFO] utils.redis_init: Redis连接已关闭
+2025-07-16 11:04:50 [INFO] utils.redis_init: 正在初始化Redis连接...
+2025-07-16 11:04:50 [INFO] utils.redis_client: Redis连接成功
+2025-07-16 11:04:50 [INFO] utils.redis_init: Redis连接初始化成功
+2025-07-16 11:05:03 [INFO] utils.redis_init: 正在关闭Redis连接...
+2025-07-16 11:05:03 [INFO] utils.redis_client: Redis连接已断开
+2025-07-16 11:05:03 [INFO] utils.redis_init: Redis连接已关闭
+2025-07-16 11:05:04 [INFO] utils.redis_init: 正在初始化Redis连接...
+2025-07-16 11:05:04 [INFO] utils.redis_client: Redis连接成功
+2025-07-16 11:05:04 [INFO] utils.redis_init: Redis连接初始化成功
+2025-07-16 11:05:45 [INFO] utils.redis_init: 正在关闭Redis连接...
+2025-07-16 11:05:45 [INFO] utils.redis_client: Redis连接已断开
+2025-07-16 11:05:45 [INFO] utils.redis_init: Redis连接已关闭
+2025-07-16 11:05:46 [INFO] utils.redis_init: 正在初始化Redis连接...
+2025-07-16 11:05:46 [INFO] utils.redis_client: Redis连接成功
+2025-07-16 11:05:46 [INFO] utils.redis_init: Redis连接初始化成功
+2025-07-16 11:11:05 [INFO] utils.redis_init: 正在关闭Redis连接...
+2025-07-16 11:11:05 [INFO] utils.redis_client: Redis连接已断开
+2025-07-16 11:11:05 [INFO] utils.redis_init: Redis连接已关闭
+2025-07-16 11:11:06 [INFO] utils.redis_init: 正在初始化Redis连接...
+2025-07-16 11:11:06 [INFO] utils.redis_client: Redis连接成功
+2025-07-16 11:11:06 [INFO] utils.redis_init: Redis连接初始化成功
+2025-07-16 11:11:17 [INFO] utils.redis_init: 正在关闭Redis连接...
+2025-07-16 11:11:17 [INFO] utils.redis_client: Redis连接已断开
+2025-07-16 11:11:17 [INFO] utils.redis_init: Redis连接已关闭
+2025-07-16 11:11:17 [INFO] utils.redis_init: 正在初始化Redis连接...
+2025-07-16 11:11:17 [INFO] utils.redis_client: Redis连接成功
+2025-07-16 11:11:17 [INFO] utils.redis_init: Redis连接初始化成功
+2025-07-16 11:14:43 [INFO] backend_fastapi.middleware.logging_middleware: [IN] POST /api/document/upload - 127.0.0.1
+2025-07-16 11:14:43 [INFO] api.document: 开始上传文档: 龚礼盛-本科毕业论文.docx
+2025-07-16 11:14:43 [INFO] utils.redis_client: 文档存储成功: 96707ab9-a77c-4a40-9ecd-93499e61f51e, 大小: 4507536 bytes
+2025-07-16 11:14:43 [INFO] api.document: 文档上传成功: 龚礼盛-本科毕业论文.docx, ID: 96707ab9-a77c-4a40-9ecd-93499e61f51e
+2025-07-16 11:14:43 [INFO] backend_fastapi.middleware.logging_middleware: [OUT] POST /api/document/upload - 200 - 0.1285s - 127.0.0.1
+2025-07-16 11:14:58 [INFO] backend_fastapi.middleware.logging_middleware: [IN] POST /api/document/process/96707ab9-a77c-4a40-9ecd-93499e61f51e - 127.0.0.1
+2025-07-16 11:14:58 [INFO] api.document: 开始处理文档: 96707ab9-a77c-4a40-9ecd-93499e61f51e
+2025-07-16 11:14:58 [INFO] utils.redis_client: 文档存储成功: 96707ab9-a77c-4a40-9ecd-93499e61f51e, 大小: 4507538 bytes
+2025-07-16 11:14:58 [INFO] api.document: 转换文档为Markdown: 96707ab9-a77c-4a40-9ecd-93499e61f51e
+2025-07-16 11:14:59 [INFO] api.document: 提取文档图片: 96707ab9-a77c-4a40-9ecd-93499e61f51e
+2025-07-16 11:14:59 [INFO] api.document: 提取到 19 张图片
+2025-07-16 11:14:59 [INFO] api.document: 转换为结构化数据: 96707ab9-a77c-4a40-9ecd-93499e61f51e
+2025-07-16 11:14:59 [INFO] utils.redis_client: 文档存储成功: 96707ab9-a77c-4a40-9ecd-93499e61f51e, 大小: 9011155 bytes
+2025-07-16 11:14:59 [INFO] api.document: 文档处理完成: 96707ab9-a77c-4a40-9ecd-93499e61f51e
+2025-07-16 11:14:59 [INFO] backend_fastapi.middleware.logging_middleware: [OUT] POST /api/document/process/96707ab9-a77c-4a40-9ecd-93499e61f51e - 200 - 0.4978s - 127.0.0.1
+2025-07-16 11:15:26 [INFO] backend_fastapi.middleware.logging_middleware: [IN] POST /api/document/process/96707ab9-a77c-4a40-9ecd-93499e61f51e - 127.0.0.1
+2025-07-16 11:15:26 [INFO] api.document: 开始处理文档: 96707ab9-a77c-4a40-9ecd-93499e61f51e
+2025-07-16 11:15:26 [INFO] utils.redis_client: 文档存储成功: 96707ab9-a77c-4a40-9ecd-93499e61f51e, 大小: 9011156 bytes
+2025-07-16 11:15:26 [INFO] api.document: 转换文档为Markdown: 96707ab9-a77c-4a40-9ecd-93499e61f51e
+2025-07-16 11:15:26 [INFO] api.document: 提取文档图片: 96707ab9-a77c-4a40-9ecd-93499e61f51e
+2025-07-16 11:15:26 [INFO] api.document: 提取到 19 张图片
+2025-07-16 11:15:26 [INFO] api.document: 转换为结构化数据: 96707ab9-a77c-4a40-9ecd-93499e61f51e
+2025-07-16 11:15:26 [INFO] utils.redis_client: 文档存储成功: 96707ab9-a77c-4a40-9ecd-93499e61f51e, 大小: 9011155 bytes
+2025-07-16 11:15:26 [INFO] api.document: 文档处理完成: 96707ab9-a77c-4a40-9ecd-93499e61f51e
+2025-07-16 11:15:26 [INFO] backend_fastapi.middleware.logging_middleware: [OUT] POST /api/document/process/96707ab9-a77c-4a40-9ecd-93499e61f51e - 200 - 0.5355s - 127.0.0.1
+2025-07-16 11:15:36 [INFO] backend_fastapi.middleware.logging_middleware: [IN] POST /api/document/process/96707ab9-a77c-4a40-9ecd-93499e61f51e - 127.0.0.1
+2025-07-16 11:15:36 [INFO] api.document: 开始处理文档: 96707ab9-a77c-4a40-9ecd-93499e61f51e
+2025-07-16 11:15:36 [INFO] utils.redis_client: 文档存储成功: 96707ab9-a77c-4a40-9ecd-93499e61f51e, 大小: 9011156 bytes
+2025-07-16 11:15:36 [INFO] api.document: 转换文档为Markdown: 96707ab9-a77c-4a40-9ecd-93499e61f51e
+2025-07-16 11:15:36 [INFO] api.document: 提取文档图片: 96707ab9-a77c-4a40-9ecd-93499e61f51e
+2025-07-16 11:15:36 [INFO] api.document: 提取到 19 张图片
+2025-07-16 11:15:36 [INFO] api.document: 转换为结构化数据: 96707ab9-a77c-4a40-9ecd-93499e61f51e
+2025-07-16 11:15:36 [INFO] utils.redis_client: 文档存储成功: 96707ab9-a77c-4a40-9ecd-93499e61f51e, 大小: 9011155 bytes
+2025-07-16 11:15:36 [INFO] api.document: 文档处理完成: 96707ab9-a77c-4a40-9ecd-93499e61f51e
+2025-07-16 11:15:36 [INFO] backend_fastapi.middleware.logging_middleware: [OUT] POST /api/document/process/96707ab9-a77c-4a40-9ecd-93499e61f51e - 200 - 0.5851s - 127.0.0.1
+2025-07-16 11:15:45 [INFO] backend_fastapi.middleware.logging_middleware: [IN] POST /api/document/process/96707ab9-a77c-4a40-9ecd-93499e61f51e - 127.0.0.1
+2025-07-16 11:15:45 [INFO] api.document: 开始处理文档: 96707ab9-a77c-4a40-9ecd-93499e61f51e
+2025-07-16 11:15:46 [INFO] utils.redis_client: 文档存储成功: 96707ab9-a77c-4a40-9ecd-93499e61f51e, 大小: 9011156 bytes
+2025-07-16 11:15:46 [INFO] api.document: 转换文档为Markdown: 96707ab9-a77c-4a40-9ecd-93499e61f51e
+2025-07-16 11:15:46 [INFO] api.document: 提取文档图片: 96707ab9-a77c-4a40-9ecd-93499e61f51e
+2025-07-16 11:15:46 [INFO] api.document: 提取到 19 张图片
+2025-07-16 11:15:46 [INFO] api.document: 转换为结构化数据: 96707ab9-a77c-4a40-9ecd-93499e61f51e
+2025-07-16 11:15:46 [INFO] utils.redis_client: 文档存储成功: 96707ab9-a77c-4a40-9ecd-93499e61f51e, 大小: 9011155 bytes
+2025-07-16 11:15:46 [INFO] api.document: 文档处理完成: 96707ab9-a77c-4a40-9ecd-93499e61f51e
+2025-07-16 11:15:46 [INFO] backend_fastapi.middleware.logging_middleware: [OUT] POST /api/document/process/96707ab9-a77c-4a40-9ecd-93499e61f51e - 200 - 0.4757s - 127.0.0.1
+2025-07-16 11:16:45 [INFO] utils.redis_init: 正在关闭Redis连接...
+2025-07-16 11:16:45 [INFO] utils.redis_client: Redis连接已断开
+2025-07-16 11:16:45 [INFO] utils.redis_init: Redis连接已关闭
+2025-07-16 11:16:53 [INFO] utils.redis_init: 正在初始化Redis连接...
+2025-07-16 11:16:53 [INFO] utils.redis_client: Redis连接成功
+2025-07-16 11:16:53 [INFO] utils.redis_init: Redis连接初始化成功
+2025-07-16 11:17:42 [INFO] backend_fastapi.middleware.logging_middleware: [IN] POST /api/document/process/96707ab9-a77c-4a40-9ecd-93499e61f51e - 127.0.0.1
+2025-07-16 11:17:42 [INFO] api.document: 开始处理文档: 96707ab9-a77c-4a40-9ecd-93499e61f51e
+2025-07-16 11:17:42 [INFO] utils.redis_client: 文档存储成功: 96707ab9-a77c-4a40-9ecd-93499e61f51e, 大小: 9011156 bytes
+2025-07-16 11:17:42 [INFO] api.document: 转换文档为Markdown: 96707ab9-a77c-4a40-9ecd-93499e61f51e
+2025-07-16 11:17:42 [INFO] api.document: 提取文档图片: 96707ab9-a77c-4a40-9ecd-93499e61f51e
+2025-07-16 11:17:42 [INFO] api.document: 提取到 19 张图片
+2025-07-16 11:17:42 [INFO] api.document: 转换为结构化数据: 96707ab9-a77c-4a40-9ecd-93499e61f51e
+2025-07-16 11:17:42 [INFO] utils.redis_client: 文档存储成功: 96707ab9-a77c-4a40-9ecd-93499e61f51e, 大小: 9011155 bytes
+2025-07-16 11:17:42 [INFO] api.document: 文档处理完成: 96707ab9-a77c-4a40-9ecd-93499e61f51e
+2025-07-16 11:17:42 [INFO] backend_fastapi.middleware.logging_middleware: [OUT] POST /api/document/process/96707ab9-a77c-4a40-9ecd-93499e61f51e - 200 - 0.6464s - 127.0.0.1
+2025-07-16 11:18:36 [INFO] backend_fastapi.middleware.logging_middleware: [IN] POST /api/document/process/96707ab9-a77c-4a40-9ecd-93499e61f51e - 127.0.0.1
+2025-07-16 11:18:36 [INFO] api.document: 开始处理文档: 96707ab9-a77c-4a40-9ecd-93499e61f51e
+2025-07-16 11:18:36 [INFO] utils.redis_client: 文档存储成功: 96707ab9-a77c-4a40-9ecd-93499e61f51e, 大小: 9011156 bytes
+2025-07-16 11:18:36 [INFO] api.document: 转换文档为Markdown: 96707ab9-a77c-4a40-9ecd-93499e61f51e
+2025-07-16 11:18:36 [INFO] api.document: 提取文档图片: 96707ab9-a77c-4a40-9ecd-93499e61f51e
+2025-07-16 11:18:36 [INFO] api.document: 提取到 19 张图片
+2025-07-16 11:18:36 [INFO] api.document: 转换为结构化数据: 96707ab9-a77c-4a40-9ecd-93499e61f51e
+2025-07-16 11:18:36 [INFO] utils.redis_client: 文档存储成功: 96707ab9-a77c-4a40-9ecd-93499e61f51e, 大小: 9011155 bytes
+2025-07-16 11:18:36 [INFO] api.document: 文档处理完成: 96707ab9-a77c-4a40-9ecd-93499e61f51e
+2025-07-16 11:18:36 [INFO] backend_fastapi.middleware.logging_middleware: [OUT] POST /api/document/process/96707ab9-a77c-4a40-9ecd-93499e61f51e - 200 - 0.4956s - 127.0.0.1
+2025-07-16 11:18:44 [INFO] backend_fastapi.middleware.logging_middleware: [IN] POST /api/document/process/96707ab9-a77c-4a40-9ecd-93499e61f51e - 127.0.0.1
+2025-07-16 11:18:44 [INFO] api.document: 开始处理文档: 96707ab9-a77c-4a40-9ecd-93499e61f51e
+2025-07-16 11:18:44 [INFO] utils.redis_client: 文档存储成功: 96707ab9-a77c-4a40-9ecd-93499e61f51e, 大小: 9011156 bytes
+2025-07-16 11:18:44 [INFO] api.document: 转换文档为Markdown: 96707ab9-a77c-4a40-9ecd-93499e61f51e
+2025-07-16 11:18:44 [INFO] api.document: 提取文档图片: 96707ab9-a77c-4a40-9ecd-93499e61f51e
+2025-07-16 11:18:44 [INFO] api.document: 提取到 19 张图片
+2025-07-16 11:18:44 [INFO] api.document: 转换为结构化数据: 96707ab9-a77c-4a40-9ecd-93499e61f51e
+2025-07-16 11:18:44 [INFO] utils.redis_client: 文档存储成功: 96707ab9-a77c-4a40-9ecd-93499e61f51e, 大小: 9011155 bytes
+2025-07-16 11:18:44 [INFO] api.document: 文档处理完成: 96707ab9-a77c-4a40-9ecd-93499e61f51e
+2025-07-16 11:18:44 [INFO] backend_fastapi.middleware.logging_middleware: [OUT] POST /api/document/process/96707ab9-a77c-4a40-9ecd-93499e61f51e - 200 - 0.4992s - 127.0.0.1
+2025-07-16 11:28:32 [INFO] utils.redis_init: 正在关闭Redis连接...
+2025-07-16 11:28:32 [INFO] utils.redis_client: Redis连接已断开
+2025-07-16 11:28:32 [INFO] utils.redis_init: Redis连接已关闭
+2025-07-16 11:28:33 [INFO] utils.redis_init: 正在初始化Redis连接...
+2025-07-16 11:28:33 [INFO] utils.redis_client: Redis连接成功
+2025-07-16 11:28:33 [INFO] utils.redis_init: Redis连接初始化成功
+2025-07-16 11:29:56 [INFO] utils.redis_init: 正在关闭Redis连接...
+2025-07-16 11:29:56 [INFO] utils.redis_client: Redis连接已断开
+2025-07-16 11:29:56 [INFO] utils.redis_init: Redis连接已关闭
+2025-07-16 11:29:57 [INFO] utils.redis_init: 正在初始化Redis连接...
+2025-07-16 11:29:57 [INFO] utils.redis_client: Redis连接成功
+2025-07-16 11:29:57 [INFO] utils.redis_init: Redis连接初始化成功
+2025-07-16 11:31:54 [INFO] utils.redis_init: 正在关闭Redis连接...
+2025-07-16 11:31:54 [INFO] utils.redis_client: Redis连接已断开
+2025-07-16 11:31:54 [INFO] utils.redis_init: Redis连接已关闭
+2025-07-16 11:31:55 [INFO] utils.redis_init: 正在初始化Redis连接...
+2025-07-16 11:31:56 [INFO] utils.redis_client: Redis连接成功
+2025-07-16 11:31:56 [INFO] utils.redis_init: Redis连接初始化成功
+2025-07-16 11:36:21 [INFO] utils.redis_init: 正在关闭Redis连接...
+2025-07-16 11:36:21 [INFO] utils.redis_client: Redis连接已断开
+2025-07-16 11:36:21 [INFO] utils.redis_init: Redis连接已关闭
+2025-07-16 11:36:23 [INFO] utils.redis_init: 正在初始化Redis连接...
+2025-07-16 11:36:23 [INFO] utils.redis_client: Redis连接成功
+2025-07-16 11:36:23 [INFO] utils.redis_init: Redis连接初始化成功
+2025-07-16 11:48:39 [INFO] utils.redis_init: 正在关闭Redis连接...
+2025-07-16 11:48:39 [INFO] utils.redis_client: Redis连接已断开
+2025-07-16 11:48:39 [INFO] utils.redis_init: Redis连接已关闭
+2025-07-16 11:48:40 [INFO] utils.redis_init: 正在初始化Redis连接...
+2025-07-16 11:48:40 [INFO] utils.redis_client: Redis连接成功
+2025-07-16 11:48:40 [INFO] utils.redis_init: Redis连接初始化成功
+2025-07-16 11:49:56 [INFO] utils.redis_init: 正在关闭Redis连接...
+2025-07-16 11:49:56 [INFO] utils.redis_client: Redis连接已断开
+2025-07-16 11:49:56 [INFO] utils.redis_init: Redis连接已关闭
+2025-07-16 11:49:57 [INFO] utils.redis_init: 正在初始化Redis连接...
+2025-07-16 11:49:57 [INFO] utils.redis_client: Redis连接成功
+2025-07-16 11:49:57 [INFO] utils.redis_init: Redis连接初始化成功
+2025-07-16 11:56:22 [INFO] utils.redis_init: 正在关闭Redis连接...
+2025-07-16 11:56:22 [INFO] utils.redis_client: Redis连接已断开
+2025-07-16 11:56:22 [INFO] utils.redis_init: Redis连接已关闭
+2025-07-16 11:56:23 [INFO] utils.redis_init: 正在初始化Redis连接...
+2025-07-16 11:56:23 [INFO] utils.redis_client: Redis连接成功
+2025-07-16 11:56:23 [INFO] utils.redis_init: Redis连接初始化成功
+2025-07-16 11:58:06 [INFO] utils.redis_init: 正在关闭Redis连接...
+2025-07-16 11:58:06 [INFO] utils.redis_client: Redis连接已断开
+2025-07-16 11:58:06 [INFO] utils.redis_init: Redis连接已关闭
+2025-07-16 11:58:06 [INFO] utils.redis_init: 正在初始化Redis连接...
+2025-07-16 11:58:06 [INFO] utils.redis_client: Redis连接成功
+2025-07-16 11:58:06 [INFO] utils.redis_init: Redis连接初始化成功
+2025-07-16 11:58:26 [INFO] utils.redis_init: 正在关闭Redis连接...
+2025-07-16 11:58:26 [INFO] utils.redis_client: Redis连接已断开
+2025-07-16 11:58:26 [INFO] utils.redis_init: Redis连接已关闭
+2025-07-16 11:58:27 [INFO] utils.redis_init: 正在初始化Redis连接...
+2025-07-16 11:58:27 [INFO] utils.redis_client: Redis连接成功
+2025-07-16 11:58:27 [INFO] utils.redis_init: Redis连接初始化成功
+2025-07-16 11:58:48 [INFO] utils.redis_init: 正在关闭Redis连接...
+2025-07-16 11:58:48 [INFO] utils.redis_client: Redis连接已断开
+2025-07-16 11:58:48 [INFO] utils.redis_init: Redis连接已关闭
+2025-07-16 11:58:49 [INFO] utils.redis_init: 正在初始化Redis连接...
+2025-07-16 11:58:49 [INFO] utils.redis_client: Redis连接成功
+2025-07-16 11:58:49 [INFO] utils.redis_init: Redis连接初始化成功
+2025-07-16 11:59:12 [INFO] utils.redis_init: 正在关闭Redis连接...
+2025-07-16 11:59:12 [INFO] utils.redis_client: Redis连接已断开
+2025-07-16 11:59:12 [INFO] utils.redis_init: Redis连接已关闭
+2025-07-16 11:59:12 [INFO] utils.redis_init: 正在初始化Redis连接...
+2025-07-16 11:59:12 [INFO] utils.redis_client: Redis连接成功
+2025-07-16 11:59:12 [INFO] utils.redis_init: Redis连接初始化成功
+2025-07-16 11:59:37 [INFO] utils.redis_init: 正在关闭Redis连接...
+2025-07-16 11:59:37 [INFO] utils.redis_client: Redis连接已断开
+2025-07-16 11:59:37 [INFO] utils.redis_init: Redis连接已关闭
+2025-07-16 11:59:38 [INFO] utils.redis_init: 正在初始化Redis连接...
+2025-07-16 11:59:38 [INFO] utils.redis_client: Redis连接成功
+2025-07-16 11:59:38 [INFO] utils.redis_init: Redis连接初始化成功
+2025-07-16 12:00:02 [INFO] utils.redis_init: 正在关闭Redis连接...
+2025-07-16 12:00:02 [INFO] utils.redis_client: Redis连接已断开
+2025-07-16 12:00:02 [INFO] utils.redis_init: Redis连接已关闭
+2025-07-16 12:00:03 [INFO] utils.redis_init: 正在初始化Redis连接...
+2025-07-16 12:00:03 [INFO] utils.redis_client: Redis连接成功
+2025-07-16 12:00:03 [INFO] utils.redis_init: Redis连接初始化成功
+2025-07-16 12:00:17 [INFO] utils.redis_init: 正在关闭Redis连接...
+2025-07-16 12:00:17 [INFO] utils.redis_client: Redis连接已断开
+2025-07-16 12:00:17 [INFO] utils.redis_init: Redis连接已关闭
+2025-07-16 12:00:17 [INFO] utils.redis_init: 正在初始化Redis连接...
+2025-07-16 12:00:17 [INFO] utils.redis_client: Redis连接成功
+2025-07-16 12:00:17 [INFO] utils.redis_init: Redis连接初始化成功
+2025-07-16 12:00:30 [INFO] utils.redis_init: 正在关闭Redis连接...
+2025-07-16 12:00:30 [INFO] utils.redis_client: Redis连接已断开
+2025-07-16 12:00:30 [INFO] utils.redis_init: Redis连接已关闭
+2025-07-16 12:00:31 [INFO] utils.redis_init: 正在初始化Redis连接...
+2025-07-16 12:00:31 [INFO] utils.redis_client: Redis连接成功
+2025-07-16 12:00:31 [INFO] utils.redis_init: Redis连接初始化成功
+2025-07-16 12:01:54 [INFO] utils.redis_init: 正在关闭Redis连接...
+2025-07-16 12:01:54 [INFO] utils.redis_client: Redis连接已断开
+2025-07-16 12:01:54 [INFO] utils.redis_init: Redis连接已关闭
+2025-07-16 12:01:55 [INFO] utils.redis_init: 正在初始化Redis连接...
+2025-07-16 12:01:55 [INFO] utils.redis_client: Redis连接成功
+2025-07-16 12:01:55 [INFO] utils.redis_init: Redis连接初始化成功
+2025-07-16 13:13:22 [INFO] utils.redis_init: 正在关闭Redis连接...
+2025-07-16 13:13:22 [INFO] utils.redis_client: Redis连接已断开
+2025-07-16 13:13:22 [INFO] utils.redis_init: Redis连接已关闭
+2025-07-16 13:13:23 [INFO] utils.redis_init: 正在初始化Redis连接...
+2025-07-16 13:13:23 [INFO] utils.redis_client: Redis连接成功
+2025-07-16 13:13:23 [INFO] utils.redis_init: Redis连接初始化成功
+2025-07-16 13:14:11 [INFO] utils.redis_init: 正在关闭Redis连接...
+2025-07-16 13:14:11 [INFO] utils.redis_client: Redis连接已断开
+2025-07-16 13:14:11 [INFO] utils.redis_init: Redis连接已关闭
+2025-07-16 13:14:12 [INFO] utils.redis_init: 正在初始化Redis连接...
+2025-07-16 13:14:12 [INFO] utils.redis_client: Redis连接成功
+2025-07-16 13:14:12 [INFO] utils.redis_init: Redis连接初始化成功
+2025-07-16 13:20:45 [INFO] utils.redis_init: 正在关闭Redis连接...
+2025-07-16 13:20:45 [INFO] utils.redis_client: Redis连接已断开
+2025-07-16 13:20:45 [INFO] utils.redis_init: Redis连接已关闭
+2025-07-16 13:20:46 [INFO] utils.redis_init: 正在初始化Redis连接...
+2025-07-16 13:20:46 [INFO] utils.redis_client: Redis连接成功
+2025-07-16 13:20:46 [INFO] utils.redis_init: Redis连接初始化成功
+2025-07-16 13:21:14 [INFO] utils.redis_init: 正在关闭Redis连接...
+2025-07-16 13:21:15 [INFO] utils.redis_client: Redis连接已断开
+2025-07-16 13:21:15 [INFO] utils.redis_init: Redis连接已关闭
+2025-07-16 13:21:15 [INFO] utils.redis_init: 正在初始化Redis连接...
+2025-07-16 13:21:15 [INFO] utils.redis_client: Redis连接成功
+2025-07-16 13:21:15 [INFO] utils.redis_init: Redis连接初始化成功
+2025-07-16 13:23:38 [INFO] utils.redis_init: 正在关闭Redis连接...
+2025-07-16 13:23:38 [INFO] utils.redis_client: Redis连接已断开
+2025-07-16 13:23:38 [INFO] utils.redis_init: Redis连接已关闭
+2025-07-16 13:23:39 [INFO] utils.redis_init: 正在初始化Redis连接...
+2025-07-16 13:23:39 [INFO] utils.redis_client: Redis连接成功
+2025-07-16 13:23:39 [INFO] utils.redis_init: Redis连接初始化成功
+2025-07-16 13:24:07 [INFO] utils.redis_init: 正在关闭Redis连接...
+2025-07-16 13:24:07 [INFO] utils.redis_client: Redis连接已断开
+2025-07-16 13:24:07 [INFO] utils.redis_init: Redis连接已关闭
+2025-07-16 13:24:08 [INFO] utils.redis_init: 正在初始化Redis连接...
+2025-07-16 13:24:08 [INFO] utils.redis_client: Redis连接成功
+2025-07-16 13:24:08 [INFO] utils.redis_init: Redis连接初始化成功
+2025-07-16 13:24:42 [INFO] utils.redis_init: 正在关闭Redis连接...
+2025-07-16 13:24:42 [INFO] utils.redis_client: Redis连接已断开
+2025-07-16 13:24:42 [INFO] utils.redis_init: Redis连接已关闭
+2025-07-16 13:24:51 [INFO] utils.redis_init: 正在初始化Redis连接...
+2025-07-16 13:24:51 [INFO] utils.redis_client: Redis连接成功
+2025-07-16 13:24:51 [INFO] utils.redis_init: Redis连接初始化成功
+2025-07-16 13:25:23 [INFO] utils.redis_init: 正在关闭Redis连接...
+2025-07-16 13:25:23 [INFO] utils.redis_client: Redis连接已断开
+2025-07-16 13:25:23 [INFO] utils.redis_init: Redis连接已关闭
+2025-07-16 13:25:24 [INFO] utils.redis_init: 正在初始化Redis连接...
+2025-07-16 13:25:24 [INFO] utils.redis_client: Redis连接成功
+2025-07-16 13:25:24 [INFO] utils.redis_init: Redis连接初始化成功
+2025-07-16 13:35:35 [INFO] utils.redis_init: 正在关闭Redis连接...
+2025-07-16 13:35:35 [INFO] utils.redis_client: Redis连接已断开
+2025-07-16 13:35:35 [INFO] utils.redis_init: Redis连接已关闭
+2025-07-16 13:35:36 [INFO] utils.redis_init: 正在初始化Redis连接...
+2025-07-16 13:35:36 [INFO] utils.redis_client: Redis连接成功
+2025-07-16 13:35:36 [INFO] utils.redis_init: Redis连接初始化成功
+2025-07-16 13:35:56 [INFO] utils.redis_init: 正在关闭Redis连接...
+2025-07-16 13:35:56 [INFO] utils.redis_client: Redis连接已断开
+2025-07-16 13:35:56 [INFO] utils.redis_init: Redis连接已关闭
+2025-07-16 13:35:57 [INFO] utils.redis_init: 正在初始化Redis连接...
+2025-07-16 13:35:57 [INFO] utils.redis_client: Redis连接成功
+2025-07-16 13:35:57 [INFO] utils.redis_init: Redis连接初始化成功
+2025-07-16 13:42:58 [INFO] utils.redis_init: 正在关闭Redis连接...
+2025-07-16 13:42:58 [INFO] utils.redis_client: Redis连接已断开
+2025-07-16 13:42:58 [INFO] utils.redis_init: Redis连接已关闭
+2025-07-16 13:42:59 [INFO] utils.redis_init: 正在初始化Redis连接...
+2025-07-16 13:42:59 [INFO] utils.redis_client: Redis连接成功
+2025-07-16 13:42:59 [INFO] utils.redis_init: Redis连接初始化成功
+2025-07-16 13:49:39 [INFO] utils.redis_init: 正在关闭Redis连接...
+2025-07-16 13:49:39 [INFO] utils.redis_client: Redis连接已断开
+2025-07-16 13:49:39 [INFO] utils.redis_init: Redis连接已关闭
+2025-07-16 13:49:40 [INFO] utils.redis_init: 正在初始化Redis连接...
+2025-07-16 13:49:40 [INFO] utils.redis_client: Redis连接成功
+2025-07-16 13:49:40 [INFO] utils.redis_init: Redis连接初始化成功
+2025-07-16 13:52:42 [INFO] utils.redis_init: 正在关闭Redis连接...
+2025-07-16 13:52:42 [INFO] utils.redis_client: Redis连接已断开
+2025-07-16 13:52:42 [INFO] utils.redis_init: Redis连接已关闭
+2025-07-16 13:52:43 [INFO] utils.redis_init: 正在初始化Redis连接...
+2025-07-16 13:52:43 [INFO] utils.redis_client: Redis连接成功
+2025-07-16 13:52:43 [INFO] utils.redis_init: Redis连接初始化成功
+2025-07-16 13:53:40 [INFO] utils.redis_init: 正在关闭Redis连接...
+2025-07-16 13:53:40 [INFO] utils.redis_client: Redis连接已断开
+2025-07-16 13:53:40 [INFO] utils.redis_init: Redis连接已关闭
+2025-07-16 20:20:53 [INFO] utils.redis_init: 正在初始化Redis连接...
+2025-07-16 20:20:53 [INFO] utils.redis_client: Redis连接成功
+2025-07-16 20:20:53 [INFO] utils.redis_init: Redis连接初始化成功
+2025-07-16 20:21:37 [INFO] utils.redis_init: 正在关闭Redis连接...
+2025-07-16 20:21:37 [INFO] utils.redis_client: Redis连接已断开
+2025-07-16 20:21:37 [INFO] utils.redis_init: Redis连接已关闭
+2025-07-16 20:21:38 [INFO] utils.redis_init: 正在初始化Redis连接...
+2025-07-16 20:21:38 [INFO] utils.redis_client: Redis连接成功
+2025-07-16 20:21:38 [INFO] utils.redis_init: Redis连接初始化成功
+2025-07-16 21:16:49 [INFO] utils.redis_init: 正在关闭Redis连接...
+2025-07-16 21:16:49 [INFO] utils.redis_client: Redis连接已断开
+2025-07-16 21:16:49 [INFO] utils.redis_init: Redis连接已关闭
+2025-07-16 21:16:51 [INFO] utils.redis_init: 正在初始化Redis连接...
+2025-07-16 21:16:51 [INFO] utils.redis_client: Redis连接成功
+2025-07-16 21:16:51 [INFO] utils.redis_init: Redis连接初始化成功
+2025-07-16 21:39:04 [INFO] utils.redis_init: 正在关闭Redis连接...
+2025-07-16 21:39:04 [INFO] utils.redis_client: Redis连接已断开
+2025-07-16 21:39:04 [INFO] utils.redis_init: Redis连接已关闭
+2025-07-16 21:39:05 [INFO] utils.redis_init: 正在初始化Redis连接...
+2025-07-16 21:39:05 [INFO] utils.redis_client: Redis连接成功
+2025-07-16 21:39:05 [INFO] utils.redis_init: Redis连接初始化成功
+2025-07-16 21:39:20 [INFO] utils.redis_init: 正在关闭Redis连接...
+2025-07-16 21:39:20 [INFO] utils.redis_client: Redis连接已断开
+2025-07-16 21:39:20 [INFO] utils.redis_init: Redis连接已关闭
+2025-07-16 21:39:21 [INFO] utils.redis_init: 正在初始化Redis连接...
+2025-07-16 21:39:21 [INFO] utils.redis_client: Redis连接成功
+2025-07-16 21:39:21 [INFO] utils.redis_init: Redis连接初始化成功
+2025-07-16 21:39:46 [INFO] utils.redis_init: 正在关闭Redis连接...
+2025-07-16 21:39:46 [INFO] utils.redis_client: Redis连接已断开
+2025-07-16 21:39:46 [INFO] utils.redis_init: Redis连接已关闭
+2025-07-16 21:39:47 [INFO] utils.redis_init: 正在初始化Redis连接...
+2025-07-16 21:39:47 [INFO] utils.redis_client: Redis连接成功
+2025-07-16 21:39:47 [INFO] utils.redis_init: Redis连接初始化成功
+2025-07-16 21:50:50 [INFO] utils.redis_init: 正在关闭Redis连接...
+2025-07-16 21:50:50 [INFO] utils.redis_client: Redis连接已断开
+2025-07-16 21:50:50 [INFO] utils.redis_init: Redis连接已关闭
+2025-07-16 21:50:51 [INFO] utils.redis_init: 正在初始化Redis连接...
+2025-07-16 21:50:51 [INFO] utils.redis_client: Redis连接成功
+2025-07-16 21:50:51 [INFO] utils.redis_init: Redis连接初始化成功
+2025-07-16 21:51:09 [INFO] utils.redis_init: 正在关闭Redis连接...
+2025-07-16 21:51:09 [INFO] utils.redis_client: Redis连接已断开
+2025-07-16 21:51:09 [INFO] utils.redis_init: Redis连接已关闭
+2025-07-16 21:51:09 [INFO] utils.redis_init: 正在初始化Redis连接...
+2025-07-16 21:51:09 [INFO] utils.redis_client: Redis连接成功
+2025-07-16 21:51:09 [INFO] utils.redis_init: Redis连接初始化成功
+2025-07-16 21:53:06 [INFO] utils.redis_init: 正在关闭Redis连接...
+2025-07-16 21:53:06 [INFO] utils.redis_client: Redis连接已断开
+2025-07-16 21:53:06 [INFO] utils.redis_init: Redis连接已关闭
+2025-07-16 21:53:06 [INFO] utils.redis_init: 正在初始化Redis连接...
+2025-07-16 21:53:06 [INFO] utils.redis_client: Redis连接成功
+2025-07-16 21:53:06 [INFO] utils.redis_init: Redis连接初始化成功
+2025-07-16 21:53:40 [INFO] utils.redis_init: 正在关闭Redis连接...
+2025-07-16 21:53:40 [INFO] utils.redis_client: Redis连接已断开
+2025-07-16 21:53:40 [INFO] utils.redis_init: Redis连接已关闭
+2025-07-16 21:53:41 [INFO] utils.redis_init: 正在初始化Redis连接...
+2025-07-16 21:53:41 [INFO] utils.redis_client: Redis连接成功
+2025-07-16 21:53:41 [INFO] utils.redis_init: Redis连接初始化成功
+2025-07-16 21:55:23 [INFO] utils.redis_init: 正在关闭Redis连接...
+2025-07-16 21:55:23 [INFO] utils.redis_client: Redis连接已断开
+2025-07-16 21:55:23 [INFO] utils.redis_init: Redis连接已关闭
+2025-07-16 21:55:24 [INFO] utils.redis_init: 正在初始化Redis连接...
+2025-07-16 21:55:24 [INFO] utils.redis_client: Redis连接成功
+2025-07-16 21:55:24 [INFO] utils.redis_init: Redis连接初始化成功
+2025-07-16 21:55:36 [INFO] utils.redis_init: 正在关闭Redis连接...
+2025-07-16 21:55:36 [INFO] utils.redis_client: Redis连接已断开
+2025-07-16 21:55:36 [INFO] utils.redis_init: Redis连接已关闭
+2025-07-16 21:55:37 [INFO] utils.redis_init: 正在初始化Redis连接...
+2025-07-16 21:55:37 [INFO] utils.redis_client: Redis连接成功
+2025-07-16 21:55:37 [INFO] utils.redis_init: Redis连接初始化成功
+2025-07-16 21:56:27 [INFO] utils.redis_init: 正在关闭Redis连接...
+2025-07-16 21:56:27 [INFO] utils.redis_client: Redis连接已断开
+2025-07-16 21:56:27 [INFO] utils.redis_init: Redis连接已关闭
+2025-07-16 21:56:28 [INFO] utils.redis_init: 正在初始化Redis连接...
+2025-07-16 21:56:28 [INFO] utils.redis_client: Redis连接成功
+2025-07-16 21:56:28 [INFO] utils.redis_init: Redis连接初始化成功
+2025-07-16 21:56:37 [INFO] utils.redis_init: 正在关闭Redis连接...
+2025-07-16 21:56:37 [INFO] utils.redis_client: Redis连接已断开
+2025-07-16 21:56:37 [INFO] utils.redis_init: Redis连接已关闭
+2025-07-16 21:56:37 [INFO] utils.redis_init: 正在初始化Redis连接...
+2025-07-16 21:56:37 [INFO] utils.redis_client: Redis连接成功
+2025-07-16 21:56:37 [INFO] utils.redis_init: Redis连接初始化成功
+2025-07-16 21:57:44 [INFO] utils.redis_init: 正在关闭Redis连接...
+2025-07-16 21:57:44 [INFO] utils.redis_client: Redis连接已断开
+2025-07-16 21:57:44 [INFO] utils.redis_init: Redis连接已关闭
+2025-07-16 21:57:45 [INFO] utils.redis_init: 正在初始化Redis连接...
+2025-07-16 21:57:45 [INFO] utils.redis_client: Redis连接成功
+2025-07-16 21:57:45 [INFO] utils.redis_init: Redis连接初始化成功
+2025-07-16 22:00:18 [INFO] utils.redis_init: 正在关闭Redis连接...
+2025-07-16 22:00:18 [INFO] utils.redis_client: Redis连接已断开
+2025-07-16 22:00:18 [INFO] utils.redis_init: Redis连接已关闭
+2025-07-16 22:00:19 [INFO] utils.redis_init: 正在初始化Redis连接...
+2025-07-16 22:00:19 [INFO] utils.redis_client: Redis连接成功
+2025-07-16 22:00:19 [INFO] utils.redis_init: Redis连接初始化成功
+2025-07-16 22:01:48 [INFO] utils.redis_init: 正在关闭Redis连接...
+2025-07-16 22:01:48 [INFO] utils.redis_client: Redis连接已断开
+2025-07-16 22:01:48 [INFO] utils.redis_init: Redis连接已关闭
+2025-07-16 22:01:49 [INFO] utils.redis_init: 正在初始化Redis连接...
+2025-07-16 22:01:49 [INFO] utils.redis_client: Redis连接成功
+2025-07-16 22:01:49 [INFO] utils.redis_init: Redis连接初始化成功
+2025-07-16 22:01:52 [INFO] backend_fastapi.middleware.logging_middleware: [IN] POST /api/document/upload - 127.0.0.1
+2025-07-16 22:01:52 [INFO] api.document: 开始上传文档: 龚礼盛-本科毕业论文.docx
+2025-07-16 22:01:52 [INFO] utils.redis_client: 文档存储成功: 20a2399d-79b1-4178-8a69-cd2bba77df57, 大小: 4507536 bytes
+2025-07-16 22:01:52 [INFO] api.document: 文档上传成功: 龚礼盛-本科毕业论文.docx, ID: 20a2399d-79b1-4178-8a69-cd2bba77df57
+2025-07-16 22:01:52 [INFO] backend_fastapi.middleware.logging_middleware: [OUT] POST /api/document/upload - 200 - 0.1184s - 127.0.0.1
+2025-07-16 22:01:52 [INFO] backend_fastapi.middleware.logging_middleware: [IN] POST /api/document/process/20a2399d-79b1-4178-8a69-cd2bba77df57 - 127.0.0.1
+2025-07-16 22:01:52 [INFO] api.document: 开始处理文档: 20a2399d-79b1-4178-8a69-cd2bba77df57
+2025-07-16 22:01:52 [INFO] utils.redis_client: 文档存储成功: 20a2399d-79b1-4178-8a69-cd2bba77df57, 大小: 4507538 bytes
+2025-07-16 22:01:52 [INFO] api.document: 转换文档为Markdown: 20a2399d-79b1-4178-8a69-cd2bba77df57
+2025-07-16 22:01:52 [INFO] api.document: 提取文档图片: 20a2399d-79b1-4178-8a69-cd2bba77df57
+2025-07-16 22:01:52 [INFO] api.document: 未找到图片标题，使用默认值: img_1
+2025-07-16 22:01:52 [INFO] api.document: 未找到图片标题，使用默认值: img_2
+2025-07-16 22:01:52 [INFO] api.document: 找到图片标题: 图1-1  越狱的一个示例 -> 图1-1__越狱的一个示例
+2025-07-16 22:01:52 [INFO] api.document: 找到图片标题: 图2-1  Transformer Decoder结构图[23] -> 图2-1__Transformer_Decoder结构图[23]
+2025-07-16 22:01:52 [INFO] api.document: 找到图片标题: 图2-2  稀疏混合专家模型基本结构 -> 图2-2__稀疏混合专家模型基本结构
+2025-07-16 22:01:52 [INFO] api.document: 找到图片标题: 图2-3  LoRA结构图 -> 图2-3__LoRA结构图
+2025-07-16 22:01:52 [INFO] api.document: 找到图片标题: 图3-1  规则过滤方法的流程图 -> 图3-1__规则过滤方法的流程图
+2025-07-16 22:01:52 [INFO] api.document: 找到图片标题: 图3-2  基于困惑度过滤方法的流程图 -> 图3-2__基于困惑度过滤方法的流程图
+2025-07-16 22:01:52 [INFO] api.document: 找到图片标题: 图3-3  LoRA微调过程中的损失变化曲线 -> 图3-3__LoRA微调过程中的损失变化曲线
+2025-07-16 22:01:52 [INFO] api.document: 找到图片标题: 图3-4  LoRA微调过程中的损失变化曲线 -> 图3-4__LoRA微调过程中的损失变化曲线
+2025-07-16 22:01:52 [INFO] api.document: 找到图片标题: 图4-1  越狱评估使用的提示词 -> 图4-1__越狱评估使用的提示词
+2025-07-16 22:01:52 [INFO] api.document: 找到图片标题: 图4-2  JailBench++_train数据集的词频统计图 -> 图4-2__JailBench++_train数据集的词频统计图
+2025-07-16 22:01:52 [INFO] api.document: 找到图片标题: 图4-3  JailBench++_train数据集的词云图 -> 图4-3__JailBench++_train数据集的词云图
+2025-07-16 22:01:52 [INFO] api.document: 找到图片标题: 图4-4  测试集中越狱提示的困惑度分布统计直方图 -> 图4-4__测试集中越狱提示的困惑度分布统计直方图
+2025-07-16 22:01:52 [INFO] api.document: 找到图片标题: 图4-5  测试集中正常提示的困惑度分布统计直方图 -> 图4-5__测试集中正常提示的困惑度分布统计直方图
+2025-07-16 22:01:52 [INFO] api.document: 找到图片标题: 图4-6  启发式过滤方法在测试集上的混淆矩阵图。(a)规则过滤, (b)情感分析, (c)整体困惑度检测，(d)滑动窗口困惑度检测 -> 图4-6__启发式过滤方法在测试集上的混淆矩阵图。(a)规则过滤,_(b)情感分析,_(c)整体困惑度检测，(d)滑动窗口困惑度检测
+2025-07-16 22:01:52 [INFO] api.document: 找到图片标题: 图4-7  零样本和梯度分析方法在测试集上的混淆矩阵图。(a)GPT3.5, (b)GPT-4, (c)Qwen2-1.5B-Instruct，(d)GradSafe -> 图4-7__零样本和梯度分析方法在测试集上的混淆矩阵图。(a)GPT3.5,_(b)GPT-4,_(c)Qwen2-1.5B-Instruct，(d)GradSafe
+2025-07-16 22:01:52 [INFO] api.document: 找到图片标题: 图4-8  LEAD在测试集上的混淆矩阵 -> 图4-8__LEAD在测试集上的混淆矩阵
+2025-07-16 22:01:52 [INFO] api.document: 找到图片标题: 图4-9  模型在微调前后的效果对比图 -> 图4-9__模型在微调前后的效果对比图
+2025-07-16 22:01:52 [INFO] api.document: 提取到 19 张图片
+2025-07-16 22:01:52 [INFO] api.document: 提取参考文献: 20a2399d-79b1-4178-8a69-cd2bba77df57
+2025-07-16 22:01:52 [INFO] api.document: 提取到 0 条参考文献
+2025-07-16 22:01:52 [INFO] api.document: 转换为结构化数据: 20a2399d-79b1-4178-8a69-cd2bba77df57
+2025-07-16 22:01:52 [INFO] utils.redis_client: 文档存储成功: 20a2399d-79b1-4178-8a69-cd2bba77df57, 大小: 9012501 bytes
+2025-07-16 22:01:52 [INFO] api.document: 文档处理完成: 20a2399d-79b1-4178-8a69-cd2bba77df57
+2025-07-16 22:01:52 [INFO] backend_fastapi.middleware.logging_middleware: [OUT] POST /api/document/process/20a2399d-79b1-4178-8a69-cd2bba77df57 - 200 - 0.5309s - 127.0.0.1
+2025-07-16 22:02:05 [INFO] backend_fastapi.middleware.logging_middleware: [IN] POST /api/document/upload - 127.0.0.1
+2025-07-16 22:02:05 [INFO] api.document: 开始上传文档: 龚礼盛-本科毕业论文.docx
+2025-07-16 22:02:05 [INFO] utils.redis_client: 文档存储成功: f4abf4e3-a43d-4e1b-94c6-c169354d6945, 大小: 4507536 bytes
+2025-07-16 22:02:05 [INFO] api.document: 文档上传成功: 龚礼盛-本科毕业论文.docx, ID: f4abf4e3-a43d-4e1b-94c6-c169354d6945
+2025-07-16 22:02:05 [INFO] backend_fastapi.middleware.logging_middleware: [OUT] POST /api/document/upload - 200 - 0.1721s - 127.0.0.1
+2025-07-16 22:02:05 [INFO] backend_fastapi.middleware.logging_middleware: [IN] POST /api/document/process/f4abf4e3-a43d-4e1b-94c6-c169354d6945 - 127.0.0.1
+2025-07-16 22:02:05 [INFO] api.document: 开始处理文档: f4abf4e3-a43d-4e1b-94c6-c169354d6945
+2025-07-16 22:02:05 [INFO] utils.redis_client: 文档存储成功: f4abf4e3-a43d-4e1b-94c6-c169354d6945, 大小: 4507538 bytes
+2025-07-16 22:02:05 [INFO] api.document: 转换文档为Markdown: f4abf4e3-a43d-4e1b-94c6-c169354d6945
+2025-07-16 22:02:05 [INFO] api.document: 提取文档图片: f4abf4e3-a43d-4e1b-94c6-c169354d6945
+2025-07-16 22:02:06 [INFO] api.document: 未找到图片标题，使用默认值: img_1
+2025-07-16 22:02:06 [INFO] api.document: 未找到图片标题，使用默认值: img_2
+2025-07-16 22:02:06 [INFO] api.document: 找到图片标题: 图1-1  越狱的一个示例 -> 图1-1__越狱的一个示例
+2025-07-16 22:02:06 [INFO] api.document: 找到图片标题: 图2-1  Transformer Decoder结构图[23] -> 图2-1__Transformer_Decoder结构图[23]
+2025-07-16 22:02:06 [INFO] api.document: 找到图片标题: 图2-2  稀疏混合专家模型基本结构 -> 图2-2__稀疏混合专家模型基本结构
+2025-07-16 22:02:06 [INFO] api.document: 找到图片标题: 图2-3  LoRA结构图 -> 图2-3__LoRA结构图
+2025-07-16 22:02:06 [INFO] api.document: 找到图片标题: 图3-1  规则过滤方法的流程图 -> 图3-1__规则过滤方法的流程图
+2025-07-16 22:02:06 [INFO] api.document: 找到图片标题: 图3-2  基于困惑度过滤方法的流程图 -> 图3-2__基于困惑度过滤方法的流程图
+2025-07-16 22:02:06 [INFO] api.document: 找到图片标题: 图3-3  LoRA微调过程中的损失变化曲线 -> 图3-3__LoRA微调过程中的损失变化曲线
+2025-07-16 22:02:06 [INFO] api.document: 找到图片标题: 图3-4  LoRA微调过程中的损失变化曲线 -> 图3-4__LoRA微调过程中的损失变化曲线
+2025-07-16 22:02:06 [INFO] api.document: 找到图片标题: 图4-1  越狱评估使用的提示词 -> 图4-1__越狱评估使用的提示词
+2025-07-16 22:02:06 [INFO] api.document: 找到图片标题: 图4-2  JailBench++_train数据集的词频统计图 -> 图4-2__JailBench++_train数据集的词频统计图
+2025-07-16 22:02:06 [INFO] api.document: 找到图片标题: 图4-3  JailBench++_train数据集的词云图 -> 图4-3__JailBench++_train数据集的词云图
+2025-07-16 22:02:06 [INFO] api.document: 找到图片标题: 图4-4  测试集中越狱提示的困惑度分布统计直方图 -> 图4-4__测试集中越狱提示的困惑度分布统计直方图
+2025-07-16 22:02:06 [INFO] api.document: 找到图片标题: 图4-5  测试集中正常提示的困惑度分布统计直方图 -> 图4-5__测试集中正常提示的困惑度分布统计直方图
+2025-07-16 22:02:06 [INFO] api.document: 找到图片标题: 图4-6  启发式过滤方法在测试集上的混淆矩阵图。(a)规则过滤, (b)情感分析, (c)整体困惑度检测，(d)滑动窗口困惑度检测 -> 图4-6__启发式过滤方法在测试集上的混淆矩阵图。(a)规则过滤,_(b)情感分析,_(c)整体困惑度检测，(d)滑动窗口困惑度检测
+2025-07-16 22:02:06 [INFO] api.document: 找到图片标题: 图4-7  零样本和梯度分析方法在测试集上的混淆矩阵图。(a)GPT3.5, (b)GPT-4, (c)Qwen2-1.5B-Instruct，(d)GradSafe -> 图4-7__零样本和梯度分析方法在测试集上的混淆矩阵图。(a)GPT3.5,_(b)GPT-4,_(c)Qwen2-1.5B-Instruct，(d)GradSafe
+2025-07-16 22:02:06 [INFO] api.document: 找到图片标题: 图4-8  LEAD在测试集上的混淆矩阵 -> 图4-8__LEAD在测试集上的混淆矩阵
+2025-07-16 22:02:06 [INFO] api.document: 找到图片标题: 图4-9  模型在微调前后的效果对比图 -> 图4-9__模型在微调前后的效果对比图
+2025-07-16 22:02:06 [INFO] api.document: 提取到 19 张图片
+2025-07-16 22:02:06 [INFO] api.document: 提取参考文献: f4abf4e3-a43d-4e1b-94c6-c169354d6945
+2025-07-16 22:02:06 [INFO] api.document: 提取到 0 条参考文献
+2025-07-16 22:02:06 [INFO] api.document: 转换为结构化数据: f4abf4e3-a43d-4e1b-94c6-c169354d6945
+2025-07-16 22:02:06 [INFO] utils.redis_client: 文档存储成功: f4abf4e3-a43d-4e1b-94c6-c169354d6945, 大小: 9012501 bytes
+2025-07-16 22:02:06 [INFO] api.document: 文档处理完成: f4abf4e3-a43d-4e1b-94c6-c169354d6945
+2025-07-16 22:02:06 [INFO] backend_fastapi.middleware.logging_middleware: [OUT] POST /api/document/process/f4abf4e3-a43d-4e1b-94c6-c169354d6945 - 200 - 0.4711s - 127.0.0.1
+2025-07-16 22:02:10 [INFO] backend_fastapi.middleware.logging_middleware: [IN] POST /api/document/upload - 127.0.0.1
+2025-07-16 22:02:10 [INFO] api.document: 开始上传文档: 龚礼盛-本科毕业论文.docx
+2025-07-16 22:02:10 [INFO] utils.redis_client: 文档存储成功: d3b1231b-f7a3-4c33-8600-13293dfc1cea, 大小: 4507536 bytes
+2025-07-16 22:02:10 [INFO] api.document: 文档上传成功: 龚礼盛-本科毕业论文.docx, ID: d3b1231b-f7a3-4c33-8600-13293dfc1cea
+2025-07-16 22:02:10 [INFO] backend_fastapi.middleware.logging_middleware: [OUT] POST /api/document/upload - 200 - 0.1091s - 127.0.0.1
+2025-07-16 22:02:10 [INFO] backend_fastapi.middleware.logging_middleware: [IN] POST /api/document/process/d3b1231b-f7a3-4c33-8600-13293dfc1cea - 127.0.0.1
+2025-07-16 22:02:10 [INFO] api.document: 开始处理文档: d3b1231b-f7a3-4c33-8600-13293dfc1cea
+2025-07-16 22:02:10 [INFO] utils.redis_client: 文档存储成功: d3b1231b-f7a3-4c33-8600-13293dfc1cea, 大小: 4507538 bytes
+2025-07-16 22:02:10 [INFO] api.document: 转换文档为Markdown: d3b1231b-f7a3-4c33-8600-13293dfc1cea
+2025-07-16 22:02:11 [INFO] api.document: 提取文档图片: d3b1231b-f7a3-4c33-8600-13293dfc1cea
+2025-07-16 22:02:11 [INFO] api.document: 未找到图片标题，使用默认值: img_1
+2025-07-16 22:02:11 [INFO] api.document: 未找到图片标题，使用默认值: img_2
+2025-07-16 22:02:11 [INFO] api.document: 找到图片标题: 图1-1  越狱的一个示例 -> 图1-1__越狱的一个示例
+2025-07-16 22:02:11 [INFO] api.document: 找到图片标题: 图2-1  Transformer Decoder结构图[23] -> 图2-1__Transformer_Decoder结构图[23]
+2025-07-16 22:02:11 [INFO] api.document: 找到图片标题: 图2-2  稀疏混合专家模型基本结构 -> 图2-2__稀疏混合专家模型基本结构
+2025-07-16 22:02:11 [INFO] api.document: 找到图片标题: 图2-3  LoRA结构图 -> 图2-3__LoRA结构图
+2025-07-16 22:02:11 [INFO] api.document: 找到图片标题: 图3-1  规则过滤方法的流程图 -> 图3-1__规则过滤方法的流程图
+2025-07-16 22:02:11 [INFO] api.document: 找到图片标题: 图3-2  基于困惑度过滤方法的流程图 -> 图3-2__基于困惑度过滤方法的流程图
+2025-07-16 22:02:11 [INFO] api.document: 找到图片标题: 图3-3  LoRA微调过程中的损失变化曲线 -> 图3-3__LoRA微调过程中的损失变化曲线
+2025-07-16 22:02:11 [INFO] api.document: 找到图片标题: 图3-4  LoRA微调过程中的损失变化曲线 -> 图3-4__LoRA微调过程中的损失变化曲线
+2025-07-16 22:02:11 [INFO] api.document: 找到图片标题: 图4-1  越狱评估使用的提示词 -> 图4-1__越狱评估使用的提示词
+2025-07-16 22:02:11 [INFO] api.document: 找到图片标题: 图4-2  JailBench++_train数据集的词频统计图 -> 图4-2__JailBench++_train数据集的词频统计图
+2025-07-16 22:02:11 [INFO] api.document: 找到图片标题: 图4-3  JailBench++_train数据集的词云图 -> 图4-3__JailBench++_train数据集的词云图
+2025-07-16 22:02:11 [INFO] api.document: 找到图片标题: 图4-4  测试集中越狱提示的困惑度分布统计直方图 -> 图4-4__测试集中越狱提示的困惑度分布统计直方图
+2025-07-16 22:02:11 [INFO] api.document: 找到图片标题: 图4-5  测试集中正常提示的困惑度分布统计直方图 -> 图4-5__测试集中正常提示的困惑度分布统计直方图
+2025-07-16 22:02:11 [INFO] api.document: 找到图片标题: 图4-6  启发式过滤方法在测试集上的混淆矩阵图。(a)规则过滤, (b)情感分析, (c)整体困惑度检测，(d)滑动窗口困惑度检测 -> 图4-6__启发式过滤方法在测试集上的混淆矩阵图。(a)规则过滤,_(b)情感分析,_(c)整体困惑度检测，(d)滑动窗口困惑度检测
+2025-07-16 22:02:11 [INFO] api.document: 找到图片标题: 图4-7  零样本和梯度分析方法在测试集上的混淆矩阵图。(a)GPT3.5, (b)GPT-4, (c)Qwen2-1.5B-Instruct，(d)GradSafe -> 图4-7__零样本和梯度分析方法在测试集上的混淆矩阵图。(a)GPT3.5,_(b)GPT-4,_(c)Qwen2-1.5B-Instruct，(d)GradSafe
+2025-07-16 22:02:11 [INFO] api.document: 找到图片标题: 图4-8  LEAD在测试集上的混淆矩阵 -> 图4-8__LEAD在测试集上的混淆矩阵
+2025-07-16 22:02:11 [INFO] api.document: 找到图片标题: 图4-9  模型在微调前后的效果对比图 -> 图4-9__模型在微调前后的效果对比图
+2025-07-16 22:02:11 [INFO] api.document: 提取到 19 张图片
+2025-07-16 22:02:11 [INFO] api.document: 提取参考文献: d3b1231b-f7a3-4c33-8600-13293dfc1cea
+2025-07-16 22:02:11 [INFO] api.document: 提取到 0 条参考文献
+2025-07-16 22:02:11 [INFO] api.document: 转换为结构化数据: d3b1231b-f7a3-4c33-8600-13293dfc1cea
+2025-07-16 22:02:11 [INFO] utils.redis_client: 文档存储成功: d3b1231b-f7a3-4c33-8600-13293dfc1cea, 大小: 9012501 bytes
+2025-07-16 22:02:11 [INFO] api.document: 文档处理完成: d3b1231b-f7a3-4c33-8600-13293dfc1cea
+2025-07-16 22:02:11 [INFO] backend_fastapi.middleware.logging_middleware: [OUT] POST /api/document/process/d3b1231b-f7a3-4c33-8600-13293dfc1cea - 200 - 0.4801s - 127.0.0.1
+2025-07-16 22:07:37 [INFO] utils.redis_init: 正在关闭Redis连接...
+2025-07-16 22:07:37 [INFO] utils.redis_client: Redis连接已断开
+2025-07-16 22:07:37 [INFO] utils.redis_init: Redis连接已关闭
+2025-07-16 22:07:38 [INFO] utils.redis_init: 正在初始化Redis连接...
+2025-07-16 22:07:38 [INFO] utils.redis_client: Redis连接成功
+2025-07-16 22:07:38 [INFO] utils.redis_init: Redis连接初始化成功
+2025-07-16 22:08:12 [INFO] utils.redis_init: 正在关闭Redis连接...
+2025-07-16 22:08:12 [INFO] utils.redis_client: Redis连接已断开
+2025-07-16 22:08:12 [INFO] utils.redis_init: Redis连接已关闭
+2025-07-16 22:08:13 [INFO] utils.redis_init: 正在初始化Redis连接...
+2025-07-16 22:08:13 [INFO] utils.redis_client: Redis连接成功
+2025-07-16 22:08:13 [INFO] utils.redis_init: Redis连接初始化成功
+2025-07-16 22:08:24 [INFO] utils.redis_init: 正在关闭Redis连接...
+2025-07-16 22:08:24 [INFO] utils.redis_client: Redis连接已断开
+2025-07-16 22:08:24 [INFO] utils.redis_init: Redis连接已关闭
+2025-07-16 22:08:24 [INFO] utils.redis_init: 正在初始化Redis连接...
+2025-07-16 22:08:24 [INFO] utils.redis_client: Redis连接成功
+2025-07-16 22:08:24 [INFO] utils.redis_init: Redis连接初始化成功
+2025-07-16 22:12:01 [INFO] backend_fastapi.middleware.logging_middleware: [IN] POST /api/document/upload - 127.0.0.1
+2025-07-16 22:12:01 [INFO] api.document: 开始上传文档: 龚礼盛-本科毕业论文.docx
+2025-07-16 22:12:01 [ERROR] utils.redis_client: 文档存储失败: adf3e722-92b1-4378-9280-0a8c53f844e3, 错误: Error 61 connecting to localhost:6379. Connection refused.
+2025-07-16 22:12:01 [ERROR] backend_fastapi.middleware.logging_middleware: [ERROR] POST /api/document/upload - 500 - 0.0539s - 127.0.0.1
+2025-07-16 22:12:20 [INFO] utils.redis_init: 正在关闭Redis连接...
+2025-07-16 22:12:20 [INFO] utils.redis_client: Redis连接已断开
+2025-07-16 22:12:20 [INFO] utils.redis_init: Redis连接已关闭
+2025-07-16 22:12:24 [INFO] utils.redis_init: 正在初始化Redis连接...
+2025-07-16 22:12:24 [ERROR] utils.redis_client: Redis连接失败: Error 61 connecting to localhost:6379. Connection refused.
+2025-07-16 22:12:24 [WARNING] utils.redis_init: Redis连接失败，功能受限
+2025-07-16 22:12:55 [INFO] utils.redis_init: 正在关闭Redis连接...
+2025-07-16 22:12:55 [INFO] utils.redis_client: Redis连接已断开
+2025-07-16 22:12:55 [INFO] utils.redis_init: Redis连接已关闭
+2025-07-16 22:12:57 [INFO] utils.redis_init: 正在初始化Redis连接...
+2025-07-16 22:12:57 [INFO] utils.redis_client: Redis连接成功
+2025-07-16 22:12:57 [INFO] utils.redis_init: Redis连接初始化成功
+2025-07-16 22:13:01 [INFO] backend_fastapi.middleware.logging_middleware: [IN] GET /api/document/process/ - 127.0.0.1
+2025-07-16 22:13:01 [WARNING] backend_fastapi.middleware.logging_middleware: [WARN] GET /api/document/process/ - 404 - 0.0081s - 127.0.0.1
+2025-07-16 22:13:34 [INFO] backend_fastapi.middleware.logging_middleware: [IN] POST /api/document/upload - 127.0.0.1
+2025-07-16 22:13:34 [INFO] api.document: 开始上传文档: 龚礼盛-本科毕业论文.docx
+2025-07-16 22:13:34 [INFO] utils.redis_client: 文档存储成功: 62366e6a-f1be-4e96-9999-8960ba436cba, 大小: 4507536 bytes
+2025-07-16 22:13:34 [INFO] api.document: 文档上传成功: 龚礼盛-本科毕业论文.docx, ID: 62366e6a-f1be-4e96-9999-8960ba436cba
+2025-07-16 22:13:34 [INFO] backend_fastapi.middleware.logging_middleware: [OUT] POST /api/document/upload - 200 - 0.0886s - 127.0.0.1
+2025-07-16 22:13:34 [INFO] backend_fastapi.middleware.logging_middleware: [IN] POST /api/document/process/62366e6a-f1be-4e96-9999-8960ba436cba - 127.0.0.1
+2025-07-16 22:13:34 [INFO] api.document: 开始处理文档: 62366e6a-f1be-4e96-9999-8960ba436cba
+2025-07-16 22:13:34 [INFO] utils.redis_client: 文档存储成功: 62366e6a-f1be-4e96-9999-8960ba436cba, 大小: 4507538 bytes
+2025-07-16 22:13:34 [INFO] api.document: 转换文档为Markdown: 62366e6a-f1be-4e96-9999-8960ba436cba
+2025-07-16 22:13:34 [INFO] api.document: 提取文档图片: 62366e6a-f1be-4e96-9999-8960ba436cba
+2025-07-16 22:13:34 [INFO] api.document: 未找到图片标题，使用默认值: img_1
+2025-07-16 22:13:34 [INFO] api.document: 未找到图片标题，使用默认值: img_2
+2025-07-16 22:13:35 [INFO] api.document: 找到图片标题: 图1-1  越狱的一个示例 -> 图1-1__越狱的一个示例
+2025-07-16 22:13:35 [INFO] api.document: 找到图片标题: 图2-1  Transformer Decoder结构图[23] -> 图2-1__Transformer_Decoder结构图[23]
+2025-07-16 22:13:35 [INFO] api.document: 找到图片标题: 图2-2  稀疏混合专家模型基本结构 -> 图2-2__稀疏混合专家模型基本结构
+2025-07-16 22:13:35 [INFO] api.document: 找到图片标题: 图2-3  LoRA结构图 -> 图2-3__LoRA结构图
+2025-07-16 22:13:35 [INFO] api.document: 找到图片标题: 图3-1  规则过滤方法的流程图 -> 图3-1__规则过滤方法的流程图
+2025-07-16 22:13:35 [INFO] api.document: 找到图片标题: 图3-2  基于困惑度过滤方法的流程图 -> 图3-2__基于困惑度过滤方法的流程图
+2025-07-16 22:13:35 [INFO] api.document: 找到图片标题: 图3-3  LoRA微调过程中的损失变化曲线 -> 图3-3__LoRA微调过程中的损失变化曲线
+2025-07-16 22:13:35 [INFO] api.document: 找到图片标题: 图3-4  LoRA微调过程中的损失变化曲线 -> 图3-4__LoRA微调过程中的损失变化曲线
+2025-07-16 22:13:35 [INFO] api.document: 找到图片标题: 图4-1  越狱评估使用的提示词 -> 图4-1__越狱评估使用的提示词
+2025-07-16 22:13:35 [INFO] api.document: 找到图片标题: 图4-2  JailBench++_train数据集的词频统计图 -> 图4-2__JailBench++_train数据集的词频统计图
+2025-07-16 22:13:35 [INFO] api.document: 找到图片标题: 图4-3  JailBench++_train数据集的词云图 -> 图4-3__JailBench++_train数据集的词云图
+2025-07-16 22:13:35 [INFO] api.document: 找到图片标题: 图4-4  测试集中越狱提示的困惑度分布统计直方图 -> 图4-4__测试集中越狱提示的困惑度分布统计直方图
+2025-07-16 22:13:35 [INFO] api.document: 找到图片标题: 图4-5  测试集中正常提示的困惑度分布统计直方图 -> 图4-5__测试集中正常提示的困惑度分布统计直方图
+2025-07-16 22:13:35 [INFO] api.document: 找到图片标题: 图4-6  启发式过滤方法在测试集上的混淆矩阵图。(a)规则过滤, (b)情感分析, (c)整体困惑度检测，(d)滑动窗口困惑度检测 -> 图4-6__启发式过滤方法在测试集上的混淆矩阵图。(a)规则过滤,_(b)情感分析,_(c)整体困惑度检测，(d)滑动窗口困惑度检测
+2025-07-16 22:13:35 [INFO] api.document: 找到图片标题: 图4-7  零样本和梯度分析方法在测试集上的混淆矩阵图。(a)GPT3.5, (b)GPT-4, (c)Qwen2-1.5B-Instruct，(d)GradSafe -> 图4-7__零样本和梯度分析方法在测试集上的混淆矩阵图。(a)GPT3.5,_(b)GPT-4,_(c)Qwen2-1.5B-Instruct，(d)GradSafe
+2025-07-16 22:13:35 [INFO] api.document: 找到图片标题: 图4-8  LEAD在测试集上的混淆矩阵 -> 图4-8__LEAD在测试集上的混淆矩阵
+2025-07-16 22:13:35 [INFO] api.document: 找到图片标题: 图4-9  模型在微调前后的效果对比图 -> 图4-9__模型在微调前后的效果对比图
+2025-07-16 22:13:35 [INFO] api.document: 提取到 19 张图片
+2025-07-16 22:13:35 [INFO] api.document: 提取参考文献: 62366e6a-f1be-4e96-9999-8960ba436cba
+2025-07-16 22:13:35 [INFO] api.document: 提取到 0 条参考文献
+2025-07-16 22:13:35 [INFO] api.document: 转换为结构化数据: 62366e6a-f1be-4e96-9999-8960ba436cba
+2025-07-16 22:13:35 [INFO] utils.redis_client: 文档存储成功: 62366e6a-f1be-4e96-9999-8960ba436cba, 大小: 9012501 bytes
+2025-07-16 22:13:35 [INFO] api.document: 文档处理完成: 62366e6a-f1be-4e96-9999-8960ba436cba
+2025-07-16 22:13:35 [INFO] backend_fastapi.middleware.logging_middleware: [OUT] POST /api/document/process/62366e6a-f1be-4e96-9999-8960ba436cba - 200 - 0.5880s - 127.0.0.1
+2025-07-16 22:16:11 [INFO] utils.redis_init: 正在关闭Redis连接...
+2025-07-16 22:16:11 [INFO] utils.redis_client: Redis连接已断开
+2025-07-16 22:16:11 [INFO] utils.redis_init: Redis连接已关闭
+2025-07-16 22:16:12 [INFO] utils.redis_init: 正在初始化Redis连接...
+2025-07-16 22:16:13 [INFO] utils.redis_client: Redis连接成功
+2025-07-16 22:16:13 [INFO] utils.redis_init: Redis连接初始化成功
+2025-07-16 22:18:04 [INFO] utils.redis_init: 正在关闭Redis连接...
+2025-07-16 22:18:04 [INFO] utils.redis_client: Redis连接已断开
+2025-07-16 22:18:04 [INFO] utils.redis_init: Redis连接已关闭
+2025-07-16 22:18:05 [INFO] utils.redis_init: 正在初始化Redis连接...
+2025-07-16 22:18:05 [INFO] utils.redis_client: Redis连接成功
+2025-07-16 22:18:05 [INFO] utils.redis_init: Redis连接初始化成功
+2025-07-16 22:18:53 [INFO] utils.redis_init: 正在关闭Redis连接...
+2025-07-16 22:18:53 [INFO] utils.redis_client: Redis连接已断开
+2025-07-16 22:18:53 [INFO] utils.redis_init: Redis连接已关闭
+2025-07-16 22:18:54 [INFO] utils.redis_init: 正在初始化Redis连接...
+2025-07-16 22:18:54 [INFO] utils.redis_client: Redis连接成功
+2025-07-16 22:18:54 [INFO] utils.redis_init: Redis连接初始化成功
+2025-07-16 22:19:49 [INFO] utils.redis_init: 正在关闭Redis连接...
+2025-07-16 22:19:49 [INFO] utils.redis_client: Redis连接已断开
+2025-07-16 22:19:49 [INFO] utils.redis_init: Redis连接已关闭
+2025-07-16 22:19:50 [INFO] utils.redis_init: 正在初始化Redis连接...
+2025-07-16 22:19:50 [INFO] utils.redis_client: Redis连接成功
+2025-07-16 22:19:50 [INFO] utils.redis_init: Redis连接初始化成功
+2025-07-16 22:21:58 [INFO] utils.redis_init: 正在关闭Redis连接...
+2025-07-16 22:21:58 [INFO] utils.redis_client: Redis连接已断开
+2025-07-16 22:21:58 [INFO] utils.redis_init: Redis连接已关闭
+2025-07-16 22:21:59 [INFO] utils.redis_init: 正在初始化Redis连接...
+2025-07-16 22:21:59 [INFO] utils.redis_client: Redis连接成功
+2025-07-16 22:21:59 [INFO] utils.redis_init: Redis连接初始化成功
+2025-07-16 22:22:23 [INFO] utils.redis_init: 正在关闭Redis连接...
+2025-07-16 22:22:24 [INFO] utils.redis_client: Redis连接已断开
+2025-07-16 22:22:24 [INFO] utils.redis_init: Redis连接已关闭
+2025-07-16 22:22:24 [INFO] utils.redis_init: 正在初始化Redis连接...
+2025-07-16 22:22:24 [INFO] utils.redis_client: Redis连接成功
+2025-07-16 22:22:24 [INFO] utils.redis_init: Redis连接初始化成功
+2025-07-16 22:23:26 [INFO] utils.redis_init: 正在初始化Redis连接...
+2025-07-16 22:23:26 [INFO] utils.redis_client: Redis连接成功
+2025-07-16 22:23:26 [INFO] utils.redis_init: Redis连接初始化成功
+2025-07-16 22:23:30 [INFO] backend_fastapi.middleware.logging_middleware: [IN] POST /api/document/upload - 127.0.0.1
+2025-07-16 22:23:30 [INFO] api.document: 开始上传文档: 龚礼盛-本科毕业论文.docx
+2025-07-16 22:23:30 [INFO] utils.redis_client: 文档存储成功: 2f2dc39c-8f4d-43e6-8a11-9fac66b2d900, 大小: 4507536 bytes
+2025-07-16 22:23:30 [INFO] api.document: 文档上传成功: 龚礼盛-本科毕业论文.docx, ID: 2f2dc39c-8f4d-43e6-8a11-9fac66b2d900
+2025-07-16 22:23:30 [INFO] backend_fastapi.middleware.logging_middleware: [OUT] POST /api/document/upload - 200 - 0.0708s - 127.0.0.1
+2025-07-16 22:23:30 [INFO] backend_fastapi.middleware.logging_middleware: [IN] POST /api/document/process/2f2dc39c-8f4d-43e6-8a11-9fac66b2d900 - 127.0.0.1
+2025-07-16 22:23:30 [INFO] api.document: 开始处理文档: 2f2dc39c-8f4d-43e6-8a11-9fac66b2d900
+2025-07-16 22:23:30 [INFO] utils.redis_client: 文档存储成功: 2f2dc39c-8f4d-43e6-8a11-9fac66b2d900, 大小: 4507538 bytes
+2025-07-16 22:23:30 [INFO] api.document: 转换文档为Markdown: 2f2dc39c-8f4d-43e6-8a11-9fac66b2d900
+2025-07-16 22:23:30 [INFO] api.document: 提取文档图片: 2f2dc39c-8f4d-43e6-8a11-9fac66b2d900
+2025-07-16 22:23:30 [INFO] api.document: 未找到图片标题，使用默认值: img_1
+2025-07-16 22:23:30 [INFO] api.document: 未找到图片标题，使用默认值: img_2
+2025-07-16 22:23:30 [INFO] api.document: 找到图片标题: 图1-1  越狱的一个示例 -> 图1-1__越狱的一个示例
+2025-07-16 22:23:30 [INFO] api.document: 找到图片标题: 图2-1  Transformer Decoder结构图[23] -> 图2-1__Transformer_Decoder结构图[23]
+2025-07-16 22:23:30 [INFO] api.document: 找到图片标题: 图2-2  稀疏混合专家模型基本结构 -> 图2-2__稀疏混合专家模型基本结构
+2025-07-16 22:23:30 [INFO] api.document: 找到图片标题: 图2-3  LoRA结构图 -> 图2-3__LoRA结构图
+2025-07-16 22:23:30 [INFO] api.document: 找到图片标题: 图3-1  规则过滤方法的流程图 -> 图3-1__规则过滤方法的流程图
+2025-07-16 22:23:30 [INFO] api.document: 找到图片标题: 图3-2  基于困惑度过滤方法的流程图 -> 图3-2__基于困惑度过滤方法的流程图
+2025-07-16 22:23:30 [INFO] api.document: 找到图片标题: 图3-3  LoRA微调过程中的损失变化曲线 -> 图3-3__LoRA微调过程中的损失变化曲线
+2025-07-16 22:23:30 [INFO] api.document: 找到图片标题: 图3-4  LoRA微调过程中的损失变化曲线 -> 图3-4__LoRA微调过程中的损失变化曲线
+2025-07-16 22:23:30 [INFO] api.document: 找到图片标题: 图4-1  越狱评估使用的提示词 -> 图4-1__越狱评估使用的提示词
+2025-07-16 22:23:30 [INFO] api.document: 找到图片标题: 图4-2  JailBench++_train数据集的词频统计图 -> 图4-2__JailBench++_train数据集的词频统计图
+2025-07-16 22:23:30 [INFO] api.document: 找到图片标题: 图4-3  JailBench++_train数据集的词云图 -> 图4-3__JailBench++_train数据集的词云图
+2025-07-16 22:23:30 [INFO] api.document: 找到图片标题: 图4-4  测试集中越狱提示的困惑度分布统计直方图 -> 图4-4__测试集中越狱提示的困惑度分布统计直方图
+2025-07-16 22:23:30 [INFO] api.document: 找到图片标题: 图4-5  测试集中正常提示的困惑度分布统计直方图 -> 图4-5__测试集中正常提示的困惑度分布统计直方图
+2025-07-16 22:23:30 [INFO] api.document: 找到图片标题: 图4-6  启发式过滤方法在测试集上的混淆矩阵图。(a)规则过滤, (b)情感分析, (c)整体困惑度检测，(d)滑动窗口困惑度检测 -> 图4-6__启发式过滤方法在测试集上的混淆矩阵图。(a)规则过滤,_(b)情感分析,_(c)整体困惑度检测，(d)滑动窗口困惑度检测
+2025-07-16 22:23:30 [INFO] api.document: 找到图片标题: 图4-7  零样本和梯度分析方法在测试集上的混淆矩阵图。(a)GPT3.5, (b)GPT-4, (c)Qwen2-1.5B-Instruct，(d)GradSafe -> 图4-7__零样本和梯度分析方法在测试集上的混淆矩阵图。(a)GPT3.5,_(b)GPT-4,_(c)Qwen2-1.5B-Instruct，(d)GradSafe
+2025-07-16 22:23:30 [INFO] api.document: 找到图片标题: 图4-8  LEAD在测试集上的混淆矩阵 -> 图4-8__LEAD在测试集上的混淆矩阵
+2025-07-16 22:23:30 [INFO] api.document: 找到图片标题: 图4-9  模型在微调前后的效果对比图 -> 图4-9__模型在微调前后的效果对比图
+2025-07-16 22:23:30 [INFO] api.document: 提取到 19 张图片
+2025-07-16 22:23:30 [INFO] api.document: 提取参考文献: 2f2dc39c-8f4d-43e6-8a11-9fac66b2d900
+2025-07-16 22:23:30 [INFO] api.document: 提取到 0 条参考文献
+2025-07-16 22:23:30 [INFO] api.document: 转换为结构化数据: 2f2dc39c-8f4d-43e6-8a11-9fac66b2d900
+2025-07-16 22:23:31 [INFO] utils.redis_client: 文档存储成功: 2f2dc39c-8f4d-43e6-8a11-9fac66b2d900, 大小: 9012501 bytes
+2025-07-16 22:23:31 [INFO] api.document: 文档处理完成: 2f2dc39c-8f4d-43e6-8a11-9fac66b2d900
+2025-07-16 22:23:31 [INFO] backend_fastapi.middleware.logging_middleware: [OUT] POST /api/document/process/2f2dc39c-8f4d-43e6-8a11-9fac66b2d900 - 200 - 0.5226s - 127.0.0.1
+2025-07-16 22:26:11 [INFO] utils.redis_init: 正在关闭Redis连接...
+2025-07-16 22:26:11 [INFO] utils.redis_client: Redis连接已断开
+2025-07-16 22:26:11 [INFO] utils.redis_init: Redis连接已关闭
+2025-07-16 22:26:12 [INFO] utils.redis_init: 正在初始化Redis连接...
+2025-07-16 22:26:12 [INFO] utils.redis_client: Redis连接成功
+2025-07-16 22:26:12 [INFO] utils.redis_init: Redis连接初始化成功
+2025-07-16 22:26:24 [INFO] utils.redis_init: 正在关闭Redis连接...
+2025-07-16 22:26:24 [INFO] utils.redis_client: Redis连接已断开
+2025-07-16 22:26:24 [INFO] utils.redis_init: Redis连接已关闭
+2025-07-16 22:26:25 [INFO] utils.redis_init: 正在初始化Redis连接...
+2025-07-16 22:26:25 [INFO] utils.redis_client: Redis连接成功
+2025-07-16 22:26:25 [INFO] utils.redis_init: Redis连接初始化成功
+2025-07-16 22:33:41 [INFO] utils.redis_init: 正在关闭Redis连接...
+2025-07-16 22:33:41 [INFO] utils.redis_client: Redis连接已断开
+2025-07-16 22:33:41 [INFO] utils.redis_init: Redis连接已关闭
+2025-07-16 22:33:42 [INFO] utils.redis_init: 正在初始化Redis连接...
+2025-07-16 22:33:42 [INFO] utils.redis_client: Redis连接成功
+2025-07-16 22:33:42 [INFO] utils.redis_init: Redis连接初始化成功
+2025-07-16 22:34:29 [INFO] utils.redis_init: 正在关闭Redis连接...
+2025-07-16 22:34:29 [INFO] utils.redis_client: Redis连接已断开
+2025-07-16 22:34:29 [INFO] utils.redis_init: Redis连接已关闭
+2025-07-16 22:34:30 [INFO] utils.redis_init: 正在初始化Redis连接...
+2025-07-16 22:34:30 [INFO] utils.redis_client: Redis连接成功
+2025-07-16 22:34:30 [INFO] utils.redis_init: Redis连接初始化成功
+2025-07-16 22:34:40 [INFO] utils.redis_init: 正在关闭Redis连接...
+2025-07-16 22:34:40 [INFO] utils.redis_client: Redis连接已断开
+2025-07-16 22:34:40 [INFO] utils.redis_init: Redis连接已关闭
+2025-07-16 22:34:41 [INFO] utils.redis_init: 正在初始化Redis连接...
+2025-07-16 22:34:41 [INFO] utils.redis_client: Redis连接成功
+2025-07-16 22:34:41 [INFO] utils.redis_init: Redis连接初始化成功
+2025-07-16 22:35:09 [INFO] utils.redis_init: 正在关闭Redis连接...
+2025-07-16 22:35:09 [INFO] utils.redis_client: Redis连接已断开
+2025-07-16 22:35:09 [INFO] utils.redis_init: Redis连接已关闭
+2025-07-16 22:35:11 [INFO] utils.redis_init: 正在初始化Redis连接...
+2025-07-16 22:35:11 [INFO] utils.redis_client: Redis连接成功
+2025-07-16 22:35:11 [INFO] utils.redis_init: Redis连接初始化成功
+2025-07-16 22:35:18 [INFO] backend_fastapi.middleware.logging_middleware: [IN] POST /api/document/upload - 127.0.0.1
+2025-07-16 22:35:18 [INFO] api.document: 开始上传文档: 龚礼盛-本科毕业论文.docx
+2025-07-16 22:35:18 [INFO] utils.redis_client: 文档存储成功: 76ea2c29-c8c7-4a10-86a1-86f449123548, 大小: 4507536 bytes
+2025-07-16 22:35:18 [INFO] api.document: 文档上传成功: 龚礼盛-本科毕业论文.docx, ID: 76ea2c29-c8c7-4a10-86a1-86f449123548
+2025-07-16 22:35:18 [INFO] backend_fastapi.middleware.logging_middleware: [OUT] POST /api/document/upload - 200 - 0.1015s - 127.0.0.1
+2025-07-16 22:35:18 [INFO] backend_fastapi.middleware.logging_middleware: [IN] POST /api/document/process/76ea2c29-c8c7-4a10-86a1-86f449123548 - 127.0.0.1
+2025-07-16 22:35:18 [INFO] api.document: 开始处理文档: 76ea2c29-c8c7-4a10-86a1-86f449123548
+2025-07-16 22:35:18 [INFO] utils.redis_client: 文档存储成功: 76ea2c29-c8c7-4a10-86a1-86f449123548, 大小: 4507538 bytes
+2025-07-16 22:35:18 [INFO] api.document: 转换文档为Markdown: 76ea2c29-c8c7-4a10-86a1-86f449123548
+2025-07-16 22:35:19 [INFO] api.document: 提取文档图片: 76ea2c29-c8c7-4a10-86a1-86f449123548
+2025-07-16 22:35:19 [INFO] api.document: 未找到图片标题，使用默认值: img_1
+2025-07-16 22:35:19 [INFO] api.document: 未找到图片标题，使用默认值: img_2
+2025-07-16 22:35:19 [INFO] api.document: 找到图片标题: 图1-1  越狱的一个示例 -> 图1-1__越狱的一个示例
+2025-07-16 22:35:19 [INFO] api.document: 找到图片标题: 图2-1  Transformer Decoder结构图[23] -> 图2-1__Transformer_Decoder结构图[23]
+2025-07-16 22:35:19 [INFO] api.document: 找到图片标题: 图2-2  稀疏混合专家模型基本结构 -> 图2-2__稀疏混合专家模型基本结构
+2025-07-16 22:35:19 [INFO] api.document: 找到图片标题: 图2-3  LoRA结构图 -> 图2-3__LoRA结构图
+2025-07-16 22:35:19 [INFO] api.document: 找到图片标题: 图3-1  规则过滤方法的流程图 -> 图3-1__规则过滤方法的流程图
+2025-07-16 22:35:19 [INFO] api.document: 找到图片标题: 图3-2  基于困惑度过滤方法的流程图 -> 图3-2__基于困惑度过滤方法的流程图
+2025-07-16 22:35:19 [INFO] api.document: 找到图片标题: 图3-3  LoRA微调过程中的损失变化曲线 -> 图3-3__LoRA微调过程中的损失变化曲线
+2025-07-16 22:35:19 [INFO] api.document: 找到图片标题: 图3-4  LoRA微调过程中的损失变化曲线 -> 图3-4__LoRA微调过程中的损失变化曲线
+2025-07-16 22:35:19 [INFO] api.document: 找到图片标题: 图4-1  越狱评估使用的提示词 -> 图4-1__越狱评估使用的提示词
+2025-07-16 22:35:19 [INFO] api.document: 找到图片标题: 图4-2  JailBench++_train数据集的词频统计图 -> 图4-2__JailBench++_train数据集的词频统计图
+2025-07-16 22:35:19 [INFO] api.document: 找到图片标题: 图4-3  JailBench++_train数据集的词云图 -> 图4-3__JailBench++_train数据集的词云图
+2025-07-16 22:35:19 [INFO] api.document: 找到图片标题: 图4-4  测试集中越狱提示的困惑度分布统计直方图 -> 图4-4__测试集中越狱提示的困惑度分布统计直方图
+2025-07-16 22:35:19 [INFO] api.document: 找到图片标题: 图4-5  测试集中正常提示的困惑度分布统计直方图 -> 图4-5__测试集中正常提示的困惑度分布统计直方图
+2025-07-16 22:35:19 [INFO] api.document: 找到图片标题: 图4-6  启发式过滤方法在测试集上的混淆矩阵图。(a)规则过滤, (b)情感分析, (c)整体困惑度检测，(d)滑动窗口困惑度检测 -> 图4-6__启发式过滤方法在测试集上的混淆矩阵图。(a)规则过滤,_(b)情感分析,_(c)整体困惑度检测，(d)滑动窗口困惑度检测
+2025-07-16 22:35:19 [INFO] api.document: 找到图片标题: 图4-7  零样本和梯度分析方法在测试集上的混淆矩阵图。(a)GPT3.5, (b)GPT-4, (c)Qwen2-1.5B-Instruct，(d)GradSafe -> 图4-7__零样本和梯度分析方法在测试集上的混淆矩阵图。(a)GPT3.5,_(b)GPT-4,_(c)Qwen2-1.5B-Instruct，(d)GradSafe
+2025-07-16 22:35:19 [INFO] api.document: 找到图片标题: 图4-8  LEAD在测试集上的混淆矩阵 -> 图4-8__LEAD在测试集上的混淆矩阵
+2025-07-16 22:35:19 [INFO] api.document: 找到图片标题: 图4-9  模型在微调前后的效果对比图 -> 图4-9__模型在微调前后的效果对比图
+2025-07-16 22:35:19 [INFO] api.document: 提取到 19 张图片
+2025-07-16 22:35:19 [INFO] api.document: 提取参考文献: 76ea2c29-c8c7-4a10-86a1-86f449123548
+2025-07-16 22:35:19 [INFO] api.document: 提取到 0 条参考文献
+2025-07-16 22:35:19 [INFO] api.document: 转换为结构化数据: 76ea2c29-c8c7-4a10-86a1-86f449123548
+2025-07-16 22:35:19 [INFO] utils.redis_client: 文档存储成功: 76ea2c29-c8c7-4a10-86a1-86f449123548, 大小: 9012501 bytes
+2025-07-16 22:35:19 [INFO] api.document: 文档处理完成: 76ea2c29-c8c7-4a10-86a1-86f449123548
+2025-07-16 22:35:19 [INFO] backend_fastapi.middleware.logging_middleware: [OUT] POST /api/document/process/76ea2c29-c8c7-4a10-86a1-86f449123548 - 200 - 0.4902s - 127.0.0.1
+2025-07-16 22:36:56 [INFO] utils.redis_init: 正在关闭Redis连接...
+2025-07-16 22:36:56 [INFO] utils.redis_client: Redis连接已断开
+2025-07-16 22:36:56 [INFO] utils.redis_init: Redis连接已关闭
+2025-07-16 22:36:57 [INFO] utils.redis_init: 正在初始化Redis连接...
+2025-07-16 22:36:57 [INFO] utils.redis_client: Redis连接成功
+2025-07-16 22:36:57 [INFO] utils.redis_init: Redis连接初始化成功
+2025-07-16 22:37:11 [INFO] utils.redis_init: 正在关闭Redis连接...
+2025-07-16 22:37:11 [INFO] utils.redis_client: Redis连接已断开
+2025-07-16 22:37:11 [INFO] utils.redis_init: Redis连接已关闭
+2025-07-16 22:37:13 [INFO] utils.redis_init: 正在初始化Redis连接...
+2025-07-16 22:37:13 [INFO] utils.redis_client: Redis连接成功
+2025-07-16 22:37:13 [INFO] utils.redis_init: Redis连接初始化成功
+2025-07-16 22:37:36 [INFO] utils.redis_init: 正在关闭Redis连接...
+2025-07-16 22:37:36 [INFO] utils.redis_client: Redis连接已断开
+2025-07-16 22:37:36 [INFO] utils.redis_init: Redis连接已关闭
+2025-07-16 22:40:04 [INFO] utils.redis_init: 正在初始化Redis连接...
+2025-07-16 22:40:04 [INFO] utils.redis_client: Redis连接成功
+2025-07-16 22:40:04 [INFO] utils.redis_init: Redis连接初始化成功
+2025-07-16 22:41:25 [INFO] utils.redis_init: 正在关闭Redis连接...
+2025-07-16 22:41:25 [INFO] utils.redis_client: Redis连接已断开
+2025-07-16 22:41:25 [INFO] utils.redis_init: Redis连接已关闭
+2025-07-16 22:42:29 [INFO] utils.redis_init: 正在初始化Redis连接...
+2025-07-16 22:42:29 [INFO] utils.redis_client: Redis连接成功
+2025-07-16 22:42:29 [INFO] utils.redis_init: Redis连接初始化成功
+2025-07-16 22:42:37 [INFO] utils.redis_init: 正在关闭Redis连接...
+2025-07-16 22:42:37 [INFO] utils.redis_client: Redis连接已断开
+2025-07-16 22:42:37 [INFO] utils.redis_init: Redis连接已关闭
+2025-07-16 22:42:38 [INFO] utils.redis_init: 正在初始化Redis连接...
+2025-07-16 22:42:38 [INFO] utils.redis_client: Redis连接成功
+2025-07-16 22:42:38 [INFO] utils.redis_init: Redis连接初始化成功
+2025-07-16 22:43:05 [INFO] utils.redis_init: 正在关闭Redis连接...
+2025-07-16 22:43:05 [INFO] utils.redis_client: Redis连接已断开
+2025-07-16 22:43:05 [INFO] utils.redis_init: Redis连接已关闭
+2025-07-16 22:43:06 [INFO] utils.redis_init: 正在初始化Redis连接...
+2025-07-16 22:43:06 [INFO] utils.redis_client: Redis连接成功
+2025-07-16 22:43:06 [INFO] utils.redis_init: Redis连接初始化成功
+2025-07-16 22:43:26 [INFO] utils.redis_init: 正在关闭Redis连接...
+2025-07-16 22:43:26 [INFO] utils.redis_client: Redis连接已断开
+2025-07-16 22:43:26 [INFO] utils.redis_init: Redis连接已关闭
+2025-07-16 22:43:27 [INFO] utils.redis_init: 正在初始化Redis连接...
+2025-07-16 22:43:27 [INFO] utils.redis_client: Redis连接成功
+2025-07-16 22:43:27 [INFO] utils.redis_init: Redis连接初始化成功

@@ -19,8 +19,8 @@ def load_prompt(prompt_path):
 def check_reference_format(reference_text):
     """检查参考文献格式是否正确"""
     # 加载提示词
-    prompt_dir = os.path.join(os.path.dirname(__file__), 'prompt')
-    prompt_path = os.path.join(prompt_dir, 'reference_check_prompt.txt')
+    prompt_dir = os.path.join(os.path.dirname(__file__), '..', 'prompts')
+    prompt_path = os.path.join(prompt_dir, 'reference_criteria.txt')
     system_prompt = load_prompt(prompt_path)
 
     # 构建消息
@@ -181,6 +181,45 @@ def save_formatted_results(results, output_path):
     print(f"发现 {formatted_result['total_issues']} 个格式问题")
     
     return formatted_output_path
+
+def eval(references_list):
+    """
+    评估参考文献格式
+    
+    Args:
+        references_list (list): 参考文献列表
+        
+    Returns:
+        dict: 评估结果，包含格式化的问题详情
+    """
+    if not references_list:
+        return {
+            "status": "success",
+            "total_issues": 0,
+            "detail": [],
+            "message": "没有参考文献需要检查"
+        }
+    
+    print(f"开始检查 {len(references_list)} 条参考文献...")
+    results = []
+    
+    for idx, ref in enumerate(references_list, 1):
+        print(f"正在检查第 {idx}/{len(references_list)} 条参考文献...")
+        result = check_reference_format(ref)
+        results.append(result)
+    
+    # 格式化结果，只保留有问题的参考文献
+    formatted_result = format_incorrect_references(results)
+    
+    # 添加状态信息
+    formatted_result["status"] = "success"
+    if formatted_result["total_issues"] == 0:
+        formatted_result["message"] = "所有参考文献格式正确"
+    else:
+        formatted_result["message"] = f"发现 {formatted_result['total_issues']} 个格式问题"
+    
+    print(f"参考文献检查完成：{formatted_result['message']}")
+    return formatted_result
 
 if __name__ == "__main__":
     # 获取当前脚本所在目录

@@ -9,10 +9,14 @@ from datetime import datetime
 from fastapi import APIRouter
 from pydantic import BaseModel
 from typing import Dict, Any
+from pathlib import Path
+import sys
 
-from ..models.model_manager import model_manager
-from ..config.app_config import APP_CONFIG
-from ..tools.logger import get_logger
+sys.path.insert(0, str(Path(__file__).parent.parent))
+
+from models.model_manager import model_manager
+from config.app_config import APP_CONFIG
+from tools.logger import get_logger
 
 logger = get_logger(__name__)
 router = APIRouter()

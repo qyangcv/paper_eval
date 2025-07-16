@@ -83,6 +83,37 @@ def table_to_markdown(table: Table) -> str:
     
     return "\n".join(md_table)
 
+def process_references(content_lines) -> List[str]:
+    """
+    处理参考文献，为每条参考文献添加编号
+    
+    Args:
+        content_lines: 内容行列表
+        
+    Returns:
+        List[str]: 处理后的内容列表
+    """
+    processed_lines = []
+    in_references = False
+    ref_counter = 1
+    
+    for line in content_lines:
+        if line.strip() == "# 参考文献":
+            in_references = True
+            processed_lines.append(line)
+        elif in_references and line.strip().startswith("#"):
+            # 遇到下一个章节，结束参考文献处理
+            in_references = False
+            processed_lines.append(line)
+        elif in_references and line.strip() and not line.strip().startswith("["):
+            # 在参考文献部分，且不是空行，且不是已经编号的引用
+            processed_lines.append(f"[{ref_counter}] {line.strip()}")
+            ref_counter += 1
+        else:
+            processed_lines.append(line)
+    
+    return processed_lines
+
 def process_paragraph(paragraph: Paragraph) -> List[str]:
     """
     处理段落，可能包含文本、图像和数学公式
@@ -94,7 +125,7 @@ def process_paragraph(paragraph: Paragraph) -> List[str]:
         List[str]: 处理后的内容列表
     """
     # 检查标题样式
-    if paragraph.style.name.startswith('Heading'):
+    if paragraph.style and paragraph.style.name and paragraph.style.name.startswith('Heading'):
         heading_level = int(paragraph.style.name[-1]) if paragraph.style.name[-1].isdigit() else 1
         para_text = paragraph.text.strip()
         if para_text:
@@ -103,6 +134,16 @@ def process_paragraph(paragraph: Paragraph) -> List[str]:
     # 处理普通段落
     para_text = paragraph.text.strip()
     if para_text:
+        # 处理特殊标题加粗
+        if para_text in ['摘要', 'ABSTRACT']:
+            return [f'**{para_text}**']
+        
+        # 处理关键词加粗
+        if para_text.startswith('关键词'):
+            return [f'**关键词**{para_text[3:]}']
+        if para_text.startswith('KEY WORDS'):
+            return [f'**KEY WORDS**{para_text[9:]}']
+        
         return [para_text]
     
     return []
@@ -142,8 +183,14 @@ def convert_docx_to_md(docx_path: str, output_md_path: Optional[str] = None) -> 
         # 如果指定了输出路径，保存文件
         if output_md_path:
             os.makedirs(os.path.dirname(output_md_path), exist_ok=True)
+            
+            # 处理参考文献编号
+            content_lines = markdown_text.split('\n')
+            processed_lines = process_references(content_lines)
+            final_content = '\n'.join(processed_lines)
+            
             with open(output_md_path, 'w', encoding='utf-8') as f:
-                f.write(markdown_text)
+                f.write(final_content)
         
         return markdown_text
         
@@ -168,3 +215,13 @@ def convert_docx_bytes_to_md(docx_bytes: bytes) -> str:
             return convert_docx_to_md(temp_file.name)
         finally:
             os.unlink(temp_file.name)
+
+if __name__ == "__main__":
+    # 测试转换功能
+    docx_path = "/Users/yang/Documents/bupt/code/github/paper_eval/backend_fastapi/data/raw/龚礼盛-本科毕业论文.docx"  # 替换为实际的DOCX文件路径
+    output_md_path = "/Users/yang/Documents/bupt/code/github/paper_eval/backend_fastapi/data/processed/龚礼盛-本科毕业论文.md"  # 替换为实际的输出路径
+    try:
+        md_content = convert_docx_to_md(docx_path, output_md_path)
+        print("转换成功，Markdown内容已保存到:", output_md_path)
+    except Exception as e:
+        print("转换失败:", str(e))

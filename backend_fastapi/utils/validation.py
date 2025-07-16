@@ -9,9 +9,15 @@ import mimetypes
 from typing import Tuple, Optional, List
 from fastapi import UploadFile, HTTPException
 
-from ..config.data_config import FILE_CONFIG
-from ..models.model_manager import model_manager
-from ..tools.logger import get_logger
+import sys
+from pathlib import Path
+# 添加项目路径
+project_root = Path(__file__).parent
+sys.path.insert(0, str(project_root))
+
+from config.data_config import FILE_CONFIG
+from models.model_manager import model_manager
+from tools.logger import get_logger
 
 logger = get_logger(__name__)
 

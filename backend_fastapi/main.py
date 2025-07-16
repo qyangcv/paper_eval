@@ -18,7 +18,7 @@ import tempfile
 import logging
 
 # 添加项目根目录到Python路径
-project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+project_root = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, project_root)
 
 # 延迟初始化日志，避免在日志配置完成前使用
@@ -59,8 +59,8 @@ convert_word_to_html_with_math = None
 extract_toc_from_docx = None
 
 try:
-    # 添加backend/hard_metrics到路径以便导入其模块
-    backend_metrics_path = os.path.join(project_root, "backend", "hard_metrics")
+    # 添加backend/hard_criteria到路径以便导入其模块
+    backend_metrics_path = os.path.join(project_root, "backend", "hard_criteria")
     if backend_metrics_path not in sys.path:
         sys.path.insert(0, backend_metrics_path)
 
@@ -74,14 +74,14 @@ except ImportError as e:
 # 尝试导入full_paper_eval模块的函数
 try:
     # 确保路径正确添加
-    hard_metrics_path = os.path.join(project_root, "backend", "hard_metrics")
-    if hard_metrics_path not in sys.path:
-        sys.path.insert(0, hard_metrics_path)
+    hard_criteria_path = os.path.join(project_root, "backend", "hard_criteria")
+    if hard_criteria_path not in sys.path:
+        sys.path.insert(0, hard_criteria_path)
 
     # 动态导入模块
     import importlib.util
     spec = importlib.util.spec_from_file_location("full_paper_eval",
-                                                  os.path.join(hard_metrics_path, "full_paper_eval.py"))
+                                                  os.path.join(hard_criteria_path, "full_paper_eval.py"))
     full_paper_eval_module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(full_paper_eval_module)
 
@@ -271,6 +271,10 @@ except ImportError as e:
     api_router = None
     API_ROUTER_AVAILABLE = False
 
+from api import api_router
+_get_logger().info("成功导入API路由")
+API_ROUTER_AVAILABLE = True
+
 # 导入中间件和文档配置
 try:
     # 尝试绝对导入
@@ -290,12 +294,31 @@ except ImportError as e:
     customize_openapi = None
     MIDDLEWARE_AVAILABLE = False
 
+# 导入Redis初始化模块
+try:
+    from utils.redis_init import redis_lifespan, check_redis_health
+    REDIS_AVAILABLE = True
+    _get_logger().info("Redis模块导入成功")
+except ImportError as e:
+    _get_logger().warning(f"Redis模块导入失败: {e}")
+    REDIS_AVAILABLE = False
+    redis_lifespan = None
+    check_redis_health = None
+
 # 创建FastAPI应用
-app = FastAPI(
-    title="论文评价分析系统API",
-    description="北邮本科论文质量评价分析系统后端API",
-    version="1.0.0"
-)
+if REDIS_AVAILABLE and redis_lifespan:
+    app = FastAPI(
+        title="论文评价分析系统API",
+        description="北邮本科论文质量评价分析系统后端API",
+        version="1.0.0",
+        lifespan=redis_lifespan
+    )
+else:
+    app = FastAPI(
+        title="论文评价分析系统API",
+        description="北邮本科论文质量评价分析系统后端API",
+        version="1.0.0"
+    )
 
 # 配置CORS
 app.add_middleware(
@@ -368,7 +391,31 @@ async def root():
 # 健康检查
 @app.get("/health")
 async def health_check():
-    return {"status": "healthy", "timestamp": datetime.now().isoformat()}
+    health_info = {
+        "status": "healthy", 
+        "timestamp": datetime.now().isoformat(),
+        "services": {}
+    }
+    
+    # 检查Redis状态
+    if REDIS_AVAILABLE and check_redis_health:
+        try:
+            redis_health = await check_redis_health()
+            health_info["services"]["redis"] = redis_health
+        except Exception as e:
+            health_info["services"]["redis"] = {
+                "status": "error",
+                "connected": False,
+                "message": f"Redis健康检查失败: {e}"
+            }
+    else:
+        health_info["services"]["redis"] = {
+            "status": "unavailable",
+            "connected": False,
+            "message": "Redis模块未加载"
+        }
+    
+    return health_info
 
 # 文档上传接口
 @app.post("/api/upload")

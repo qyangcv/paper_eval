@@ -4,10 +4,15 @@
 """
 
 from typing import Dict, Any, Optional, Callable, Union, List
-from ..tools.docx_tools.docx2md import convert_docx_bytes_to_md
-from ..tools.docx_tools.md2pkl import convert_md_content_to_pkl_data
-from ..pipeline.quality_assessment import evaluate_paper_quality
-from ..tools.logger import get_logger
+from pathlib import Path
+import sys
+
+sys.path.insert(0, str(Path(__file__).parent.parent))
+
+from tools.docx_tools.docx2md import convert_docx_bytes_to_md
+from tools.docx_tools.md2pkl import convert_md_content_to_pkl_data
+from pipeline.quality_assessment import evaluate_paper_quality
+from tools.logger import get_logger
 
 logger = get_logger(__name__)
 
