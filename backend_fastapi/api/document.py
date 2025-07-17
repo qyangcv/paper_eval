@@ -105,7 +105,7 @@ async def upload_document(file: UploadFile = File(...)):
         if not is_valid:
             logger.warning(f"文件验证失败: {error_msg}")
             raise HTTPException(status_code=400, detail=error_msg)
-        
+        /
         # 读取文件内容
         file_content = await file.read()
         file_size = len(file_content)

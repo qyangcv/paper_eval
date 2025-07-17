@@ -1081,3 +1081,6 @@
 2025-07-16 22:43:27 [INFO] utils.redis_init: 正在初始化Redis连接...
 2025-07-16 22:43:27 [INFO] utils.redis_client: Redis连接成功
 2025-07-16 22:43:27 [INFO] utils.redis_init: Redis连接初始化成功
+2025-07-16 23:12:04 [INFO] utils.redis_init: 正在关闭Redis连接...
+2025-07-16 23:12:04 [INFO] utils.redis_client: Redis连接已断开
+2025-07-16 23:12:04 [INFO] utils.redis_init: Redis连接已关闭

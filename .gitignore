@@ -35,7 +35,7 @@ build/
 # 数据文件
 *.pkl
 *.png
-*.docx
+# *.docx
 *.jpeg
 *.json
 *.log
@@ -48,4 +48,4 @@ build/
 # 数据目录
 /data/
 /logs/
-backend_fastapi/data/
+# backend_fastapi/data/
