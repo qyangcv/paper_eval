@@ -4,7 +4,7 @@ import { ElMessage } from 'element-plus'
 // 创建axios实例
 const api = axios.create({
   baseURL: 'http://localhost:8000',
-  timeout: 0, // 移除超时限制，允许长时间处理
+  timeout: 600000, // 10分钟超时，考虑到分析需要5-7分钟
   headers: {
     'Content-Type': 'application/json'
   }
@@ -26,14 +26,34 @@ api.interceptors.response.use(
   response => {
     return response
   },
-  error => {
+  async error => {
     console.error('API请求错误:', error)
+
+    const config = error.config
+
+    // 如果是超时错误且配置了重试，则进行重试
+    if (error.code === 'ECONNABORTED' && config && config.retry > 0) {
+      config.retry -= 1
+      console.log(`请求超时，正在重试... 剩余重试次数: ${config.retry}`)
+      console.log('注意：分析通常需要5-7分钟，请耐心等待')
+
+      // 等待一段时间后重试
+      if (config.retryDelay) {
+        await new Promise(resolve => setTimeout(resolve, config.retryDelay))
+      }
+
+      return api(config)
+    }
 
     let message = '请求失败'
     if (error.response) {
       message = error.response.data?.detail || error.response.statusText
     } else if (error.request) {
-      message = '网络连接失败'
+      if (error.code === 'ECONNABORTED') {
+        message = '请求超时，请稍后重试'
+      } else {
+        message = '网络连接失败'
+      }
     } else {
       message = error.message
     }
@@ -103,7 +123,19 @@ export default {
 
   // 获取问题分析数据（用于环形图和问题列表）
   getIssues (taskId) {
-    return api.get(`/api/analysis/${taskId}/issues`)
+    return api.get(`/api/analysis/${taskId}/issues`, {
+      timeout: 480000, // 8分钟超时，给分析留足时间
+      // 添加重试机制
+      retry: 2, // 减少重试次数，避免过长等待
+      retryDelay: 5000 // 增加重试延迟到5秒
+    })
+  },
+
+  // 获取评估状态
+  getEvaluationStatus (taskId) {
+    return api.get(`/api/analysis/${taskId}/evaluation-status`, {
+      timeout: 15000 // 15秒超时，状态查询应该很快
+    })
   },
 
   // ========== 文档预览专用API接口 ==========

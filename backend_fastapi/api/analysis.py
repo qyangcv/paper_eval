@@ -16,10 +16,9 @@ sys.path.insert(0, str(Path(__file__).parent.parent))
 from tools.logger import get_logger
 from utils.redis_client import get_redis_manager
 from utils.task_storage import get_task_storage
+from utils.async_tasks import get_task_manager
 from api.eval_module import (
-    hard_eval,
-    soft_eval,
-    img_eval
+    soft_eval
 )
 
 logger = get_logger(__name__)
@@ -405,12 +404,31 @@ async def get_hard_eval(task_id: str):
             if document_info.get('hard_eval_error') or 'soft_eval_result' not in document_info:
                 logger.info("无模型分析，返回空的硬指标结果")
                 hard_result = {
-                    "summary": {"total_issues": 0, "severity_distribution": {}},
+                    "summary": {
+                        "total_issues": 0,
+                        "issue_types": [],
+                        "severity_distribution": {"高": 0, "中": 0, "低": 0}
+                    },
                     "by_chapter": {}
                 }
             else:
-                logger.info("未找到预计算的硬指标结果，重新计算...")
-                hard_result = await hard_eval(task_id)
+                logger.info("未找到预计算的硬指标结果，启动后台任务并返回默认结果")
+
+                # 启动后台评估任务
+                task_manager = await get_task_manager()
+                if not task_manager.is_task_running(task_id):
+                    await task_manager.start_evaluation_task(task_id, document_info)
+
+                # 返回默认结果，避免前端超时
+                hard_result = {
+                    "summary": {
+                        "total_issues": 0,
+                        "issue_types": [],
+                        "severity_distribution": {"高": 0, "中": 0, "低": 0},
+                        "message": "问题分析数据正在生成中，请稍后刷新页面查看"
+                    },
+                    "by_chapter": {}
+                }
 
         if img_result is None:
             logger.info("未找到预计算的图片分析结果，使用默认结果...")
@@ -420,16 +438,35 @@ async def get_hard_eval(task_id: str):
                 "message": "图片查重分析已跳过"
             }
 
-        # 解析结果
-        if isinstance(hard_result, str):
-            hard_data = json.loads(hard_result)
-        else:
-            hard_data = hard_result
+        # 解析结果，添加错误处理
+        try:
+            if isinstance(hard_result, str):
+                hard_data = json.loads(hard_result)
+            else:
+                hard_data = hard_result
+        except (json.JSONDecodeError, TypeError) as e:
+            logger.error(f"解析硬指标结果失败: {e}")
+            hard_data = {
+                "summary": {
+                    "total_issues": 0,
+                    "issue_types": [],
+                    "severity_distribution": {"高": 0, "中": 0, "低": 0}
+                },
+                "by_chapter": {}
+            }
 
-        if isinstance(img_result, str):
-            img_data = json.loads(img_result)
-        else:
-            img_data = img_result
+        try:
+            if isinstance(img_result, str):
+                img_data = json.loads(img_result)
+            else:
+                img_data = img_result
+        except (json.JSONDecodeError, TypeError) as e:
+            logger.error(f"解析图片分析结果失败: {e}")
+            img_data = {
+                "total_reused": 0,
+                "detail": [],
+                "message": "图片查重分析已跳过"
+            }
 
         # 将图片查重问题添加到issues中
         if img_data.get('total_reused', 0) > 0:
@@ -469,3 +506,49 @@ async def get_hard_eval(task_id: str):
 
 # 预览相关接口已移动到preview.py
 # 图片评价接口已整合到issues接口中
+
+@router.get("/{task_id}/evaluation-status")
+async def get_evaluation_status(task_id: str):
+    """
+    获取评估任务状态
+
+    Args:
+        task_id: 任务ID
+
+    Returns:
+        dict: 评估状态信息
+    """
+    try:
+        logger.info(f"获取任务 {task_id} 的评估状态")
+
+        # 获取Redis管理器
+        redis_mgr = await get_redis_manager()
+
+        # 检查文档是否存在
+        document_info = await redis_mgr.get_document(task_id)
+        if document_info is None:
+            raise HTTPException(status_code=404, detail="文档不存在")
+
+        # 获取任务管理器
+        task_manager = await get_task_manager()
+
+        # 检查各项评估状态
+        status = {
+            "hard_eval_completed": document_info.get('hard_eval_result') is not None,
+            "soft_eval_completed": document_info.get('soft_eval_result') is not None,
+            "img_eval_completed": document_info.get('img_eval_result') is not None,
+            "background_task_running": task_manager.is_task_running(task_id),
+            "has_errors": bool(document_info.get('hard_eval_error') or document_info.get('soft_eval_error')),
+            "message": "评估完成" if all([
+                document_info.get('hard_eval_result') is not None,
+                document_info.get('img_eval_result') is not None
+            ]) else "评估进行中"
+        }
+
+        return status
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"获取评估状态失败: {e}")
+        raise HTTPException(status_code=500, detail=f"获取评估状态失败: {str(e)}")

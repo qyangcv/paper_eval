@@ -85,9 +85,10 @@ SECURITY_CONFIG = {
 # 任务配置
 TASK_CONFIG = {
     'max_concurrent_tasks': 10,
-    'task_timeout': 0,  # 移除任务超时限制
+    'task_timeout': 600,  # 10分钟超时，考虑到分析需要5-7分钟
     'cleanup_interval': 3600,  # 1小时清理一次过期任务
     'max_task_history': 1000,  # 最多保留1000个任务记录
+    'evaluation_timeout': 480,  # 评估任务8分钟超时
 }
 
 # 缓存配置
@@ -118,8 +119,9 @@ DOCUMENT_CONFIG = {
     'supported_formats': ['.docx', '.doc'],
     'max_pages': 500,
     'max_chapters': 50,
-    'processing_timeout': 0,  # 移除文档处理超时限制
+    'processing_timeout': 600,  # 10分钟文档处理超时
     'temp_file_cleanup': True,
+    'evaluation_timeout': 480,  # 8分钟评估超时
 }
 
 # 模型评估配置

@@ -2,21 +2,14 @@
 论文处理API子模块，供合并使用
 """
 
-import uuid
-import asyncio
-from datetime import datetime
-from fastapi import APIRouter, HTTPException, BackgroundTasks
-from pydantic import BaseModel
-from typing import Dict, Any, Optional
-from pathlib import Path
+from fastapi import APIRouter, HTTPException
 import json
 import sys
+from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from tools.logger import get_logger
-from pipeline.paper_evaluation import full_paper_evaluation
-from utils.task_storage import get_task_storage
 from utils.redis_client import get_redis_manager
 
 from api.document import get_document_markdown, extract_references_from_markdown
@@ -80,12 +73,12 @@ async def hard_eval(document_id: str):
                         "by_chapter": {}
                     }
 
-            # 将结果存储到Redis，设置1小时过期时间
-            # 缓存可以提高响应速度，避免重复计算
+            # 将结果存储到Redis，设置较长的过期时间
+            # 考虑到分析需要5-7分钟，缓存时间设置为4小时
             try:
                 response_json = json.dumps(response, ensure_ascii=False, default=str)
                 if redis_mgr._client:
-                    await redis_mgr._client.setex(key, 3600, response_json)  # 1小时过期
+                    await redis_mgr._client.setex(key, 14400, response_json)  # 4小时过期
                     logger.info(f"硬指标评价结果已存储到Redis: {document_id}")
             except Exception as store_error:
                 logger.warning(f"存储硬指标评价结果到Redis失败: {store_error}")
@@ -139,12 +132,12 @@ async def soft_eval(document_id: str):
             # 调用pipeline中的软指标评价函数，通常涉及AI模型调用
             response = soft_criterial_eval(md_content)
             
-            # 将结果存储到Redis，设置1小时过期时间
-            # 软指标评价成本较高，缓存可以显著提升用户体验
+            # 将结果存储到Redis，设置较长的过期时间
+            # 软指标评价成本较高，考虑到分析需要5-7分钟，缓存时间设置为4小时
             try:
                 response_json = json.dumps(response, ensure_ascii=False, default=str)
                 if redis_mgr._client:
-                    await redis_mgr._client.setex(key, 3600, response_json)  # 1小时过期
+                    await redis_mgr._client.setex(key, 14400, response_json)  # 4小时过期
                     logger.info(f"软指标评价结果已存储到Redis: {document_id}")
             except Exception as store_error:
                 logger.warning(f"存储软指标评价结果到Redis失败: {store_error}")
@@ -214,11 +207,12 @@ async def ref_eval(document_id: str):
             # 使用AI模型检查引用格式的规范性
             response = reference_eval(references)
             
-            # 将结果存储到Redis，设置1小时过期时间
+            # 将结果存储到Redis，设置较长的过期时间
+            # 考虑到分析需要5-7分钟，缓存时间设置为4小时
             try:
                 response_json = json.dumps(response, ensure_ascii=False, default=str)
                 if redis_mgr._client:
-                    await redis_mgr._client.setex(key, 3600, response_json)  # 1小时过期
+                    await redis_mgr._client.setex(key, 14400, response_json)  # 4小时过期
                     logger.info(f"参考文献评价结果已存储到Redis: {document_id}")
             except Exception as store_error:
                 logger.warning(f"存储参考文献评价结果到Redis失败: {store_error}")

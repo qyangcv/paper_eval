@@ -340,6 +340,14 @@ class OmmlToLatexConverter:
                         continue
                 expr_parts.append(expr)
 
+        # Special handling for piecewise functions (cases)
+        # Check if this looks like a piecewise function with conditions
+        if left_delim == '{' and len(expr_parts) >= 2:
+            # Look for patterns like "0, i≥j" and "-∞, i<j" or similar
+            cases_pattern = self._detect_piecewise_pattern(expr_parts)
+            if cases_pattern:
+                return self._format_as_cases(cases_pattern)
+
         # Forced special handling for p_θ(y|x,I) patterns - this is a common case in ML papers
         # Check if we have exactly 2 expressions and no explicit separator
         if len(expr_parts) == 2 and not sep_char and left_delim == '(' and right_delim == ')':
@@ -350,15 +358,15 @@ class OmmlToLatexConverter:
                     parent_text = p.text or ""
                     if parent_text:
                         parent_context += parent_text
-            
+
             # Look for typical probability notations in parent context
             prob_indicators = ['p', 'P', 'Pr', 'θ', 'log']
-            
+
             # First part is typically a single variable like y
             first_part = expr_parts[0].strip()
             # Second part often contains x, context, etc.
             second_part = expr_parts[1].strip()
-            
+
             # If the first part is a single letter (like y) and second part contains typical variables
             if ((len(first_part) <= 2 and any(x in second_part for x in ['x', 'X', 'I', 'c'])) or
                 (any(p in parent_context for p in prob_indicators))):
@@ -394,7 +402,126 @@ class OmmlToLatexConverter:
 
         # LaTeX requires \left and \right before certain delimiters
         return f"\\left{left_delim_tex} {inner_expr} \\right{right_delim_tex}"
-    
+
+    def _detect_piecewise_pattern(self, expr_parts):
+        """Detect if the expressions form a piecewise function pattern."""
+        if len(expr_parts) < 1:
+            return None
+
+        # Join all parts to analyze the full expression
+        full_expr = ' '.join(expr_parts)
+
+        # Enhanced pattern detection for various piecewise function formats
+        # Pattern 1: Mask matrix pattern "0, i≥j−∞, i<j" or similar
+        mask_patterns = [
+            r'0.*?i.*?[≥>=].*?j.*?[−\-]?.*?∞.*?i.*?<.*?j',  # 0, i≥j, −∞, i<j
+            r'0.*?i.*?[≥>=].*?j.*?∞.*?i.*?<.*?j',  # 0, i≥j, ∞, i<j (without minus)
+            r'0.*?i.*?j.*?∞.*?i.*?j',  # General: 0, something with i,j, infinity, something with i,j
+        ]
+
+        # Pattern 2: General piecewise patterns
+        general_patterns = [
+            r'(\w+)\s*,\s*([a-zA-Z]\s*[≥≤<>=]\s*[a-zA-Z]).*?([−\-]?\w*∞?\w*)\s*,\s*([a-zA-Z]\s*[≥≤<>=]\s*[a-zA-Z])',  # value, condition, value, condition
+            r'(\w+)\s*,.*?([a-zA-Z]\s*[≥≤<>=]\s*[a-zA-Z]).*?(\w+)\s*,.*?([a-zA-Z]\s*[≥≤<>=]\s*[a-zA-Z])',  # flexible pattern
+        ]
+
+        # Check mask patterns first (more specific)
+        for pattern in mask_patterns:
+            if re.search(pattern, full_expr):
+                return self._parse_piecewise_components(full_expr)
+
+        # Check general patterns
+        for pattern in general_patterns:
+            match = re.search(pattern, full_expr)
+            if match:
+                return self._parse_general_piecewise(match, full_expr)
+
+        return None
+
+    def _parse_piecewise_components(self, expr):
+        """Parse piecewise function components from the expression."""
+        # Handle the specific mask matrix pattern: "0, i≥j−∞, i<j"
+        if '0' in expr and 'i' in expr and 'j' in expr and '∞' in expr:
+            # This looks like a mask matrix definition
+            cases = []
+
+            # Extract the first case: value when i≥j
+            if re.search(r'0\s*,?\s*i\s*[≥>=]\s*j', expr):
+                cases.append(('0', 'i \\geq j'))
+
+            # Extract the second case: value when i<j
+            if re.search(r'[−\-]\s*∞\s*,?\s*i\s*<\s*j', expr):
+                cases.append(('-\\infty', 'i < j'))
+            elif re.search(r'∞\s*,?\s*i\s*<\s*j', expr):
+                cases.append(('-\\infty', 'i < j'))
+
+            return cases if len(cases) >= 2 else None
+
+        return None
+
+    def _parse_general_piecewise(self, match, expr):
+        """Parse general piecewise function from regex match."""
+        try:
+            groups = match.groups()
+            if len(groups) >= 4:
+                # Extract value-condition pairs
+                cases = []
+
+                # First case
+                value1 = groups[0].strip()
+                condition1 = groups[1].strip()
+                cases.append((value1, self._clean_condition(condition1)))
+
+                # Second case
+                value2 = groups[2].strip()
+                condition2 = groups[3].strip()
+
+                # Handle infinity symbols
+                if '∞' in value2:
+                    if not value2.startswith('-') and not value2.startswith('−'):
+                        value2 = '-\\infty'
+                    else:
+                        value2 = '-\\infty'
+
+                cases.append((value2, self._clean_condition(condition2)))
+
+                return cases if len(cases) >= 2 else None
+        except:
+            pass
+
+        return None
+
+    def _clean_condition(self, condition):
+        """Clean and format a condition string for LaTeX."""
+        # Replace Unicode symbols with LaTeX equivalents
+        condition = condition.replace('≥', '\\geq')
+        condition = condition.replace('≤', '\\leq')
+        condition = condition.replace('≠', '\\neq')
+        condition = condition.replace('−', '-')
+
+        return condition.strip()
+
+    def _format_as_cases(self, cases_list):
+        """Format the cases as a LaTeX cases environment."""
+        if not cases_list or len(cases_list) < 2:
+            return None
+
+        cases_content = []
+        for value, condition in cases_list:
+            # Clean up the value and condition
+            clean_value = value.strip()
+            clean_condition = condition.strip()
+
+            # Ensure proper LaTeX formatting
+            if clean_value == '∞':
+                clean_value = '\\infty'
+            elif clean_value == '−∞' or clean_value == '-∞':
+                clean_value = '-\\infty'
+
+            cases_content.append(f"{clean_value}, & {clean_condition}")
+
+        return f"\\begin{{cases}} {' \\\\\\\\ '.join(cases_content)} \\end{{cases}}"
+
     def convert_matrix(self, element):
         """Convert matrix element."""
         # This is a simplified implementation
@@ -520,6 +647,20 @@ class OmmlToLatexConverter:
         for symbol, latex in self.symbol_map.items():
             text = text.replace(symbol, latex)
 
+        # Additional symbol replacements for common mathematical notation
+        # Handle various forms of infinity
+        text = text.replace('−∞', '-\\infty')
+        text = text.replace('-∞', '-\\infty')
+        text = text.replace('∞', '\\infty')
+
+        # Handle comparison operators that might not be in symbol_map
+        text = text.replace('≥', '\\geq')
+        text = text.replace('≤', '\\leq')
+        text = text.replace('≠', '\\neq')
+
+        # Handle minus sign variations
+        text = text.replace('−', '-')  # Replace Unicode minus with ASCII minus
+
         # Don't escape special characters in math mode as they might be part of LaTeX commands
         # Just remove problematic equation numbering patterns
         import re
@@ -591,6 +732,17 @@ class OmmlToLatexConverter:
 
         # Remove standalone # characters that aren't part of LaTeX commands
         latex_text = re.sub(r'(?<!\\)#(?![a-zA-Z])', '', latex_text)
+
+        # Fix infinity symbol issues
+        latex_text = re.sub(r'−\\\\infty', r'-\\infty', latex_text)
+        latex_text = re.sub(r'−∞', r'-\\infty', latex_text)
+        latex_text = re.sub(r'-∞', r'-\\infty', latex_text)
+        latex_text = re.sub(r'(?<!\\\\)∞', r'\\infty', latex_text)
+
+        # Fix comparison operators
+        latex_text = re.sub(r'(?<!\\\\)≥', r'\\geq', latex_text)
+        latex_text = re.sub(r'(?<!\\\\)≤', r'\\leq', latex_text)
+        latex_text = re.sub(r'(?<!\\\\)≠', r'\\neq', latex_text)
 
         # Fix double backslashes in LaTeX commands (except for line breaks)
         latex_text = re.sub(r'\\\\(?!\\|$)', r'\\', latex_text)

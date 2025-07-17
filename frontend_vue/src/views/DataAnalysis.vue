@@ -532,8 +532,9 @@
                           <div
                             v-for="(issue, index) in issues"
                             :key="issue.id"
-                            class="issue-item enhanced-issue-item"
+                            class="issue-item enhanced-issue-item clickable-issue"
                             :style="{ animationDelay: `${index * 0.1}s` }"
+                            @click="handleIssueClick(issue)"
                           >
                             <div class="issue-header enhanced-issue-header">
                               <div class="issue-meta">

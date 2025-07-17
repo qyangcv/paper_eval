@@ -45,7 +45,11 @@ build/
 !README.md
 !**/README.md
 
-# 数据目录
+# Redis 数据库文件
+dump.rdb
+*.rdb
+
+# 数据目录和日志目录
 /data/
 /logs/
 backend_fastapi/data/

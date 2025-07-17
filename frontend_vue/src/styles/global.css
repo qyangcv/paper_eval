@@ -251,6 +251,60 @@ html, body {
   transition: all 0.3s ease;
 }
 
+/* 高亮文本样式 - 全局样式，用于动态创建的元素 */
+.document-content .issue-highlight,
+.html-preview .issue-highlight,
+span.issue-highlight {
+  background: #fbbf24 !important;
+  color: #92400e !important;
+  padding: 2px 4px !important;
+  border-radius: 4px !important;
+  font-weight: 600 !important;
+  box-shadow: 0 2px 4px rgba(251, 191, 36, 0.3) !important;
+  animation: highlightPulse 2s ease-in-out !important;
+  display: inline !important;
+  position: relative !important;
+  z-index: 10 !important;
+}
+
+@keyframes highlightPulse {
+  0% {
+    background: #fbbf24;
+    transform: scale(1);
+  }
+  50% {
+    background: #fcd34d;
+    transform: scale(1.02);
+  }
+  100% {
+    background: #fbbf24;
+    transform: scale(1);
+  }
+}
+
+/* 连接线样式 - 全局样式，用于动态创建的元素 */
+.document-preview-container .connection-line,
+div.connection-line {
+  background: #fbbf24 !important;
+  box-shadow: 0 0 8px rgba(251, 191, 36, 0.5) !important;
+  border-radius: 1px !important;
+  animation: lineGlow 2s ease-in-out infinite alternate !important;
+  position: absolute !important;
+  z-index: 1000 !important;
+  pointer-events: none !important;
+}
+
+@keyframes lineGlow {
+  0% {
+    box-shadow: 0 0 8px rgba(251, 191, 36, 0.5);
+    opacity: 0.8;
+  }
+  100% {
+    box-shadow: 0 0 12px rgba(251, 191, 36, 0.8);
+    opacity: 1;
+  }
+}
+
 .slide-up-enter-from {
   transform: translateY(20px);
   opacity: 0;
