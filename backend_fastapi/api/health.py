@@ -33,48 +33,7 @@ class HealthResponse(BaseModel):
 # 应用启动时间
 app_start_time = datetime.now()
 
-@router.get("/", response_model=HealthResponse)
-async def health_check():
-    """
-    系统健康检查
-    
-    Returns:
-        HealthResponse: 健康状态信息
-    """
-    try:
-        current_time = datetime.now()
-        uptime = (current_time - app_start_time).total_seconds()
-        
-        # 系统信息
-        system_info = {
-            'cpu_percent': psutil.cpu_percent(interval=1),
-            'memory_percent': psutil.virtual_memory().percent,
-            'disk_percent': psutil.disk_usage('/').percent,
-            'python_version': f"{psutil.sys.version_info.major}.{psutil.sys.version_info.minor}.{psutil.sys.version_info.micro}",
-        }
-        
-        # 模型状态
-        model_status = model_manager.get_model_status()
-        
-        return HealthResponse(
-            status="healthy",
-            timestamp=current_time.isoformat(),
-            version=APP_CONFIG['version'],
-            uptime=uptime,
-            system=system_info,
-            models=model_status
-        )
-        
-    except Exception as e:
-        logger.error(f"健康检查失败: {e}")
-        return HealthResponse(
-            status="unhealthy",
-            timestamp=datetime.now().isoformat(),
-            version=APP_CONFIG['version'],
-            uptime=0,
-            system={},
-            models={}
-        )
+# 这个路由已经在main.py中定义，这里删除避免重复
 
 @router.get("/models")
 async def check_models():

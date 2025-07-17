@@ -21,12 +21,14 @@ from backend_fastapi.tools.logger import get_logger
 def setup_logging(environment: str = 'development'):
     """
     设置日志配置
-    
+
     Args:
         environment: 环境类型
     """
-    log_config = get_log_config(environment)
-    logging.config.dictConfig(log_config)
+    # 不在这里设置日志配置，让main.py中的彩色日志配置生效
+    # log_config = get_log_config(environment)
+    # logging.config.dictConfig(log_config)
+    pass
 
 def check_dependencies():
     """检查必要的依赖"""
@@ -93,7 +95,7 @@ def check_environment():
                 f.write('test')
             os.remove(test_file)
         except Exception as e:
-            issues.append(f"目录 {path_name} ({path_value}) 权限问题: {e}")
+            issues.append(f"目录 {path_name} ({path_value}) 权限问题: {str(e)}")
 
     if not issues:
         logger.info("环境配置检查通过")

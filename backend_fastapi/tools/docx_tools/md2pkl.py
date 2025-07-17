@@ -130,23 +130,135 @@ def convert_md_to_pkl(md_path: str, pkl_path: str) -> bool:
         print(f'转换失败: {str(e)}')
         return False
 
+def extract_basic_info(md_content: str) -> Dict[str, Any]:
+    """
+    从Markdown内容中提取基础信息（标题、作者、学院、导师、关键词等）
+
+    Args:
+        md_content: Markdown内容字符串
+
+    Returns:
+        Dict[str, Any]: 基础信息字典
+    """
+    basic_info = {}
+
+    # 提取论文标题 - 通常在文档开头的第一个一级标题
+    title_patterns = [
+        r'^#\s+(.+?)(?=\n|$)',  # 第一个一级标题
+        r'^\*\*(.+?)\*\*(?=\n|$)',  # 加粗的标题
+        r'^(.+?)(?=\n\n|\n\*\*作者)',  # 文档开头到作者之前的内容
+    ]
+
+    title = "未知标题"
+    for pattern in title_patterns:
+        match = re.search(pattern, md_content, re.MULTILINE)
+        if match:
+            potential_title = match.group(1).strip()
+            # 过滤掉明显不是标题的内容
+            if len(potential_title) > 5 and len(potential_title) < 100 and not potential_title.startswith('第'):
+                title = potential_title
+                break
+
+    # 提取作者
+    author_patterns = [
+        r'\*\*作者[：:]\*\*\s*(.+?)(?=\n|\*\*)',
+        r'作者[：:]\s*(.+?)(?=\n|$)',
+        r'\*\*姓名[：:]\*\*\s*(.+?)(?=\n|\*\*)',
+        r'姓名[：:]\s*(.+?)(?=\n|$)',
+    ]
+
+    author = "未知作者"
+    for pattern in author_patterns:
+        match = re.search(pattern, md_content, re.IGNORECASE)
+        if match:
+            author = match.group(1).strip()
+            break
+
+    # 提取学院/学校
+    school_patterns = [
+        r'\*\*学院[：:]\*\*\s*(.+?)(?=\n|\*\*)',
+        r'学院[：:]\s*(.+?)(?=\n|$)',
+        r'\*\*学校[：:]\*\*\s*(.+?)(?=\n|\*\*)',
+        r'学校[：:]\s*(.+?)(?=\n|$)',
+        r'\*\*院系[：:]\*\*\s*(.+?)(?=\n|\*\*)',
+        r'院系[：:]\s*(.+?)(?=\n|$)',
+    ]
+
+    school = "未知学院"
+    for pattern in school_patterns:
+        match = re.search(pattern, md_content, re.IGNORECASE)
+        if match:
+            school = match.group(1).strip()
+            break
+
+    # 提取导师
+    advisor_patterns = [
+        r'\*\*导师[：:]\*\*\s*(.+?)(?=\n|\*\*)',
+        r'导师[：:]\s*(.+?)(?=\n|$)',
+        r'\*\*指导教师[：:]\*\*\s*(.+?)(?=\n|\*\*)',
+        r'指导教师[：:]\s*(.+?)(?=\n|$)',
+    ]
+
+    advisor = "未知导师"
+    for pattern in advisor_patterns:
+        match = re.search(pattern, md_content, re.IGNORECASE)
+        if match:
+            advisor = match.group(1).strip()
+            break
+
+    # 提取关键词
+    keywords_patterns = [
+        r'\*\*关键词[：:]\*\*\s*(.+?)(?=\n\*\*|\n#|\Z)',
+        r'关键词[：:]\s*(.+?)(?=\n\*\*|\n#|\Z)',
+        r'\*\*KEY WORDS[：:]\*\*\s*(.+?)(?=\n\*\*|\n#|\Z)',
+    ]
+
+    keywords = []
+    for pattern in keywords_patterns:
+        match = re.search(pattern, md_content, re.IGNORECASE | re.DOTALL)
+        if match:
+            keywords_text = match.group(1).strip()
+            # 分割关键词，支持多种分隔符
+            keywords_list = re.split(r'[;；,，、\s]+', keywords_text)
+            keywords = [kw.strip() for kw in keywords_list if kw.strip()]
+            break
+
+    return {
+        'title': title,
+        'author': author,
+        'school': school,
+        'advisor': advisor,
+        'keywords': keywords
+    }
+
+
 def convert_md_content_to_pkl_data(md_content: str) -> Dict[str, Any]:
     """
     将Markdown内容转换为PKL数据结构
-    
+
     Args:
         md_content: Markdown内容字符串
-        
+
     Returns:
         Dict[str, Any]: 结构化的数据
     """
+    # 提取基础信息
+    basic_info = extract_basic_info(md_content)
+
+    # 提取其他内容
     zh_abs, en_abs = extract_abstracts(md_content)
     ref = extract_reference(md_content)
     chapters = extract_chapters(md_content)
-    
-    return {
+
+    # 合并所有数据
+    result = {
         'zh_abs': zh_abs,
         'en_abs': en_abs,
         'ref': ref,
         'chapters': chapters
     }
+
+    # 添加基础信息
+    result.update(basic_info)
+
+    return result

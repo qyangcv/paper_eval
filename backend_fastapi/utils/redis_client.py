@@ -9,8 +9,13 @@ import logging
 from typing import Any, Dict, Optional, Union
 
 # 导入Redis异步库
-import redis.asyncio as aioredis
-from redis.asyncio import Redis as AsyncRedis
+try:
+    import redis.asyncio as aioredis
+    from redis.asyncio import Redis as AsyncRedis
+except ImportError:
+    # 兼容旧版本的导入方式
+    import aioredis
+    AsyncRedis = aioredis.Redis
 
 from pathlib import Path
 import sys
@@ -46,16 +51,18 @@ class RedisManager:
                 encoding=REDIS_POOL_CONFIG['encoding'],
                 decode_responses=False,  # 处理二进制数据时设为False
             )
-            
+
             # 测试连接
             await self._client.ping()
             self._connected = True
             logger.info("Redis连接成功")
             return True
-            
+
         except Exception as e:
-            logger.error(f"Redis连接失败: {e}")
+            logger.warning(f"Redis连接失败: {e}")
+            logger.info("系统将在没有Redis缓存的情况下运行")
             self._connected = False
+            self._client = None
             return False
     
     async def disconnect(self):
@@ -76,31 +83,38 @@ class RedisManager:
     async def store_document(self, document_id: str, document_data: Dict[str, Any]) -> bool:
         """
         存储文档到Redis
-        
+
         Args:
             document_id: 文档唯一ID
             document_data: 文档数据字典
-            
+
         Returns:
             bool: 存储是否成功
         """
+        # 检查Redis连接状态
         if not self._connected or not self._client:
-            logger.error("Redis未连接")
+            logger.warning("Redis未连接，无法缓存文档")
             return False
-        
+
         try:
+            # 再次检查客户端是否有效
+            if self._client is None:
+                logger.warning("Redis客户端为空，无法缓存文档")
+                self._connected = False
+                return False
+
             # 处理二进制数据转换
             processed_data = self._encode_binary_data(document_data)
-            
+
             # 序列化为JSON
             serialized_data = json.dumps(processed_data, ensure_ascii=False)
-            
+
             # 检查数据大小限制
             data_size = len(serialized_data.encode('utf-8'))
             if data_size > DOCUMENT_REDIS_CONFIG['max_content_size']:
                 logger.error(f"文档过大: {data_size} > {DOCUMENT_REDIS_CONFIG['max_content_size']}")
                 return False
-            
+
             # 存储到Redis并设置过期时间
             key = self._get_document_key(document_id)
             await self._client.setex(
@@ -108,12 +122,16 @@ class RedisManager:
                 DOCUMENT_REDIS_CONFIG['expire_time'],
                 serialized_data
             )
-            
+
             logger.info(f"文档存储成功: {document_id}, 大小: {data_size} bytes")
             return True
-            
+
         except Exception as e:
             logger.error(f"文档存储失败: {document_id}, 错误: {e}")
+            # 如果是连接相关错误，标记为未连接
+            if "connection" in str(e).lower() or "_add_writer" in str(e):
+                self._connected = False
+                self._client = None
             return False
     
     async def get_document(self, document_id: str) -> Optional[Dict[str, Any]]:
@@ -127,7 +145,7 @@ class RedisManager:
             Optional[Dict[str, Any]]: 文档数据，不存在返回None
         """
         if not self._connected or not self._client:
-            logger.error("Redis未连接")
+            logger.warning("Redis未连接，无法从缓存获取文档")
             return None
         
         try:
@@ -156,7 +174,7 @@ class RedisManager:
     async def delete_document(self, document_id: str) -> bool:
         """删除Redis中的文档"""
         if not self._connected or not self._client:
-            logger.error("Redis未连接")
+            logger.warning("Redis未连接，无法删除缓存文档")
             return False
         
         try:

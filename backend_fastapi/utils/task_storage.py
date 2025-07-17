@@ -51,8 +51,10 @@ class TaskStorage:
             return True
             
         except Exception as e:
-            logger.error(f"任务存储Redis连接失败: {e}")
+            logger.warning(f"任务存储Redis连接失败: {e}")
+            logger.info("系统将在没有Redis任务缓存的情况下运行")
             self._connected = False
+            self._client = None
             return False
     
     async def disconnect(self):
@@ -75,7 +77,9 @@ class TaskStorage:
         if not self._connected or self._client is None:
             await self.connect()
         if not self._connected:
-            raise RuntimeError("无法连接到Redis")
+            logger.warning("Redis不可用，任务信息将不会被缓存")
+            return False
+        return True
     
     async def set_task(self, task_id: str, task_info: Dict[str, Any]) -> bool:
         """
@@ -89,23 +93,25 @@ class TaskStorage:
             bool: 设置是否成功
         """
         try:
-            await self._ensure_connected()
-            
+            if not await self._ensure_connected():
+                logger.warning(f"Redis不可用，无法缓存任务信息: {task_id}")
+                return False
+
             # 序列化任务信息
             task_data = json.dumps(task_info, ensure_ascii=False, default=str)
-            
+
             # 存储任务数据
             task_key = self._get_task_key(task_id)
             await self._client.set(task_key, task_data)  # type: ignore
-            
+
             # 添加到任务列表
             await self._client.sadd(self._task_list_key, task_id)  # type: ignore
-            
+
             logger.debug(f"任务信息设置成功: {task_id}")
             return True
-            
+
         except Exception as e:
-            logger.error(f"设置任务信息失败: {task_id}, 错误: {e}")
+            logger.warning(f"设置任务信息失败: {task_id}, 错误: {e}")
             return False
     
     async def get_task(self, task_id: str) -> Optional[Dict[str, Any]]:

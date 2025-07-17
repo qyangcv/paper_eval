@@ -36,12 +36,12 @@ class ErrorHandlerMiddleware(BaseHTTPMiddleware):
             
         except HTTPException as e:
             # FastAPI的HTTP异常，直接传递
-            logger.warning(f"HTTP异常: {e.status_code} - {e.detail} - {request.url}")
+            logger.warning("HTTP异常: %s - %s - %s", e.status_code, e.detail, request.url)
             raise e
             
         except ValueError as e:
             # 值错误，通常是参数验证失败
-            logger.error(f"参数错误: {str(e)} - {request.url}")
+            logger.error("参数错误: %s - %s", str(e), request.url)
             return JSONResponse(
                 status_code=400,
                 content={
@@ -93,7 +93,7 @@ class ErrorHandlerMiddleware(BaseHTTPMiddleware):
             
         except ConnectionError as e:
             # 连接错误
-            logger.error(f"连接错误: {str(e)} - {request.url}")
+            logger.error("连接错误: %s - %s", str(e), request.url)
             return JSONResponse(
                 status_code=503,
                 content={
@@ -110,8 +110,8 @@ class ErrorHandlerMiddleware(BaseHTTPMiddleware):
             error_traceback = traceback.format_exc()
             
             logger.error(
-                f"未处理的异常 [ID: {error_id}]: {str(e)} - {request.url}\n"
-                f"Traceback:\n{error_traceback}"
+                "未处理的异常 [ID: %s]: %s - %s\nTraceback:\n%s",
+                error_id, str(e), request.url, error_traceback
             )
             
             # 在开发环境中返回详细错误信息

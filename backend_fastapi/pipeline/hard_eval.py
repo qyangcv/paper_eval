@@ -162,8 +162,8 @@ def formatting_js(responses, ch_names, sub_ch_names):
         },
         "by_chapter": ordered_by_chapter
     }
-    
-    return json.dumps(result, ensure_ascii=False, indent=2)
+
+    return result
 
 
 def build_prompts(abs, chapters):
@@ -199,7 +199,15 @@ def eval(md_content):
     
     if not toc or not abs or not chapters:
         logger.error("Markdown格式不符合要求，无法提取目录、摘要或正文内容")
-        return []
+        # 返回空的标准格式而不是空列表
+        return {
+            "summary": {
+                "total_issues": 0,
+                "issue_types": [],
+                "severity_distribution": {"高": 0, "中": 0, "低": 0}
+            },
+            "by_chapter": {}
+        }
 
     # 检查正文中的主观用词：“我们”“我”
     colloquial_cases = _scan_colloquial_words(chapters)

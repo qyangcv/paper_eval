@@ -48,4 +48,5 @@ build/
 # 数据目录
 /data/
 /logs/
-# backend_fastapi/data/
+backend_fastapi/data/
+backend_fastapi/preview/

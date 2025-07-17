@@ -13,7 +13,7 @@ const routes = [
     }
   },
   {
-    path: '/preview',
+    path: '/preview/:taskId',
     name: 'DocumentPreview',
     component: DocumentPreview,
     meta: {
@@ -21,12 +21,21 @@ const routes = [
     }
   },
   {
-    path: '/analysis',
+    path: '/analysis/:taskId',
     name: 'DataAnalysis',
     component: DataAnalysis,
     meta: {
       title: '数据分析'
     }
+  },
+  // 兼容旧路由（无taskId参数）
+  {
+    path: '/preview',
+    redirect: '/'
+  },
+  {
+    path: '/analysis',
+    redirect: '/'
   }
 ]
 

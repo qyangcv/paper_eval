@@ -11,7 +11,7 @@ MODEL_CONFIG = {
         'api_base': 'https://api.deepseek.com',
         'max_tokens': 8192,
         'temperature': 0.7,
-        'timeout': 60,
+        'timeout': 0,  # 移除超时限制
         'retry_times': 3,
         'retry_delay': 1,
     },
@@ -21,7 +21,7 @@ MODEL_CONFIG = {
         'api_base': 'https://api.deepseek.com',
         'max_tokens': 8192,
         'temperature': 0.7,
-        'timeout': 120,  # 推理模型需要更长时间
+        'timeout': 0,  # 移除超时限制
         'retry_times': 3,
         'retry_delay': 1,
     },
@@ -31,7 +31,7 @@ MODEL_CONFIG = {
         'api_base': 'https://generativelanguage.googleapis.com',
         'max_tokens': 8192,
         'temperature': 0.7,
-        'timeout': 60,
+        'timeout': 0,  # 移除超时限制
         'retry_times': 3,
         'retry_delay': 1,
     },
@@ -41,7 +41,7 @@ MODEL_CONFIG = {
         'api_base': 'https://dashscope.aliyuncs.com/compatible-mode/v1',
         'max_tokens': 8192,
         'temperature': 0.7,
-        'timeout': 60,
+        'timeout': 0,  # 移除超时限制
         'retry_times': 3,
         'retry_delay': 1,
     },
