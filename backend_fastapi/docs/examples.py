@@ -8,14 +8,11 @@ DOCUMENT_UPLOAD_EXAMPLES = {
     "success_response": {
         "summary": "文档上传成功",
         "value": {
-            "success": True,
-            "message": "文档上传成功",
-            "document_id": "123e4567-e89b-12d3-a456-426614174000",
-            "file_info": {
-                "filename": "论文.docx",
-                "size": 1024000,
-                "content_type": "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
-            }
+            "task_id": "123e4567-e89b-12d3-a456-426614174000",
+            "filename": "论文.docx",
+            "file_size": 1024000,
+            "upload_time": "2025-07-17T01:10:56.228579",
+            "status": "uploaded"
         }
     },
     "error_response": {

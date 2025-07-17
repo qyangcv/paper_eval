@@ -49,3 +49,4 @@ build/
 /data/
 /logs/
 backend_fastapi/data/
+backend_fastapi/preview/

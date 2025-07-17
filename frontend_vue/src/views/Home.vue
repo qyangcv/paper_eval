@@ -172,21 +172,10 @@
                   <el-icon v-if="!isProcessing"><DataAnalysis /></el-icon>
                   <span>{{ isProcessing ? '正在分析中...' : '🚀 开始智能分析' }}</span>
                 </el-button>
-
-                <el-button
-                  type="success"
-                  size="large"
-                  plain
-                  @click="loadTestPreview"
-                  class="test-btn"
-                >
-                  <el-icon><Document /></el-icon>
-                  <span>📖 测试预览</span>
-                </el-button>
               </div>
 
               <div class="analysis-info" v-if="!selectedFile">
-                <p>💡 请先上传Word文档以开始分析，或点击"测试预览"查看示例</p>
+                <p>💡 请先上传Word文档以开始分析</p>
               </div>
             </div>
           </div>
@@ -220,7 +209,7 @@
             <el-input
               v-model="apiKeys.deepseek"
               type="password"
-              placeholder="sk-e6068e4723e74a4b8a8e2788cf7ac055"
+              placeholder="请输入DeepSeek API密钥"
               show-password
             />
             <div class="api-hint">
@@ -354,7 +343,7 @@ export default {
 
     // API密钥管理
     const apiKeys = ref({
-      deepseek: documentStore.apiKeys.deepseek || 'sk-e6068e4723e74a4b8a8e2788cf7ac055',
+      deepseek: documentStore.apiKeys.deepseek || '',
       gemini: documentStore.apiKeys.gemini || '',
       gpt: documentStore.apiKeys.gpt || ''
     })
@@ -473,12 +462,12 @@ export default {
 
         // 2. 开始处理 - 直接使用axios发送请求
         const modelName = selectedModel.value
-        let apiKey = apiKeys.value[modelName] || ''
+        const apiKey = apiKeys.value[modelName] || ''
 
-        // 如果是deepseek模型且没有设置API密钥，使用默认密钥
-        if (modelName.startsWith('deepseek') && !apiKey) {
-          apiKey = 'sk-e6068e4723e74a4b8a8e2788cf7ac055'
-          console.log('使用默认DeepSeek API密钥')
+        // 检查API密钥是否设置
+        if (!apiKey && modelName !== 'none') {
+          ElMessage.error(`请先设置${modelName}模型的API密钥`)
+          return
         }
 
         const processRequestData = {
@@ -546,7 +535,22 @@ export default {
     const viewResults = () => {
       showProcessingDialog.value = false
       isProcessing.value = false
-      router.push('/preview')
+
+      // 确保有taskId才跳转
+      if (currentTaskId.value) {
+        // 更新documentStore状态，解锁导航栏
+        if (!documentStore.currentTask) {
+          documentStore.currentTask = { task_id: currentTaskId.value }
+        }
+        documentStore.processingStatus = {
+          status: 'completed',
+          progress: 1.0,
+          message: '分析完成！'
+        }
+        router.push(`/preview/${currentTaskId.value}`)
+      } else {
+        ElMessage.error('任务ID丢失，无法跳转到预览页面')
+      }
     }
 
     const cancelProcessing = () => {
@@ -561,22 +565,6 @@ export default {
       processingStatus.value = 'pending'
       processingProgress.value = 0
       currentTaskId.value = null
-    }
-
-    // 加载测试预览
-    const loadTestPreview = async () => {
-      try {
-        const success = await documentStore.loadTestFile()
-        if (success) {
-          ElMessage.success('测试文件加载成功！')
-          router.push('/preview')
-        } else {
-          ElMessage.error('测试文件加载失败')
-        }
-      } catch (error) {
-        console.error('加载测试文件失败:', error)
-        ElMessage.error('测试文件加载失败')
-      }
     }
 
     onMounted(() => {
@@ -626,8 +614,7 @@ export default {
       startAnalysis,
       retryProcessing,
       viewResults,
-      cancelProcessing,
-      loadTestPreview
+      cancelProcessing
     }
   }
 }

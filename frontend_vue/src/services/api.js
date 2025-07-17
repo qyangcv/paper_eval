@@ -4,7 +4,7 @@ import { ElMessage } from 'element-plus'
 // 创建axios实例
 const api = axios.create({
   baseURL: 'http://localhost:8000',
-  timeout: 300000, // 5分钟超时，因为文档处理可能需要较长时间
+  timeout: 0, // 移除超时限制，允许长时间处理
   headers: {
     'Content-Type': 'application/json'
   }
@@ -126,14 +126,8 @@ export default {
   // 并行加载所有数据分析数据
   async loadAllAnalysisData (taskId) {
     try {
-      const [
-        basicInfo,
-        overallStats,
-        chapterStats,
-        referenceStats,
-        evaluation,
-        issues
-      ] = await Promise.all([
+      // 使用Promise.allSettled来处理部分API可能失败的情况（如无模型分析）
+      const results = await Promise.allSettled([
         this.getBasicInfo(taskId),
         this.getOverallStats(taskId),
         this.getChapterStats(taskId),
@@ -142,13 +136,63 @@ export default {
         this.getIssues(taskId)
       ])
 
+      // 处理结果，为失败的请求提供默认值
+      const [
+        basicInfoResult,
+        overallStatsResult,
+        chapterStatsResult,
+        referenceStatsResult,
+        evaluationResult,
+        issuesResult
+      ] = results
+
       return {
-        basic_info: basicInfo.data,
-        overall_stats: overallStats.data,
-        chapter_stats: chapterStats.data,
-        reference_stats: referenceStats.data,
-        evaluation: evaluation.data,
-        issue_list: issues.data
+        basic_info: basicInfoResult.status === 'fulfilled'
+          ? basicInfoResult.value.data
+          : {
+              title: '未知标题',
+              author: '未知作者',
+              school: '未知学院',
+              advisor: '未知导师',
+              keywords: []
+            },
+        overall_stats: overallStatsResult.status === 'fulfilled'
+          ? overallStatsResult.value.data
+          : {
+              total_words: 0,
+              total_chapters: 0,
+              total_paragraphs: 0,
+              total_images: 0,
+              total_tables: 0,
+              total_formulas: 0,
+              total_references: 0
+            },
+        chapter_stats: chapterStatsResult.status === 'fulfilled'
+          ? chapterStatsResult.value.data
+          : {
+              chapters: []
+            },
+        reference_stats: referenceStatsResult.status === 'fulfilled'
+          ? referenceStatsResult.value.data
+          : {
+              total_references: 0,
+              by_type: {},
+              by_language: {},
+              recent_years: {}
+            },
+        evaluation: evaluationResult.status === 'fulfilled'
+          ? evaluationResult.value.data
+          : {
+              dimensions: [],
+              overall_score: 0,
+              summary: '无模型分析，未进行质量评估'
+            },
+        issue_list: issuesResult.status === 'fulfilled'
+          ? issuesResult.value.data
+          : {
+              summary: { total_issues: 0, severity_distribution: {} },
+              by_chapter: {}
+            }
       }
     } catch (error) {
       console.error('数据加载失败:', error)

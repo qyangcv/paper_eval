@@ -6,11 +6,11 @@
 import os
 import sys
 import uuid
-import logging
 import base64
 import tempfile
 import re
 from pathlib import Path
+from datetime import datetime
 from typing import Dict, Any, Optional, Tuple, List
 from typing import Dict, Any, Optional
 from fastapi import APIRouter, File, UploadFile, HTTPException, Form
@@ -32,10 +32,11 @@ router = APIRouter()
 # 响应模型
 class DocumentUploadResponse(BaseModel):
     """文档上传响应模型"""
-    success: bool
-    message: str
-    document_id: Optional[str] = None
-    file_info: Optional[Dict[str, Any]] = None
+    task_id: str
+    filename: str
+    file_size: int
+    upload_time: str
+    status: str
 
 class DocumentProcessResponse(BaseModel):
     """文档处理响应模型"""
@@ -137,21 +138,266 @@ async def upload_document(file: UploadFile = File(...)):
         
         logger.info(f"文档上传成功: {file.filename}, ID: {document_id}")
         
-        return DocumentUploadResponse(
-            success=True,
-            message="文档上传成功",
-            document_id=document_id,
-            file_info={
-                'filename': file.filename,
-                'size': file_size,
-            }
-        )
+        # 按照前端API需求返回格式
+        return {
+            "task_id": document_id,
+            "filename": file.filename,
+            "file_size": file_size,
+            "upload_time": datetime.now().isoformat(),
+            "status": "uploaded"
+        }
         
     except HTTPException:
         raise
     except Exception as e:
         logger.error(f"文档上传失败: {e}")
         raise HTTPException(status_code=500, detail=f"文档上传失败: {str(e)}")
+
+# 新的处理接口，符合前端API需求
+@router.post("/process")
+async def process_document_api(request: dict):
+    """
+    开始分析已上传的文档
+
+    Args:
+        request: 包含task_id和model_config的请求体
+
+    Returns:
+        dict: 处理结果
+    """
+    try:
+        task_id = request.get('task_id')
+        model_config = request.get('model_config', {})
+
+        if not task_id:
+            raise HTTPException(status_code=400, detail="缺少task_id参数")
+
+        logger.info(f"开始处理文档: {task_id}")
+
+        # 获取Redis管理器
+        redis_mgr = await get_redis_manager()
+
+        # 检查文档是否存在
+        document_info = await redis_mgr.get_document(task_id)
+        if document_info is None:
+            raise HTTPException(status_code=404, detail="文档不存在")
+
+        # 检查文档状态
+        if document_info['status'] == 'processing':
+            raise HTTPException(status_code=409, detail="文档正在处理中")
+
+        # 更新状态
+        document_info['status'] = 'processing'
+        await redis_mgr.store_document(task_id, document_info)
+
+        # 转换为Markdown
+        logger.info(f"转换文档为Markdown: {task_id}")
+        md_content = convert_docx_bytes_to_md(document_info['content'])
+
+        # 提取图片信息
+        logger.info(f"提取文档图片: {task_id}")
+        images = extract_images_from_docx(document_info['content'])
+        logger.info(f"提取到 {len(images)} 张图片")
+
+        # 提取参考文献
+        logger.info(f"提取参考文献: {task_id}")
+        references = extract_references_from_markdown(md_content)
+
+        # 转换为结构化数据
+        logger.info(f"转换为结构化数据: {task_id}")
+        pkl_data = convert_md_content_to_pkl_data(md_content)
+
+        # 更新进度：基础处理完成
+        document_info['md_content'] = md_content
+        document_info['images'] = images
+        document_info['references'] = references
+        document_info['pkl_data'] = pkl_data
+        document_info['progress'] = 0.3
+        document_info['message'] = '基础处理完成，开始分析评估...'
+        await redis_mgr.store_document(task_id, document_info)
+
+        # 分析文档结构
+        logger.info(f"分析文档结构: {task_id}")
+        temp_file_path = None
+        try:
+            with tempfile.NamedTemporaryFile(suffix='.pkl', delete=False) as temp_file:
+                import pickle
+                pickle.dump(pkl_data, temp_file)
+                temp_file.flush()
+                temp_file_path = temp_file.name
+
+            structure = analyze_pkl_structure(temp_file_path)
+            summary = get_document_summary(temp_file_path)
+
+        finally:
+            # 安全删除临时文件
+            if temp_file_path and os.path.exists(temp_file_path):
+                max_retries = 3
+                for attempt in range(max_retries):
+                    try:
+                        os.unlink(temp_file_path)
+                        break
+                    except (PermissionError, OSError) as e:
+                        if attempt < max_retries - 1:
+                            import time
+                            time.sleep(0.1 * (attempt + 1))
+                        else:
+                            logger.warning(f"无法删除临时文件 {temp_file_path}: {e}")
+
+        document_info['structure'] = structure
+        document_info['summary'] = summary
+        document_info['progress'] = 0.5
+        document_info['message'] = '文档结构分析完成，标记为已处理状态...'
+        # 在执行评估之前，先将状态设置为processed，确保评估函数能获取到markdown内容
+        document_info['status'] = 'processed'
+        document_info['processed_at'] = datetime.now().isoformat()
+        await redis_mgr.store_document(task_id, document_info)
+
+        # 检查是否配置了模型，决定是否执行评估
+        model_name = model_config.get('model_name', 'none')
+
+        if model_name != 'none':
+            # 执行硬指标评估
+            logger.info(f"执行硬指标评估: {task_id}")
+            try:
+                from .eval_module import hard_eval
+                hard_eval_result = await hard_eval(task_id)
+                document_info['hard_eval_result'] = hard_eval_result
+                document_info['progress'] = 0.7
+                document_info['message'] = '硬指标评估完成，开始软指标评估...'
+                await redis_mgr.store_document(task_id, document_info)
+            except Exception as e:
+                logger.warning(f"硬指标评估失败: {e}")
+                document_info['hard_eval_error'] = str(e)
+
+            # 执行软指标评估
+            logger.info(f"执行软指标评估: {task_id}")
+            try:
+                from .eval_module import soft_eval
+                soft_eval_result = await soft_eval(task_id)
+                document_info['soft_eval_result'] = soft_eval_result
+                document_info['progress'] = 0.9
+                document_info['message'] = '软指标评估完成，生成最终报告...'
+                await redis_mgr.store_document(task_id, document_info)
+            except Exception as e:
+                logger.warning(f"软指标评估失败: {e}")
+                document_info['soft_eval_error'] = str(e)
+        else:
+            # 无模型分析，跳过所有评估
+            logger.info("选择无模型分析，跳过硬指标和软指标评估")
+            document_info['progress'] = 0.9
+            document_info['message'] = '跳过质量评估，直接生成文档预览...'
+            await redis_mgr.store_document(task_id, document_info)
+
+        # 暂时跳过图片查重分析
+        logger.info(f"跳过图片查重分析: {task_id}")
+        document_info['img_eval_result'] = {
+            "total_reused": 0,
+            "detail": [],
+            "message": "图片查重分析已跳过"
+        }
+
+        # 生成HTML预览文件 - 使用docx2html.py
+        logger.info(f"生成HTML预览文件: {task_id}")
+        try:
+            # 创建预览目录
+            preview_dir = Path("preview") / task_id
+            preview_dir.mkdir(parents=True, exist_ok=True)
+            images_dir = preview_dir / "images"
+            images_dir.mkdir(exist_ok=True)
+
+            # 保存原始DOCX文件到临时位置
+            temp_docx_path = preview_dir / "temp_document.docx"
+            with open(temp_docx_path, 'wb') as f:
+                f.write(document_info['content'])
+
+            # 使用docx2html.py转换文档
+            from tools.docx_tools.docx2html import docx_to_html
+            html_file_path = preview_dir / "document.html"
+
+            # 转换DOCX到HTML，图片会自动保存到images目录
+            docx_to_html(
+                docx_path=str(temp_docx_path),
+                output_html_path=str(html_file_path),
+                image_dir=str(images_dir)
+            )
+
+            # 清理临时DOCX文件
+            temp_docx_path.unlink()
+
+            logger.info(f"HTML预览文件生成成功: {html_file_path}")
+
+            # 读取生成的HTML内容以便后续处理
+            with open(html_file_path, 'r', encoding='utf-8') as f:
+                html_content = f.read()
+
+            # 备用：如果docx2html生成的图片不够，补充保存从文档提取的图片
+            if images:
+                logger.info(f"补充保存 {len(images)} 张提取的图片到 {images_dir}")
+                import base64
+
+                for i, img_info in enumerate(images):
+                    try:
+                        # 使用1基索引保存图片文件，与前端请求保持一致
+                        img_path = images_dir / f"image_{i+1}.png"
+
+                        # 如果docx2html已经生成了这个图片，跳过
+                        if img_path.exists():
+                            logger.info(f"图片 {i+1} 已存在，跳过: {img_path}")
+                            continue
+
+                        # img_info是字典，包含image_data(base64编码)
+                        if isinstance(img_info, dict) and 'image_data' in img_info:
+                            # 解码base64数据
+                            img_bytes = base64.b64decode(img_info['image_data'])
+                            with open(img_path, 'wb') as f:
+                                f.write(img_bytes)
+                            logger.info(f"补充保存图片 {i+1}: {img_path} (大小: {len(img_bytes)} bytes)")
+                        elif isinstance(img_info, bytes):
+                            # 兼容旧格式
+                            with open(img_path, 'wb') as f:
+                                f.write(img_info)
+                            logger.info(f"补充保存图片 {i+1}: {img_path} (旧格式)")
+                        else:
+                            logger.warning(f"图片 {i+1} 格式不正确: {type(img_info)}")
+
+                    except Exception as e:
+                        logger.error(f"保存图片 {i+1} 失败: {e}")
+
+            # 将HTML文件路径保存到文档信息中
+            document_info['html_file_path'] = str(html_file_path)
+        except Exception as e:
+            logger.warning(f"生成HTML预览文件失败: {e}")
+            document_info['html_generation_error'] = str(e)
+
+        # 标记为完全处理完成
+        document_info['progress'] = 1.0
+        document_info['message'] = '所有分析完成！'
+        await redis_mgr.store_document(task_id, document_info)
+
+        logger.info(f"文档处理完成: {task_id}")
+
+        return {
+            "task_id": task_id,
+            "status": "processing",
+            "message": "开始处理文档"
+        }
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"文档处理失败: {e}")
+        # 更新状态为失败
+        try:
+            redis_mgr = await get_redis_manager()
+            document_info = await redis_mgr.get_document(task_id)
+            if document_info:
+                document_info['status'] = 'failed'
+                document_info['error'] = str(e)
+                await redis_mgr.store_document(task_id, document_info)
+        except Exception as redis_error:
+            logger.error(f"更新文档失败状态失败: {redis_error}")
+        raise HTTPException(status_code=500, detail=f"文档处理失败: {str(e)}")
 
 @router.post("/process/{document_id}", response_model=DocumentProcessResponse)
 async def process_document(document_id: str):
@@ -209,16 +455,31 @@ async def process_document(document_id: str):
         
         # 分析文档结构
         # 创建临时文件用于分析
-        with tempfile.NamedTemporaryFile(suffix='.pkl', delete=False) as temp_file:
-            import pickle
-            pickle.dump(pkl_data, temp_file)
-            temp_file.flush()
-            
-            try:
-                structure = analyze_pkl_structure(temp_file.name)
-                summary = get_document_summary(temp_file.name)
-            finally:
-                os.unlink(temp_file.name)
+        temp_file_path = None
+        try:
+            with tempfile.NamedTemporaryFile(suffix='.pkl', delete=False) as temp_file:
+                import pickle
+                pickle.dump(pkl_data, temp_file)
+                temp_file.flush()
+                temp_file_path = temp_file.name
+
+            structure = analyze_pkl_structure(temp_file_path)
+            summary = get_document_summary(temp_file_path)
+
+        finally:
+            # 安全删除临时文件
+            if temp_file_path and os.path.exists(temp_file_path):
+                max_retries = 3
+                for attempt in range(max_retries):
+                    try:
+                        os.unlink(temp_file_path)
+                        break
+                    except (PermissionError, OSError) as e:
+                        if attempt < max_retries - 1:
+                            import time
+                            time.sleep(0.1 * (attempt + 1))
+                        else:
+                            logger.warning(f"无法删除临时文件 {temp_file_path}: {e}")
         
         document_info['structure'] = structure
         document_info['summary'] = summary
@@ -316,81 +577,111 @@ async def preview_document(document_id: str):
         logger.error(f"文档预览失败: {e}")
         raise HTTPException(status_code=500, detail=f"文档预览失败: {str(e)}")
 
-@router.get("/status/{document_id}")
-async def get_document_status(document_id: str):
+@router.get("/status/{task_id}")
+async def get_document_status(task_id: str):
     """
-    获取文档处理状态
-    
+    查询文档处理状态
+
     Args:
-        document_id: 文档ID
-        
+        task_id: 任务ID
+
     Returns:
         dict: 文档状态信息
     """
     try:
         # 获取Redis管理器
         redis_mgr = await get_redis_manager()
-        
+
         # 检查文档是否存在
-        document_info = await redis_mgr.get_document(document_id)
+        document_info = await redis_mgr.get_document(task_id)
         if document_info is None:
             raise HTTPException(status_code=404, detail="文档不存在")
-        
-        return {
-            'success': True,
-            'document_id': document_id,
-            'status': document_info['status'],
-            'filename': document_info['filename'],
-            'size': document_info['size'],
-            'has_markdown': 'md_content' in document_info,
-            'has_pkl_data': 'pkl_data' in document_info,
-            'image_count': len(document_info.get('images', [])),
-            'chapter_count': len(document_info.get('pkl_data', {}).get('chapters', [])),
-            'error': document_info.get('error')
+
+        # 计算进度
+        status = document_info['status']
+        progress = document_info.get('progress', 0.0)
+        message = document_info.get('message', "等待处理")
+
+        if status == 'uploaded':
+            if progress == 0.0:
+                progress = 0.1
+                message = "文档已上传"
+        elif status == 'processing':
+            if progress == 0.0:
+                progress = 0.2
+                message = "正在处理文档"
+            # 使用存储的进度和消息
+        elif status == 'processed':
+            progress = 1.0
+            message = "所有分析完成！"
+            status = 'completed'  # 前端期望的状态名
+        elif status == 'failed':
+            progress = 0.0
+            message = "处理失败"
+            status = 'error'  # 前端期望的状态名
+
+        result = {
+            "task_id": task_id,
+            "status": status,
+            "progress": progress,
+            "message": message,
+            "error": document_info.get('error')
         }
-        
+
+        # 如果处理完成，添加结果信息
+        if status == 'completed':
+            result["result"] = {
+                "filename": document_info['filename'],
+                "size": document_info['size'],
+                "has_markdown": 'md_content' in document_info,
+                "has_pkl_data": 'pkl_data' in document_info,
+                "image_count": len(document_info.get('images', [])),
+                "chapter_count": len(document_info.get('pkl_data', {}).get('chapters', []))
+            }
+
+        return result
+
     except HTTPException:
         raise
     except Exception as e:
         logger.error(f"获取文档状态失败: {e}")
         raise HTTPException(status_code=500, detail=f"获取文档状态失败: {str(e)}")
 
-@router.delete("/delete/{document_id}")
-async def delete_document(document_id: str):
+@router.delete("/task/{task_id}")
+async def delete_task(task_id: str):
     """
-    删除文档
-    
+    删除指定任务及其相关数据
+
     Args:
-        document_id: 文档ID
-        
+        task_id: 任务ID
+
     Returns:
         dict: 删除结果
     """
     try:
         # 获取Redis管理器
         redis_mgr = await get_redis_manager()
-        
+
         # 检查文档是否存在并删除
-        if not await redis_mgr.document_exists(document_id):
-            raise HTTPException(status_code=404, detail="文档不存在")
-        
+        if not await redis_mgr.document_exists(task_id):
+            raise HTTPException(status_code=404, detail="任务不存在")
+
         # 删除文档
-        if not await redis_mgr.delete_document(document_id):
-            raise HTTPException(status_code=500, detail="文档删除失败")
-        
-        logger.info(f"文档删除成功: {document_id}")
-        
+        if not await redis_mgr.delete_document(task_id):
+            raise HTTPException(status_code=500, detail="任务删除失败")
+
+        logger.info(f"任务删除成功: {task_id}")
+
         return {
-            'success': True,
-            'message': '文档删除成功',
-            'document_id': document_id
+            "message": "任务已删除",
+            "task_id": task_id
         }
-        
+
     except HTTPException:
         raise
     except Exception as e:
-        logger.error(f"文档删除失败: {e}")
-        raise HTTPException(status_code=500, detail=f"文档删除失败: {str(e)}")
+        logger.error(f"任务删除失败: {e}")
+        raise HTTPException(status_code=500, detail=f"任务删除失败: {str(e)}")
 
 async def get_document_markdown(document_id: str) -> Optional[str]:
     """
@@ -435,49 +726,75 @@ async def get_document_markdown(document_id: str) -> Optional[str]:
 def extract_references_from_markdown(md_content: str) -> List[str]:
     """
     从Markdown内容中提取参考文献
-    
+
     Args:
         md_content: Markdown内容
-        
+
     Returns:
         List[str]: 参考文献列表，每条参考文献删除换行符
     """
     references = []
-    
-    # 查找参考文献章节的开始位置
-    ref_pattern = r'#\s*参考文献'
-    ref_match = re.search(ref_pattern, md_content, re.IGNORECASE)
-    
+
+    # 多种参考文献章节标题模式
+    ref_patterns = [
+        r'#\s*参考文献',
+        r'#\s*References',
+        r'#\s*REFERENCES',
+        r'##\s*参考文献',
+        r'##\s*References',
+        r'###\s*参考文献',
+        r'参考文献',
+        r'References'
+    ]
+
+    ref_match = None
+    for pattern in ref_patterns:
+        ref_match = re.search(pattern, md_content, re.IGNORECASE)
+        if ref_match:
+            logger.info(f"找到参考文献章节，使用模式: {pattern}")
+            break
+
     if not ref_match:
-        logger.warning("未找到参考文献章节")
-        return references
-    
-    # 获取参考文献章节开始位置
-    ref_start = ref_match.end()
-    
-    # 查找下一个章节（如致谢、附录等）的开始位置作为结束位置
-    # 匹配以#开头的章节标题
-    next_section_pattern = r'\n#\s+(?!参考文献)'
-    next_section_match = re.search(next_section_pattern, md_content[ref_start:], re.IGNORECASE)
-    
-    if next_section_match:
-        ref_end = ref_start + next_section_match.start()
-        ref_content = md_content[ref_start:ref_end]
+        logger.warning("未找到参考文献章节，尝试在整个文档中查找参考文献条目")
+        # 如果没有找到参考文献章节，尝试在整个文档中查找参考文献条目
+        ref_content = md_content
     else:
-        # 如果没有找到下一个章节，则参考文献内容到文档结尾
-        ref_content = md_content[ref_start:]
-    
-    # 提取每条参考文献
-    # 匹配形如 [1] 或 [1] 开头的行
-    ref_item_pattern = r'\[(\d+)\]\s*(.+?)(?=\n\[\d+\]|\n#|\Z)'
-    ref_matches = re.findall(ref_item_pattern, ref_content, re.DOTALL)
-    
-    for ref_num, ref_text in ref_matches:
-        # 删除换行符和多余的空白字符
-        clean_ref = re.sub(r'\s+', ' ', ref_text.strip())
-        if clean_ref:
-            references.append(f"[{ref_num}] {clean_ref}")
-    
+        # 获取参考文献章节开始位置
+        ref_start = ref_match.end()
+
+        # 查找下一个章节（如致谢、附录等）的开始位置作为结束位置
+        # 匹配以#开头的章节标题
+        next_section_pattern = r'\n#+\s+(?!参考文献|References|REFERENCES)'
+        next_section_match = re.search(next_section_pattern, md_content[ref_start:], re.IGNORECASE)
+
+        if next_section_match:
+            ref_end = ref_start + next_section_match.start()
+            ref_content = md_content[ref_start:ref_end]
+        else:
+            # 如果没有找到下一个章节，则参考文献内容到文档结尾
+            ref_content = md_content[ref_start:]
+
+    # 多种参考文献条目模式
+    ref_item_patterns = [
+        r'\[(\d+)\]\s*(.+?)(?=\n\[\d+\]|\n#+|\Z)',  # [1] 格式
+        r'(\d+)\.\s*(.+?)(?=\n\d+\.|\n#+|\Z)',      # 1. 格式
+        r'(\d+)\)\s*(.+?)(?=\n\d+\)|\n#+|\Z)',      # 1) 格式
+    ]
+
+    for pattern in ref_item_patterns:
+        ref_matches = re.findall(pattern, ref_content, re.DOTALL)
+        if ref_matches:
+            logger.info(f"使用模式提取参考文献: {pattern}")
+            for ref_num, ref_text in ref_matches:
+                # 删除换行符和多余的空白字符
+                clean_ref = re.sub(r'\s+', ' ', ref_text.strip())
+                if clean_ref and len(clean_ref) > 10:  # 过滤太短的条目
+                    if pattern.startswith(r'\['):
+                        references.append(f"[{ref_num}] {clean_ref}")
+                    else:
+                        references.append(f"{ref_num}. {clean_ref}")
+            break
+
     logger.info(f"提取到 {len(references)} 条参考文献")
     return references
 
@@ -485,10 +802,10 @@ def extract_references_from_markdown(md_content: str) -> List[str]:
 def extract_images_from_docx(docx_bytes: bytes) -> List[Dict[str, Any]]:
     """
     从DOCX文件中提取图片及其标题
-    
+
     Args:
         docx_bytes: DOCX文件的字节数据
-        
+
     Returns:
         List[Dict[str, Any]]: 图片信息列表，包含image_id、image_data、image_type、image_title等
     """
@@ -497,21 +814,25 @@ def extract_images_from_docx(docx_bytes: bytes) -> List[Dict[str, Any]]:
         from docx.shared import Pt
         from docx.enum.text import WD_ALIGN_PARAGRAPH
         from io import BytesIO
-        
-        # 使用临时文件处理docx
-        with tempfile.NamedTemporaryFile(suffix='.docx') as temp_file:
-            temp_file.write(docx_bytes)
-            temp_file.flush()
-            
-            doc = Document(temp_file.name)
+
+        # 使用临时文件处理docx，在Windows上需要设置delete=False
+        temp_file_path = None
+        try:
+            with tempfile.NamedTemporaryFile(suffix='.docx', delete=False) as temp_file:
+                temp_file.write(docx_bytes)
+                temp_file.flush()
+                temp_file_path = temp_file.name
+
+            # 在临时文件关闭后再打开文档
+            doc = Document(temp_file_path)
             images = []
-            
+
             # 先构建图片ID到文件名的映射
             image_rels = {}
             for rel in doc.part.rels.values():
                 if "image" in rel.target_ref:
                     image_rels[rel.target_ref] = rel.target_part.blob
-            
+
             # 遍历文档段落，查找图片和对应的标题
             for para_idx, paragraph in enumerate(doc.paragraphs):
                 # 检查段落中是否包含图片
@@ -529,16 +850,16 @@ def extract_images_from_docx(docx_bytes: bytes) -> List[Dict[str, Any]]:
                                         # 获取图片数据
                                         image_bytes = rel.target_part.blob
                                         image_ext = os.path.splitext(rel.target_ref)[-1] or '.png'
-                                        
+
                                         # 生成图片ID
                                         image_id = f"img_{len(images) + 1}"
-                                        
+
                                         # 将图片数据编码为base64
                                         image_base64 = base64.b64encode(image_bytes).decode('utf-8')
-                                        
+
                                         # 查找图片标题
                                         image_title = find_image_title(doc, para_idx, image_id)
-                                        
+
                                         images.append({
                                             'image_id': image_id,
                                             'image_data': image_base64,
@@ -549,7 +870,7 @@ def extract_images_from_docx(docx_bytes: bytes) -> List[Dict[str, Any]]:
                                     except Exception as e:
                                         logger.warning(f"提取图片失败: {e}")
                                         continue
-            
+
             # 如果没有找到图片，使用原来的方法作为备选
             if not images:
                 logger.info("使用备选方法提取图片")
@@ -559,13 +880,13 @@ def extract_images_from_docx(docx_bytes: bytes) -> List[Dict[str, Any]]:
                             # 获取图片数据
                             image_bytes = rel.target_part.blob
                             image_ext = os.path.splitext(rel.target_ref)[-1] or '.png'
-                            
+
                             # 生成图片ID
                             image_id = f"img_{len(images) + 1}"
-                            
+
                             # 将图片数据编码为base64
                             image_base64 = base64.b64encode(image_bytes).decode('utf-8')
-                            
+
                             images.append({
                                 'image_id': image_id,
                                 'image_data': image_base64,
@@ -576,8 +897,16 @@ def extract_images_from_docx(docx_bytes: bytes) -> List[Dict[str, Any]]:
                         except Exception as e:
                             logger.warning(f"提取图片失败: {e}")
                             continue
-            
+
             return images
+
+        finally:
+            # 清理临时文件
+            if temp_file_path and os.path.exists(temp_file_path):
+                try:
+                    os.unlink(temp_file_path)
+                except Exception as e:
+                    logger.warning(f"无法删除临时文件 {temp_file_path}: {e}")
             
     except Exception as e:
         logger.error(f"提取图片时发生错误: {e}")

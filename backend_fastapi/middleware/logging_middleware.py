@@ -105,7 +105,7 @@ class LoggingMiddleware(BaseHTTPMiddleware):
             logger.debug(f"请求详情: {json.dumps(log_data, ensure_ascii=False, indent=2)}")
             
         except Exception as e:
-            logger.error(f"记录请求日志失败: {e}")
+            logger.error("记录请求日志失败: %s", str(e))
     
     async def _log_response(self, request: Request, response: Response, process_time: float):
         """
@@ -152,7 +152,7 @@ class LoggingMiddleware(BaseHTTPMiddleware):
             logger.debug(f"响应详情: {json.dumps(log_data, ensure_ascii=False, indent=2)}")
             
         except Exception as e:
-            logger.error(f"记录响应日志失败: {e}")
+            logger.error("记录响应日志失败: %s", str(e))
     
     def _get_client_ip(self, request: Request) -> str:
         """

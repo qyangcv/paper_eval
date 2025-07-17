@@ -26,8 +26,8 @@ FILE_CONFIG = {
     'log_dir': str(LOGS_DIR),
     'max_file_size': 50 * 1024 * 1024,  # 50MB
     'allowed_extensions': {'.docx', '.doc', '.pdf', '.txt', '.md'},
-    'upload_timeout': 300,  # 5分钟
-    'processing_timeout': 1800,  # 30分钟
+    'upload_timeout': 0,  # 移除上传超时限制
+    'processing_timeout': 0,  # 移除处理超时限制
 }
 
 # 数据路径配置

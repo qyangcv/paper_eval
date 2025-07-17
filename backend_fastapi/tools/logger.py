@@ -99,5 +99,5 @@ def init_default_logging():
         log_format='%(asctime)s - %(name)s - %(levelname)s - %(funcName)s:%(lineno)d - %(message)s'
     )
 
-# 在模块导入时初始化默认日志配置
-init_default_logging()
+# 不在模块导入时自动初始化，避免与main.py中的日志配置冲突
+# init_default_logging()

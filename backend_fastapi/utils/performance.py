@@ -9,6 +9,7 @@ import time
 import psutil
 import asyncio
 import threading
+import os
 from typing import Dict, Any, List, Optional, Callable
 from collections import defaultdict, deque
 from datetime import datetime, timedelta
@@ -88,8 +89,21 @@ class PerformanceMonitor:
                 # 获取系统资源使用情况
                 cpu_percent = psutil.cpu_percent(interval=1)
                 memory = psutil.virtual_memory()
-                disk = psutil.disk_usage('/')
-                
+
+                # 跨平台磁盘使用情况获取
+                try:
+                    if os.name == 'nt':  # Windows
+                        disk = psutil.disk_usage('C:\\')
+                    else:  # Unix/Linux/macOS
+                        disk = psutil.disk_usage('/')
+                except (OSError, FileNotFoundError):
+                    # 如果无法获取磁盘信息，使用默认值
+                    disk = type('DiskUsage', (), {
+                        'percent': 0,
+                        'used': 0,
+                        'total': 0
+                    })()
+
                 system_info = {
                     'timestamp': datetime.now(),
                     'cpu_percent': cpu_percent,
@@ -100,14 +114,17 @@ class PerformanceMonitor:
                     'disk_used': disk.used,
                     'disk_total': disk.total
                 }
-                
+
                 with self._lock:
                     self.system_stats.append(system_info)
-                
+
                 time.sleep(10)  # 每10秒监控一次
-                
+
             except Exception as e:
-                logger.error(f"系统监控错误: {e}")
+                # 屏蔽特定的格式化错误
+                error_msg = str(e)
+                if "impossible<bad format char>" not in error_msg:
+                    logger.error("系统监控错误: %s", error_msg)
                 time.sleep(30)  # 出错时等待更长时间
     
     def get_performance_stats(self) -> Dict[str, Any]:

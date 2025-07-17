@@ -85,7 +85,7 @@ SECURITY_CONFIG = {
 # 任务配置
 TASK_CONFIG = {
     'max_concurrent_tasks': 10,
-    'task_timeout': 1800,  # 30分钟
+    'task_timeout': 0,  # 移除任务超时限制
     'cleanup_interval': 3600,  # 1小时清理一次过期任务
     'max_task_history': 1000,  # 最多保留1000个任务记录
 }
@@ -118,7 +118,7 @@ DOCUMENT_CONFIG = {
     'supported_formats': ['.docx', '.doc'],
     'max_pages': 500,
     'max_chapters': 50,
-    'processing_timeout': 1800,  # 30分钟
+    'processing_timeout': 0,  # 移除文档处理超时限制
     'temp_file_cleanup': True,
 }
 
@@ -177,7 +177,7 @@ def adjust_config_for_environment():
         
     elif APP_CONFIG['environment'] == 'testing':
         # 测试环境配置调整
-        TASK_CONFIG['task_timeout'] = 60
+        TASK_CONFIG['task_timeout'] = 0  # 测试环境也移除超时限制
         CACHE_CONFIG['enabled'] = False
         
 # 在模块导入时调整配置

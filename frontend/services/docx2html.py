@@ -46,6 +46,8 @@ class Docx2HtmlConverter:
         }
         # Set to track processed image IDs to avoid duplicates
         self.processed_image_ids = set()
+        # Global image counter for sequential numbering
+        self.image_counter = 1
     
     def convert_docx_to_html(self, docx_path, output_path=None, title=None, include_images=True):
         """
@@ -236,10 +238,14 @@ class Docx2HtmlConverter:
                 for image_id in image_ids:
                     if image_id not in self.processed_image_ids and image_id in relationship_map:
                         rel = relationship_map[image_id]
-                        image_filename = self._save_image(rel, image_dir, image_id)
-                        if image_filename:
+                        image_result = self._save_image(rel, image_dir, image_id)
+                        if image_result[0]:  # image_filename
+                            image_filename, sequential_number = image_result
+                            # 在原始位置留下特定标记，包含图片信息
                             img_rel_path = f"{os.path.basename(image_dir)}/{image_filename}"
-                            result_parts.append(f'<img src="{img_rel_path}" alt="Image" />')
+                            # 使用特殊的标记格式，前端可以识别并替换
+                            image_marker = f'<span class="image-placeholder" data-image-src="{img_rel_path}" data-image-id="{image_id}" data-image-number="{sequential_number}">{{IMAGE_PLACEHOLDER_{sequential_number}}}</span>'
+                            result_parts.append(image_marker)
                             self.stats['images'] += 1
                             self.processed_image_ids.add(image_id)
         
@@ -293,16 +299,20 @@ class Docx2HtmlConverter:
         """
         result_parts = []
         
-        # 只处理尚未处理过的图片
+        # 处理图片，在原始位置留下标记
         image_ids = self._find_embedded_image_ids(run_element)
         for image_id in image_ids:
             # 检查图片ID是否已处理过
             if image_id not in self.processed_image_ids and image_id in relationship_map:
                 rel = relationship_map[image_id]
-                image_filename = self._save_image(rel, image_dir, image_id)
-                if image_filename:
+                image_result = self._save_image(rel, image_dir, image_id)
+                if image_result[0]:  # image_filename
+                    image_filename, sequential_number = image_result
+                    # 在原始位置留下特定标记，包含图片信息
                     img_rel_path = f"{os.path.basename(image_dir)}/{image_filename}"
-                    result_parts.append(f'<img src="{img_rel_path}" alt="Image" />')
+                    # 使用特殊的标记格式，前端可以识别并替换
+                    image_marker = f'<span class="image-placeholder" data-image-src="{img_rel_path}" data-image-id="{image_id}" data-image-number="{sequential_number}">{{IMAGE_PLACEHOLDER_{sequential_number}}}</span>'
+                    result_parts.append(image_marker)
                     self.stats['images'] += 1
                     self.processed_image_ids.add(image_id)  # 标记图片ID为已处理
         
@@ -441,31 +451,36 @@ class Docx2HtmlConverter:
     def _save_image(self, rel, image_dir, image_id):
         """
         Save image from relationship and return the filename.
-        
+
         Args:
             rel: Relationship object containing the image.
             image_dir (str): Directory to save the image.
             image_id (str): Unique ID for the image.
-            
+
         Returns:
-            str: Filename of the saved image.
+            tuple: (filename, sequential_number) of the saved image.
         """
         try:
             image_bytes = rel.target_part.blob
             image_ext = os.path.splitext(rel.target_ref)[-1]
             if not image_ext:
                 image_ext = '.png'  # Default extension if none found
-                
-            image_filename = f"image_{image_id}{image_ext}"
+
+            # Use sequential numbering instead of relationship ID
+            sequential_number = self.image_counter
+            image_filename = f"image_{sequential_number}{image_ext}"
             image_path = os.path.join(image_dir, image_filename)
-            
+
             with open(image_path, 'wb') as f:
                 f.write(image_bytes)
-                
-            return image_filename
+
+            # Increment counter for next image
+            self.image_counter += 1
+
+            return image_filename, sequential_number
         except Exception as e:
             logger.error(f"Error extracting image: {e}")
-            return None
+            return None, None
     
     def _has_math_or_images(self, paragraph):
         """Check if a paragraph contains math elements or images."""

@@ -11,9 +11,13 @@
         <router-link
           v-for="item in menuItems"
           :key="item.path"
-          :to="item.path"
+          :to="item.disabled ? '#' : item.path"
           class="navbar-item"
-          :class="{ active: $route.path === item.path }"
+          :class="{
+            active: $route.path === item.path || ($route.path.startsWith(item.path) && item.path !== '/'),
+            disabled: item.disabled
+          }"
+          @click="item.disabled && $event.preventDefault()"
         >
           <el-icon class="menu-icon">
             <component :is="item.icon" />
@@ -27,12 +31,19 @@
 
 <script>
 import { House, Document, DataAnalysis } from '@element-plus/icons-vue'
+import { useDocumentStore } from '../stores/document'
+import { computed } from 'vue'
 
 export default {
   name: 'NavBar',
-  data () {
-    return {
-      menuItems: [
+  setup () {
+    const documentStore = useDocumentStore()
+
+    const menuItems = computed(() => {
+      const currentTaskId = documentStore.currentTask?.task_id
+      const isCompleted = documentStore.isCompleted
+
+      return [
         {
           name: '首页',
           path: '/',
@@ -40,15 +51,21 @@ export default {
         },
         {
           name: '论文预览',
-          path: '/preview',
-          icon: Document
+          path: currentTaskId ? `/preview/${currentTaskId}` : '/preview',
+          icon: Document,
+          disabled: !currentTaskId || !isCompleted
         },
         {
           name: '数据分析',
-          path: '/analysis',
-          icon: DataAnalysis
+          path: currentTaskId ? `/analysis/${currentTaskId}` : '/analysis',
+          icon: DataAnalysis,
+          disabled: !currentTaskId || !isCompleted
         }
       ]
+    })
+
+    return {
+      menuItems
     }
   },
   components: {
@@ -134,6 +151,18 @@ export default {
 
 .menu-icon {
   font-size: 18px;
+}
+
+/* 禁用状态样式 */
+.navbar-item.disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+.navbar-item.disabled:hover {
+  background-color: transparent;
+  color: rgba(255, 255, 255, 0.8);
 }
 
 /* 响应式设计 */

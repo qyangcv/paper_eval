@@ -3,44 +3,119 @@ FastAPI后端主应用
 重构自原Streamlit应用，提供RESTful API服务
 """
 
-from fastapi import FastAPI, File, UploadFile, HTTPException, BackgroundTasks
+from fastapi import FastAPI, HTTPException, BackgroundTasks
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel
 from typing import Optional, Dict, Any, List
 import os
 import sys
-import uuid
+
 import json
 import asyncio
 from datetime import datetime
 import tempfile
 import logging
+import logging.config
 
 # 添加项目根目录到Python路径
-project_root = os.path.dirname(os.path.abspath(__file__))
+# backend_fastapi目录的父目录才是真正的项目根目录
+project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, project_root)
 
-# 延迟初始化日志，避免在日志配置完成前使用
-def _get_logger():
-    import logging
-    logger = logging.getLogger(__name__)
+# 初始化彩色日志配置
+def _init_colored_logging():
+    """初始化彩色日志配置"""
+    try:
+        from config.log_config import ColoredFormatter
 
-    # 清除现有的处理器，确保使用统一格式
-    logger.handlers.clear()
+        # 创建彩色格式化器
+        colored_formatter = ColoredFormatter(
+            fmt='%(asctime)s [%(levelname)s] %(name)s: %(message)s',
+            datefmt='%Y-%m-%d %H:%M:%S'
+        )
 
-    # 添加统一格式的处理器
-    handler = logging.StreamHandler()
-    formatter = logging.Formatter(
-        '%(asctime)s [%(levelname)s] %(name)s: %(message)s',
+        # 完全重置日志系统
+        _reset_logging_system(colored_formatter)
+
+    except ImportError as e:
+        print(f"警告：无法导入日志配置: {e}")
+        # 如果无法导入配置，使用简单的彩色格式
+        _setup_fallback_colored_logging()
+
+def _reset_logging_system(colored_formatter):
+    """完全重置日志系统，确保没有重复的处理器"""
+    # 获取根日志记录器
+    root_logger = logging.getLogger()
+
+    # 清除所有现有的处理器
+    for handler in root_logger.handlers[:]:
+        root_logger.removeHandler(handler)
+
+    # 清除所有子日志记录器的处理器
+    logger_dict = logging.Logger.manager.loggerDict
+    for logger_name, logger_obj in logger_dict.items():
+        if isinstance(logger_obj, logging.Logger):
+            for handler in logger_obj.handlers[:]:
+                logger_obj.removeHandler(handler)
+            # 设置为传播到根日志记录器
+            logger_obj.propagate = True
+
+    # 为根日志记录器添加唯一的彩色控制台处理器
+    console_handler = logging.StreamHandler()
+    console_handler.setLevel(logging.INFO)
+    console_handler.setFormatter(colored_formatter)
+    root_logger.addHandler(console_handler)
+    root_logger.setLevel(logging.INFO)
+
+    # 禁用basicConfig，防止自动创建处理器
+    logging.basicConfig = lambda **kwargs: None
+
+def _setup_fallback_colored_logging():
+    """设置备用的彩色日志配置"""
+    # 简单的彩色格式化器类
+    class SimpleColoredFormatter(logging.Formatter):
+        COLORS = {
+            'DEBUG': '\033[36m',    # 青色
+            'INFO': '\033[32m',     # 绿色
+            'WARNING': '\033[33m',  # 黄色
+            'ERROR': '\033[31m',    # 红色
+            'CRITICAL': '\033[35m', # 紫色
+            'RESET': '\033[0m',     # 重置
+        }
+
+        def format(self, record):
+            color = self.COLORS.get(record.levelname, '')
+            reset = self.COLORS['RESET']
+            record.levelname = f"{color}[{record.levelname}]{reset}"
+            return super().format(record)
+
+    # 配置根日志记录器
+    root_logger = logging.getLogger()
+    root_logger.setLevel(logging.INFO)
+
+    # 清除现有处理器
+    for handler in root_logger.handlers[:]:
+        root_logger.removeHandler(handler)
+
+    # 添加彩色控制台处理器
+    console_handler = logging.StreamHandler()
+    console_handler.setLevel(logging.INFO)
+    colored_formatter = SimpleColoredFormatter(
+        '%(asctime)s %(levelname)s %(name)s: %(message)s',
         datefmt='%Y-%m-%d %H:%M:%S'
     )
-    handler.setFormatter(formatter)
-    logger.addHandler(handler)
-    logger.setLevel(logging.INFO)
-    logger.propagate = False  # 防止重复输出
+    console_handler.setFormatter(colored_formatter)
+    root_logger.addHandler(console_handler)
 
-    return logger
+# 初始化彩色日志
+_init_colored_logging()
+
+# 获取日志记录器
+def _get_logger():
+    return logging.getLogger(__name__)
+
+
 
 # 导入新的模型接口
 try:
@@ -48,7 +123,7 @@ try:
     _get_logger().info("成功导入新的模型管理器")
     MODEL_MANAGER_AVAILABLE = True
 except ImportError as e:
-    _get_logger().warning(f"无法导入模型管理器: {e}")
+    _get_logger().warning("无法导入模型管理器: %s", str(e))
     model_manager = None
     new_request_model = None
     MODEL_MANAGER_AVAILABLE = False
@@ -67,194 +142,9 @@ try:
     from frontend.services.document_processor import process_paper_evaluation, convert_word_to_html_with_math, extract_toc_from_docx
     _get_logger().info("成功导入后端模块")
 except ImportError as e:
-    _get_logger().warning(f"导入警告: {e}")
+    _get_logger().warning("导入警告: %s", str(e))
     _get_logger().info("将使用模拟功能进行测试")
     _get_logger().info(f"项目根目录: {project_root}")
-
-# 尝试导入full_paper_eval模块的函数
-try:
-    # 确保路径正确添加
-    hard_criteria_path = os.path.join(project_root, "backend", "hard_criteria")
-    if hard_criteria_path not in sys.path:
-        sys.path.insert(0, hard_criteria_path)
-
-    # 动态导入模块
-    import importlib.util
-    spec = importlib.util.spec_from_file_location("full_paper_eval",
-                                                  os.path.join(hard_criteria_path, "full_paper_eval.py"))
-    full_paper_eval_module = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(full_paper_eval_module)
-
-    # 获取需要的函数
-    process_docx_file = full_paper_eval_module.process_docx_file
-    load_chapters = full_paper_eval_module.load_chapters
-    process_chapter = full_paper_eval_module.process_chapter
-    evaluate_overall = full_paper_eval_module.evaluate_overall
-    score_paper = full_paper_eval_module.score_paper
-    request_model = full_paper_eval_module.request_model
-
-    _get_logger().info("成功导入full_paper_eval模块")
-    FULL_PAPER_EVAL_AVAILABLE = True
-except Exception as e:
-    _get_logger().warning(f"full_paper_eval导入警告: {e}")
-    _get_logger().info("将在需要时动态导入")
-    FULL_PAPER_EVAL_AVAILABLE = False
-    # 设置默认值
-    process_docx_file = None
-    load_chapters = None
-    process_chapter = None
-    evaluate_overall = None
-    score_paper = None
-    request_model = None
-
-    # 创建模拟函数用于测试
-    def mock_convert_word_to_html_with_math(file):
-        return "<html><body><h1>模拟HTML内容</h1><p>文档处理功能正常</p></body></html>"
-
-    def mock_extract_toc_from_docx(file):
-        return [{"title": "第1章 引言", "level": 1}, {"title": "第2章 相关工作", "level": 1}]
-
-    def mock_process_paper_evaluation(file_path, model_name, progress_callback=None):
-        """模拟论文评估过程，用于测试"""
-        import time
-        import random
-
-        if progress_callback:
-            progress_callback(0.1, "开始文档解析...")
-            time.sleep(0.5)
-            progress_callback(0.3, "提取章节结构...")
-            time.sleep(0.5)
-            progress_callback(0.5, f"使用{model_name}模型分析中...")
-            time.sleep(1.0)
-            progress_callback(0.7, "生成评估报告...")
-            time.sleep(0.5)
-            progress_callback(0.9, "计算综合得分...")
-            time.sleep(0.3)
-            progress_callback(1.0, "评估完成")
-
-        # 生成模拟的详细评估结果
-        return {
-            "overall_score": random.randint(75, 95),
-            "dimensions": {
-                "创新性": random.randint(70, 90),
-                "技术深度": random.randint(75, 95),
-                "实验设计": random.randint(80, 95),
-                "写作质量": random.randint(75, 90),
-                "学术规范": random.randint(70, 85)
-            },
-            "summary": f"使用{model_name}模型完成的论文质量评估",
-            "detailed_analysis": {
-                "strengths": ["研究方法科学", "实验设计合理", "数据分析充分"],
-                "weaknesses": ["文献综述可以更全面", "结论部分需要加强"],
-                "suggestions": ["建议补充相关工作对比", "加强实验结果讨论"]
-            },
-            "chapter_scores": [
-                {"chapter": "引言", "score": random.randint(75, 90)},
-                {"chapter": "相关工作", "score": random.randint(70, 85)},
-                {"chapter": "方法", "score": random.randint(80, 95)},
-                {"chapter": "实验", "score": random.randint(85, 95)},
-                {"chapter": "结论", "score": random.randint(75, 90)}
-            ]
-        }
-
-    convert_word_to_html_with_math = mock_convert_word_to_html_with_math
-    extract_toc_from_docx = mock_extract_toc_from_docx
-
-    # 尝试使用真实的评估函数，如果失败则使用模拟函数
-    def real_process_paper_evaluation(file_path, model_name, progress_callback=None):
-        """真实的论文评估函数，调用大模型进行分析"""
-        try:
-            # 检查是否已成功导入full_paper_eval模块和新的模型管理器
-            if not FULL_PAPER_EVAL_AVAILABLE or not all([process_docx_file, load_chapters, process_chapter,
-                                                        evaluate_overall, score_paper]):
-                raise Exception("full_paper_eval模块未正确导入")
-
-            # 使用新的模型管理器验证模型配置
-            if MODEL_MANAGER_AVAILABLE and model_manager:
-                if not model_manager.validate_model_config(model_name):
-                    raise Exception(f"模型 {model_name} 配置无效或API密钥缺失")
-
-            if progress_callback:
-                progress_callback(0.1, "开始处理文档...")
-
-            # 处理docx文件转换为pkl
-            pkl_file_path = process_docx_file(file_path)
-            if not pkl_file_path:
-                raise Exception("文档转换失败")
-
-            if progress_callback:
-                progress_callback(0.2, "加载章节内容...")
-
-            # 加载章节
-            chapters = load_chapters(pkl_file_path)
-            if not chapters:
-                raise Exception("章节加载失败")
-
-            if progress_callback:
-                progress_callback(0.3, f"使用{model_name}开始章节分析...")
-
-            # 处理每个章节
-            chapter_evaluations = []
-            total_chapters = len(chapters)
-            for i, chapter in enumerate(chapters):
-                if progress_callback:
-                    progress = 0.3 + (i / total_chapters) * 0.4
-                    progress_callback(progress, f"分析章节: {chapter.get('title', f'第{i+1}章')}")
-
-                chapter_eval = process_chapter(chapter, model_name)
-                chapter_evaluations.append(chapter_eval)
-
-            if progress_callback:
-                progress_callback(0.7, "进行整体评估...")
-
-            # 整体评估
-            overall_evaluation = evaluate_overall(chapter_evaluations, model_name)
-            all_evaluations = [overall_evaluation] + chapter_evaluations
-
-            if progress_callback:
-                progress_callback(0.9, "计算最终得分...")
-
-            # 评分
-            paper_scores = score_paper(all_evaluations, model_name)
-
-            # 计算总分
-            total_score = sum(item.get('score', 0) for item in paper_scores if 'score' in item)
-
-            if progress_callback:
-                progress_callback(1.0, "评估完成")
-
-            # 格式化结果
-            return {
-                "overall_score": total_score,
-                "dimensions": {
-                    "创新性": paper_scores[0].get('score', 0) if len(paper_scores) > 0 else 0,
-                    "技术深度": paper_scores[1].get('score', 0) if len(paper_scores) > 1 else 0,
-                    "实验设计": paper_scores[2].get('score', 0) if len(paper_scores) > 2 else 0,
-                    "写作质量": paper_scores[3].get('score', 0) if len(paper_scores) > 3 else 0,
-                    "学术规范": paper_scores[4].get('score', 0) if len(paper_scores) > 4 else 0
-                },
-                "summary": overall_evaluation.get('summary', '评估完成'),
-                "detailed_analysis": {
-                    "strengths": overall_evaluation.get('strengths', []),
-                    "weaknesses": overall_evaluation.get('weaknesses', []),
-                    "suggestions": overall_evaluation.get('suggestions', [])
-                },
-                "chapter_scores": [
-                    {
-                        "chapter": eval_item.get('chapter', '未知章节'),
-                        "score": eval_item.get('score', 0)
-                    }
-                    for eval_item in chapter_evaluations
-                ],
-                "raw_evaluations": all_evaluations,
-                "raw_scores": paper_scores
-            }
-
-        except Exception as e:
-            _get_logger().warning(f"真实评估失败，使用模拟结果: {e}")
-            return mock_process_paper_evaluation(file_path, model_name, progress_callback)
-
-    process_paper_evaluation = real_process_paper_evaluation
 
 # 导入API路由
 try:
@@ -267,7 +157,7 @@ try:
     _get_logger().info("成功导入API路由")
     API_ROUTER_AVAILABLE = True
 except ImportError as e:
-    _get_logger().warning(f"无法导入API路由: {e}")
+    _get_logger().warning("无法导入API路由: %s", str(e))
     api_router = None
     API_ROUTER_AVAILABLE = False
 
@@ -288,7 +178,7 @@ try:
     _get_logger().info("成功导入中间件和文档配置")
     MIDDLEWARE_AVAILABLE = True
 except ImportError as e:
-    _get_logger().warning(f"无法导入中间件: {e}")
+    _get_logger().warning("无法导入中间件: %s", str(e))
     ErrorHandlerMiddleware = None
     LoggingMiddleware = None
     customize_openapi = None
@@ -300,7 +190,7 @@ try:
     REDIS_AVAILABLE = True
     _get_logger().info("Redis模块导入成功")
 except ImportError as e:
-    _get_logger().warning(f"Redis模块导入失败: {e}")
+    _get_logger().warning("Redis模块导入失败: %s", str(e))
     REDIS_AVAILABLE = False
     redis_lifespan = None
     check_redis_health = None
@@ -351,6 +241,8 @@ if API_ROUTER_AVAILABLE and api_router:
 else:
     _get_logger().warning("API路由未注册，使用原有路由")
 
+# 日志系统已在初始化时配置完成
+
 # 全局存储处理任务状态
 processing_tasks: Dict[str, Dict[str, Any]] = {}
 
@@ -388,71 +280,15 @@ class EvaluationRequest(BaseModel):
 async def root():
     return {"message": "论文评价分析系统API", "version": "1.0.0"}
 
-# 健康检查
+# 健康检查 - 按照API需求返回简化格式
 @app.get("/health")
 async def health_check():
-    health_info = {
-        "status": "healthy", 
-        "timestamp": datetime.now().isoformat(),
-        "services": {}
+    return {
+        "status": "ok",
+        "timestamp": datetime.now().isoformat()
     }
-    
-    # 检查Redis状态
-    if REDIS_AVAILABLE and check_redis_health:
-        try:
-            redis_health = await check_redis_health()
-            health_info["services"]["redis"] = redis_health
-        except Exception as e:
-            health_info["services"]["redis"] = {
-                "status": "error",
-                "connected": False,
-                "message": f"Redis健康检查失败: {e}"
-            }
-    else:
-        health_info["services"]["redis"] = {
-            "status": "unavailable",
-            "connected": False,
-            "message": "Redis模块未加载"
-        }
-    
-    return health_info
 
-# 文档上传接口
-@app.post("/api/upload")
-async def upload_document(file: UploadFile = File(...)):
-    """
-    上传Word文档并返回任务ID
-    """
-    # 验证文件类型
-    if not file.filename.endswith('.docx'):
-        raise HTTPException(status_code=400, detail="仅支持.docx格式的文档")
-    
-    # 生成任务ID
-    task_id = str(uuid.uuid4())
-    
-    try:
-        # 读取文件内容
-        file_content = await file.read()
-        
-        # 创建任务记录
-        processing_tasks[task_id] = {
-            "task_id": task_id,
-            "status": "pending",
-            "progress": 0.0,
-            "message": "文档上传成功，等待处理",
-            "filename": file.filename,
-            "file_content": file_content,
-            "created_at": datetime.now().isoformat()
-        }
-        
-        return {
-            "task_id": task_id,
-            "filename": file.filename,
-            "message": "文档上传成功"
-        }
-        
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"文档上传失败: {str(e)}")
+# 文档上传接口已移至 api/document.py，避免重复路由
 
 # 获取处理状态
 @app.get("/api/status/{task_id}")

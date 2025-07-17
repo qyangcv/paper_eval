@@ -117,14 +117,14 @@ with open('论文.docx', 'rb') as f:
         files={'file': f}
     )
     
-document_id = response.json()['document_id']
+task_id = response.json()['task_id']
 ```
 
 ### 2. 文档处理
 
 ```python
 # 处理文档
-response = requests.post(f'http://localhost:8000/api/document/process/{document_id}')
+response = requests.post(f'http://localhost:8000/api/document/process/{task_id}')
 print(response.json())
 ```
 
@@ -135,7 +135,7 @@ print(response.json())
 response = requests.post(
     'http://localhost:8000/api/evaluation/start',
     json={
-        'document_id': document_id,
+        'document_id': task_id,
         'model_name': 'deepseek-chat'
     }
 )

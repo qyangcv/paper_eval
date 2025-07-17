@@ -68,7 +68,18 @@ async def hard_eval(document_id: str):
             # 执行硬指标分析
             # 调用pipeline中的硬指标评价函数
             response = hard_criterial_eval(md_content)
-            
+
+            # 如果response是JSON字符串，需要解析为字典
+            if isinstance(response, str):
+                try:
+                    response = json.loads(response)
+                except json.JSONDecodeError:
+                    logger.error(f"硬指标评价结果JSON解析失败: {response}")
+                    response = {
+                        "summary": {"total_issues": 0, "issue_types": [], "severity_distribution": {"高": 0, "中": 0, "低": 0}},
+                        "by_chapter": {}
+                    }
+
             # 将结果存储到Redis，设置1小时过期时间
             # 缓存可以提高响应速度，避免重复计算
             try:
@@ -78,8 +89,8 @@ async def hard_eval(document_id: str):
                     logger.info(f"硬指标评价结果已存储到Redis: {document_id}")
             except Exception as store_error:
                 logger.warning(f"存储硬指标评价结果到Redis失败: {store_error}")
-            
-            return response_json
+
+            return response
         else:
             raise ValueError("文档内容为空，无法进行硬指标评价")
             
@@ -138,7 +149,7 @@ async def soft_eval(document_id: str):
             except Exception as store_error:
                 logger.warning(f"存储软指标评价结果到Redis失败: {store_error}")
             
-            return response_json
+            return response
         else:
             raise ValueError("文档内容为空，无法进行软指标评价")
             
@@ -212,7 +223,7 @@ async def ref_eval(document_id: str):
             except Exception as store_error:
                 logger.warning(f"存储参考文献评价结果到Redis失败: {store_error}")
             
-            return response_json
+            return response
         else:
             # 没有参考文献的情况
             # 返回标准化的结果格式，便于前端处理
@@ -222,11 +233,10 @@ async def ref_eval(document_id: str):
                 "detail": [],
                 "message": "未找到参考文献"
             }
-            response_json = json.dumps(response, ensure_ascii=False, default=str)
-            return response_json
+            return response
             
     except Exception as e:
-        logger.error(f"文档参考文献评价失败: {e}")
+        logger.error("文档参考文献评价失败: %s", str(e))
         raise HTTPException(status_code=500, detail=f"获取参考文献评价失败: {str(e)}")
     
 async def img_eval(document_id: str):
@@ -277,8 +287,7 @@ async def img_eval(document_id: str):
                 "detail": [],
                 "message": "文档中没有图片"
             }
-            response_json = json.dumps(response, ensure_ascii=False, default=str)
-            return response_json
+            return response
 
         logger.info(f"文档 {document_id} 中找到 {len(images)} 张图片，开始检测重复使用")
         
@@ -291,11 +300,18 @@ async def img_eval(document_id: str):
         # 图片检测是计算密集型任务，缓存结果非常重要
         try:
             if redis_mgr._client:
-                await redis_mgr._client.setex(key, 3600, response)  # 1小时过期
+                response_json = json.dumps(response, ensure_ascii=False, default=str) if isinstance(response, dict) else response
+                await redis_mgr._client.setex(key, 3600, response_json)  # 1小时过期
                 logger.info(f"图片评价结果已存储到Redis: {document_id}")
         except Exception as store_error:
             logger.warning(f"存储图片评价结果到Redis失败: {store_error}")
-        
+
+        # 确保返回的是字典格式
+        if isinstance(response, str):
+            try:
+                return json.loads(response)
+            except:
+                return {"total_reused": 0, "detail": [], "message": "解析响应失败"}
         return response
             
     except Exception as e:

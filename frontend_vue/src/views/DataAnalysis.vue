@@ -1,10 +1,8 @@
 <template>
   <div class="data-analysis-page">
     <!-- 加载状态 -->
-    <div v-if="loading" class="loading-container">
-      <el-loading-directive v-loading="true" element-loading-text="正在加载数据分析报告...">
-        <div style="height: 400px;"></div>
-      </el-loading-directive>
+    <div v-if="loading" class="loading-container" v-loading="true" element-loading-text="正在加载数据分析报告...">
+      <div style="height: 400px;"></div>
     </div>
 
     <!-- 数据分析内容 -->
@@ -85,7 +83,7 @@
                 </div>
                 <div class="stat-quick">
                   <span class="stat-label">问题数量</span>
-                  <span class="stat-value">{{ analysisData.issue_list?.summary?.total_issues || 0 }}</span>
+                  <span class="stat-value">{{ totalIssuesCount }}</span>
                 </div>
               </div>
             </div>
@@ -486,11 +484,11 @@
                       </div>
                       <div class="issues-summary-enhanced">
                         <div class="summary-main">
-                          <span class="summary-number">{{ analysisData.issue_list?.summary?.total_issues || 0 }}</span>
+                          <span class="summary-number">{{ totalIssuesCount }}</span>
                           <span class="summary-label">个问题</span>
                         </div>
-                        <div class="summary-status" :class="getSummaryStatusClass(analysisData.issue_list?.summary?.total_issues || 0)">
-                          {{ getSummaryStatusText(analysisData.issue_list?.summary?.total_issues || 0) }}
+                        <div class="summary-status" :class="getSummaryStatusClass(totalIssuesCount)">
+                          {{ getSummaryStatusText(totalIssuesCount) }}
                         </div>
                       </div>
                     </div>
@@ -511,35 +509,17 @@
 
                 <!-- 问题详情区域 -->
                 <div class="issues-details-section">
-                  <!-- 问题严重程度统计 -->
-                  <div class="severity-stats-bar">
-                    <div class="severity-summary-text">
-                      <span class="severity-stat-item total">
-                        <span class="severity-label">总</span>
-                        <span class="severity-count">{{ analysisData.issue_list?.summary?.total_issues || 0 }}</span>
-                      </span>
-                      <span
-                        v-for="(count, severity) in analysisData.issue_list?.summary?.severity_distribution"
-                        :key="severity"
-                        class="severity-stat-item"
-                        :class="severity"
-                      >
-                        <span class="severity-label">{{ severity }}</span>
-                        <span class="severity-count">{{ count }}</span>
-                      </span>
-                    </div>
-                  </div>
 
                   <div class="issues-nav enhanced-issues-nav">
                     <el-tabs
                       v-model="activeIssueTab"
                       type="border-card"
                       class="enhanced-tabs"
-                      v-if="analysisData.issue_list && analysisData.issue_list.by_chapter"
+                      v-if="issuesChapterData && Object.keys(issuesChapterData).length > 0"
                       @tab-change="handleTabChange"
                     >
                       <el-tab-pane
-                        v-for="(issues, chapter) in analysisData.issue_list.by_chapter"
+                        v-for="(issues, chapter) in issuesChapterData"
                         :key="chapter"
                         :label="chapter"
                         :name="chapter"
@@ -559,10 +539,10 @@
                               <div class="issue-meta">
                                 <div class="issue-type-wrapper">
                                   <el-tag
-                                    :type="getIssueTagType(issue.type)"
                                     size="small"
                                     class="issue-type-tag"
                                     effect="dark"
+                                    :style="{ backgroundColor: getColorForIssueType(issue.type), borderColor: getColorForIssueType(issue.type), color: '#fff' }"
                                   >
                                     <el-icon class="tag-icon">
                                       <component :is="getIssueIcon(issue.type)" />
@@ -634,7 +614,7 @@
 </template>
 
 <script>
-import { ref, computed, onMounted, onUnmounted, nextTick } from 'vue'
+import { ref, computed, onMounted, onUnmounted, nextTick, reactive } from 'vue'
 import { ElMessage } from 'element-plus'
 import { use } from 'echarts/core'
 import { CanvasRenderer } from 'echarts/renderers'
@@ -683,7 +663,7 @@ import {
   Menu as ElMenu
 } from '@element-plus/icons-vue'
 import { useDocumentStore } from '../stores/document'
-import { useRoute } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import api from '../services/api'
 
 // 注册ECharts组件
@@ -736,6 +716,7 @@ export default {
   setup () {
     const documentStore = useDocumentStore()
     const route = useRoute()
+    const router = useRouter()
 
     const activeIssueTab = ref('')
     const activeDimension = ref(0)
@@ -753,22 +734,52 @@ export default {
       try {
         loading.value = true
 
-        // 获取task_id，优先从路由参数获取，否则使用默认值
-        const taskId = route.params.taskId || route.query.taskId || 'demo-task-id'
+        // 获取task_id，必须从路由参数获取
+        const taskId = route.params.taskId || route.query.taskId
+
+        if (!taskId) {
+          throw new Error('缺少任务ID参数')
+        }
 
         console.log('正在加载数据分析数据，task_id:', taskId)
 
+        // 首先检查任务状态
         try {
-          // 使用API服务加载所有分析数据
-          analysisData.value = await api.loadAllAnalysisData(taskId)
-          console.log('API数据加载成功:', analysisData.value)
-        } catch (apiError) {
-          console.warn('API数据加载失败，降级到静态数据:', apiError)
-          // 降级到静态JSON文件
-          const response = await fetch('/data_exhibit.json')
-          analysisData.value = await response.json()
-          console.log('静态数据加载成功')
+          const statusResponse = await api.getStatus(taskId)
+          const statusData = statusResponse.data
+          console.log('任务状态:', statusData)
+
+          // 如果任务还在处理中，显示处理中的消息并等待
+          if (statusData.status === 'processing' || statusData.status === 'pending') {
+            ElMessage.warning('任务正在处理中，请稍候...')
+            // 3秒后重试
+            setTimeout(() => {
+              loadAnalysisData()
+            }, 3000)
+            return
+          }
+
+          // 如果任务失败，显示错误信息
+          if (statusData.status === 'error') {
+            ElMessage.error('任务处理失败：' + (statusData.error || '未知错误'))
+            loading.value = false
+            return
+          }
+
+          // 只有任务完成时才继续加载数据
+          if (statusData.status !== 'completed') {
+            ElMessage.warning('任务状态异常，请返回首页重新处理')
+            loading.value = false
+            return
+          }
+        } catch (statusError) {
+          console.error('获取任务状态失败:', statusError)
+          ElMessage.warning('无法获取任务状态，尝试直接加载数据...')
         }
+
+        // 使用API服务加载所有分析数据
+        analysisData.value = await api.loadAllAnalysisData(taskId)
+        console.log('API数据加载成功:', analysisData.value)
 
         // 设置第一个章节为默认选中的问题标签页
         const chapters = Object.keys(analysisData.value.issue_list?.by_chapter || {})
@@ -780,7 +791,9 @@ export default {
         await new Promise(resolve => requestAnimationFrame(resolve))
       } catch (error) {
         console.error('加载分析数据失败:', error)
-        ElMessage.error('加载分析数据失败')
+        ElMessage.error('数据加载失败，请检查任务ID是否正确')
+        // 可以考虑跳转回首页或显示错误页面
+        await router.push('/')
       } finally {
         loading.value = false
       }
@@ -837,7 +850,7 @@ export default {
       const dimensions = analysisData.value.evaluation?.dimensions || []
       const indicator = dimensions.map(dim => ({
         name: dim.name,
-        max: dim.full_score,
+        max: Math.max(dim.full_score, 10), // 确保最大值至少为10
         min: 0
       }))
       const actualData = dimensions.map(dim => dim.score)
@@ -1303,62 +1316,108 @@ export default {
 
     // 问题类型统计环形图配置 - ECharts圆角环形图
     const issueTypePieOption = computed(() => {
-      if (!analysisData.value || !analysisData.value.issue_list) {
+      // 调试信息
+      console.log('issueTypePieOption - analysisData.value:', analysisData.value)
+
+      // 检查数据源，支持新旧两种数据格式
+      let issueData = null
+      if (analysisData.value?.issue_list) {
+        // 新格式：issue_list
+        issueData = analysisData.value.issue_list
+        console.log('使用新格式 issue_list:', issueData)
+      } else if (analysisData.value?.error_analysis) {
+        // 旧格式：error_analysis
+        issueData = analysisData.value.error_analysis
+        console.log('使用旧格式 error_analysis:', issueData)
+      }
+
+      if (!issueData) {
+        console.log('没有找到问题数据')
         return {}
       }
 
-      // 定义问题类型对应的颜色，与右侧详细内容标签颜色保持一致
-      const getIssueTypeColor = (type) => {
-        const colorMap = {
-          格式错误: '#e6a23c', // warning - 橙色
-          语法问题: '#f56c6c', // danger - 红色
-          逻辑不清: '#909399', // info - 灰色
-          图表问题: '#409eff', // primary - 蓝色
-          公式问题: '#67c23a', // success - 绿色
-          引用错误: '#f56c6c' // danger - 红色
-        }
-        return colorMap[type] || '#909399' // 默认灰色
-      }
+      // 使用动态颜色映射
+      const getIssueTypeColor = getColorForIssueType
 
-      const issueTypes = analysisData.value.issue_list?.summary?.issue_types || []
-      const data = issueTypes.map(type => {
-        // 统计每种类型的问题数量
-        let count = 0
-        const byChapter = analysisData.value.issue_list?.by_chapter || {}
-        Object.values(byChapter).forEach(issues => {
-          count += issues.filter(issue => issue.type === type).length
-        })
-        return {
-          name: type,
-          value: count,
-          itemStyle: {
-            color: getIssueTypeColor(type),
-            borderRadius: 10,
-            borderColor: '#fff',
-            borderWidth: 2
+      let data = []
+
+      if (issueData.summary?.issue_types) {
+        // 新格式：从 summary.issue_types 获取类型，从 by_chapter 统计数量
+        const issueTypes = issueData.summary.issue_types
+        console.log('问题类型列表:', issueTypes)
+        console.log('章节数据:', issueData.by_chapter)
+
+        data = issueTypes.map(type => {
+          let count = 0
+          const byChapter = issueData.by_chapter || {}
+          Object.values(byChapter).forEach(issues => {
+            count += issues.filter(issue => issue.type === type).length
+          })
+
+          const color = getIssueTypeColor(type)
+          console.log(`问题类型 ${type}: 数量=${count}, 颜色=${color}`)
+
+          return {
+            name: type,
+            value: count,
+            itemStyle: {
+              color,
+              borderRadius: 10,
+              borderColor: '#fff',
+              borderWidth: 2
+            }
           }
-        }
-      })
+        })
+      } else if (issueData.chapters) {
+        // 旧格式：从 chapters 中的 errors 统计
+        const typeCount = {}
+        issueData.chapters.forEach(chapter => {
+          if (chapter.errors) {
+            chapter.errors.forEach(error => {
+              const type = error.type
+              typeCount[type] = (typeCount[type] || 0) + 1
+            })
+          }
+        })
+
+        console.log('旧格式问题类型统计:', typeCount)
+
+        data = Object.entries(typeCount).map(([type, count]) => {
+          const color = getIssueTypeColor(type)
+          console.log(`旧格式问题类型 ${type}: 数量=${count}, 颜色=${color}`)
+
+          return {
+            name: type,
+            value: count,
+            itemStyle: {
+              color,
+              borderRadius: 10,
+              borderColor: '#fff',
+              borderWidth: 2
+            }
+          }
+        })
+      }
 
       return {
         tooltip: {
-          trigger: 'item'
+          trigger: 'item',
+          formatter: '{a} <br/>{b}: {c} ({d}%)'
         },
         legend: {
           top: '5%',
-          left: 'center'
+          left: 'center',
+          textStyle: {
+            fontSize: 12
+          }
         },
         series: [
           {
             name: '问题类型',
             type: 'pie',
             radius: ['40%', '70%'],
+            center: ['50%', '50%'],
             avoidLabelOverlap: false,
-            itemStyle: {
-              borderRadius: 10,
-              borderColor: '#fff',
-              borderWidth: 2
-            },
             label: {
               show: false,
               position: 'center'
@@ -1368,12 +1427,17 @@ export default {
                 show: true,
                 fontSize: 16,
                 fontWeight: 'bold'
+              },
+              itemStyle: {
+                shadowBlur: 10,
+                shadowOffsetX: 0,
+                shadowColor: 'rgba(0, 0, 0, 0.5)'
               }
             },
             labelLine: {
               show: false
             },
-            data
+            data: data.filter(item => item.value > 0) // 过滤掉值为0的项
           }
         ]
       }
@@ -1657,6 +1721,48 @@ export default {
       return evaluationDimensions.value[activeDimension.value] || null
     })
 
+    // 问题章节数据兼容性处理
+    const issuesChapterData = computed(() => {
+      // 检查数据源，支持新旧两种数据格式
+      if (analysisData.value?.issue_list?.by_chapter) {
+        // 新格式：issue_list.by_chapter
+        return analysisData.value.issue_list.by_chapter
+      } else if (analysisData.value?.error_analysis?.chapters) {
+        // 旧格式：error_analysis.chapters，需要转换格式
+        const chapters = analysisData.value.error_analysis.chapters
+        const converted = {}
+        chapters.forEach(chapter => {
+          if (chapter.errors && chapter.errors.length > 0) {
+            converted[chapter.name] = chapter.errors.map((error, index) => ({
+              id: `${chapter.name}-${index}`,
+              type: error.type,
+              severity: error.severity,
+              sub_chapter: chapter.name,
+              original_text: error.description || '',
+              detail: error.description || '',
+              suggestion: error.suggestion || ''
+            }))
+          }
+        })
+        return converted
+      }
+      return {}
+    })
+
+    // 问题总数兼容性处理
+    const totalIssuesCount = computed(() => {
+      if (analysisData.value?.issue_list?.summary?.total_issues) {
+        // 新格式：直接从 summary 获取
+        return analysisData.value.issue_list.summary.total_issues
+      } else if (analysisData.value?.error_analysis?.chapters) {
+        // 旧格式：统计所有章节的错误数量
+        return analysisData.value.error_analysis.chapters.reduce((total, chapter) => {
+          return total + (chapter.error_count || 0)
+        }, 0)
+      }
+      return 0
+    })
+
     // 维度得分均分（使用权重计算）
     const dimensionAverageScore = computed(() => {
       if (!analysisData.value || !analysisData.value.evaluation) {
@@ -1708,43 +1814,6 @@ export default {
       if (score >= 4.0) return 'primary'
       if (score >= 3.5) return 'warning'
       return 'danger'
-    }
-
-    const getIssueTagType = (type) => {
-      const typeMap = {
-        格式错误: 'warning',
-        语法问题: 'danger',
-        逻辑不清: 'info',
-        图表问题: 'primary',
-        公式问题: 'success',
-        引用错误: 'danger'
-      }
-      return typeMap[type] || 'info'
-    }
-
-    // 根据百分数返回颜色类名
-    const getPercentageColorClass = (score, fullScore) => {
-      const percentage = Math.round((score / fullScore) * 100)
-      if (percentage >= 90) return 'percentage-excellent' // 绿色
-      if (percentage >= 80) return 'percentage-good' // 蓝色
-      return 'percentage-warning' // 黄色
-    }
-
-    // 获取维度对应的emoji
-    const getDimensionEmoji = (dimensionName) => {
-      const emojiMap = {
-        研究内容: '🔬',
-        研究方法: '⚙️',
-        实验设计: '🧪',
-        数据分析: '📊',
-        结果讨论: '💭',
-        文献综述: '📚',
-        创新性: '💡',
-        逻辑性: '🧠',
-        规范性: '📋',
-        完整性: '✅'
-      }
-      return emojiMap[dimensionName] || '📝'
     }
 
     // 获取问题类型对应的图标
@@ -1953,6 +2022,65 @@ export default {
       }
     })
 
+    // ---------------------------------------------
+    // 动态颜色映射: 为每个问题类型分配唯一颜色，并在环状图和标签中复用
+    // ---------------------------------------------
+    const colorPalette = [
+      '#f56c6c', // 红
+      '#e6a23c', // 橙
+      '#409eff', // 蓝
+      '#67c23a', // 绿
+      '#909399', // 灰
+      '#ff7f50', // 珊瑚
+      '#b482ff', // 淡紫
+      '#13c2c2', // 青
+      '#fa8c16', // 橙黄
+      '#52c41a', // 亮绿
+      '#2f54eb', // 深蓝
+      '#a0d911' // 黄绿
+    ]
+
+    // 使用 reactive 保证映射在模板和计算属性中都是响应式的
+    const issueTypeColorMap = reactive({})
+
+    /**
+     * 获取指定问题类型的颜色。如首次调用，则分配调色板中的下一个颜色。
+     * 这样确保环状图与右侧标签颜色保持一致，且支持后端动态新增的问题类型。
+     */
+    const getColorForIssueType = (type) => {
+      if (!issueTypeColorMap[type]) {
+        const index = Object.keys(issueTypeColorMap).length % colorPalette.length
+        issueTypeColorMap[type] = colorPalette[index]
+      }
+      return issueTypeColorMap[type]
+    }
+
+    // 获取评价维度对应的emoji
+    const getDimensionEmoji = (dimensionName) => {
+      const emojiMap = {
+        研究内容: '🔬',
+        研究方法: '⚙️',
+        实验设计: '🧪',
+        数据分析: '📊',
+        结果讨论: '💭',
+        文献综述: '📚',
+        创新性: '💡',
+        逻辑性: '🧠',
+        规范性: '📋',
+        完整性: '✅'
+      }
+      return emojiMap[dimensionName] || '📝'
+    }
+
+    // 获取问题类型对应的图标
+    const getPercentageColorClass = (score, fullScore) => {
+      const percentage = Math.round((score / fullScore) * 100)
+      if (percentage >= 90) return 'percentage-excellent'
+      if (percentage >= 80) return 'percentage-good'
+      if (percentage >= 70) return 'percentage-warning'
+      return 'percentage-danger'
+    }
+
     return {
       documentStore,
       analysisData,
@@ -1971,12 +2099,13 @@ export default {
       evaluationDimensions,
       currentDimension,
       dimensionAverageScore,
+      issuesChapterData,
+      totalIssuesCount,
       onIssueChartClick,
       onIssueChartMouseover,
       onIssueChartMouseout,
       hoveredIssueType,
       getScoreTagType,
-      getIssueTagType,
       getPercentageColorClass,
       getDimensionEmoji,
       getIssueIcon,
@@ -1985,7 +2114,8 @@ export default {
       getSummaryStatusClass,
       getSummaryStatusText,
       handleTabChange,
-      scrollToSection
+      scrollToSection,
+      getColorForIssueType
     }
   }
 }
