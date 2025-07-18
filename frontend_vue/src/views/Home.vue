@@ -315,14 +315,9 @@ export default {
     // 模型选项
     const modelOptions = ref([
       {
-        value: 'deepseek-chat',
-        label: 'DeepSeek Chat',
-        description: '通用对话模型，适合基础分析'
-      },
-      {
-        value: 'deepseek-reasoner',
-        label: 'DeepSeek Reasoner',
-        description: '推理模型，适合深度分析'
+        value: 'deepseek',
+        label: 'DeepSeek',
+        description: 'DeepSeek AI模型，智能分析与推理'
       },
       {
         value: 'gemini',
@@ -367,7 +362,7 @@ export default {
       if (model === 'none') return null
 
       let key = ''
-      if (model.startsWith('deepseek')) {
+      if (model === 'deepseek') {
         key = apiKeys.value.deepseek
       } else if (model === 'gemini') {
         key = apiKeys.value.gemini
@@ -439,7 +434,7 @@ export default {
 
         // 同步当前API密钥到store
         documentStore.setSelectedModel(selectedModel.value)
-        if (selectedModel.value.startsWith('deepseek')) {
+        if (selectedModel.value === 'deepseek') {
           documentStore.setApiKey('deepseek', apiKeys.value.deepseek)
         } else if (selectedModel.value === 'gemini') {
           documentStore.setApiKey('gemini', apiKeys.value.gemini)

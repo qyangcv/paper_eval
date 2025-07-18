@@ -688,6 +688,58 @@ def remove_italic_tags(html_content):
     return html_content
 
 
+def fix_malformed_math_formulas(html_content):
+    """
+    后处理HTML内容：修复格式错误的数学公式
+
+    Args:
+        html_content (str): HTML内容字符串
+
+    Returns:
+        str: 处理后的HTML内容（已修复数学公式）
+    """
+    # 修复分段函数的常见错误模式
+    # 模式1: {M}_{ij}=\left\{ 0, i\geq j-\infty, i<j \right)\left( 2-9 \right)
+    piecewise_pattern = r'\\left\\{\s*0\s*,\s*i\s*\\geq\s*j\s*-\s*\\infty\s*,\s*i\s*<\s*j\s*\\right\)\\left\(\s*\d+-\d+\s*\\right\)'
+    replacement = r'\\begin{cases} 0, & i \\geq j \\\\\\\\ -\\infty, & i < j \\end{cases}'
+
+    fixed_count = 0
+    if re.search(piecewise_pattern, html_content):
+        html_content = re.sub(piecewise_pattern, replacement, html_content)
+        fixed_count += 1
+
+    # 模式2: 更通用的错误分段函数模式
+    general_pattern = r'\\left\\{\s*([^,]+)\s*,\s*([^,]+)\s*([−\-]?\\infty)\s*,\s*([^\\]+)\\right\)\\left\(\s*\d+-\d+\s*\\right\)'
+
+    def replace_general_piecewise(match):
+        value1 = match.group(1).strip()
+        condition1 = match.group(2).strip()
+        value2 = match.group(3).strip()
+        condition2 = match.group(4).strip()
+
+        # 确保无穷大符号正确
+        if value2 == '\\infty':
+            value2 = '-\\infty'
+        elif not value2.startswith('-'):
+            value2 = '-\\infty'
+
+        return f'\\begin{{cases}} {value1}, & {condition1} \\\\\\\\ {value2}, & {condition2} \\end{{cases}}'
+
+    if re.search(general_pattern, html_content):
+        html_content = re.sub(general_pattern, replace_general_piecewise, html_content)
+        fixed_count += 1
+
+    # 修复其他常见的数学符号问题
+    # 修复无穷大符号
+    html_content = re.sub(r'j\s*−\s*\\infty', r'j \\\\\\\\ -\\infty', html_content)
+    html_content = re.sub(r'j\s*-\s*\\infty', r'j \\\\\\\\ -\\infty', html_content)
+
+    if fixed_count > 0:
+        print(f"已修复 {fixed_count} 个格式错误的数学公式")
+
+    return html_content
+
+
 def docx_to_html(docx_path, output_html_path, image_dir="images", css_file=None):
     """
     将DOCX文件转换为HTML格式，保持文本、图像、表格和数学公式的顺序
@@ -838,6 +890,9 @@ def docx_to_html(docx_path, output_html_path, image_dir="images", css_file=None)
 
     # 后处理2：去除所有斜体标签
     full_html = remove_italic_tags(full_html)
+
+    # 后处理3：修复格式错误的数学公式
+    full_html = fix_malformed_math_formulas(full_html)
 
     # 写入HTML文件 - 确保UTF-8编码
     try:

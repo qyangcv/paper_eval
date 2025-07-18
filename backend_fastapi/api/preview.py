@@ -17,6 +17,75 @@ from utils.redis_client import get_redis_manager
 logger = get_logger(__name__)
 router = APIRouter()
 
+
+def fix_math_formulas_in_html(html_content):
+    """
+    自动修复HTML中的数学公式错误
+
+    Args:
+        html_content (str): HTML内容字符串
+
+    Returns:
+        str: 修复后的HTML内容
+    """
+    import re
+
+    fixed_count = 0
+
+    # 修复分段函数的常见错误模式
+    # 模式1: {M}_{ij}=\left\{ 0, i\geq j-\infty, i<j \right)\left( 2-9 \right)
+    piecewise_pattern = r'\\left\\{\s*0\s*,\s*i\s*\\geq\s*j\s*-\s*\\infty\s*,\s*i\s*<\s*j\s*\\right\)\\left\(\s*\d+-\d+\s*\\right\)'
+    replacement = r'\\begin{cases} 0, & i \\geq j \\\\\\\\ -\\infty, & i < j \\end{cases}'
+
+    if re.search(piecewise_pattern, html_content):
+        html_content = re.sub(piecewise_pattern, replacement, html_content)
+        fixed_count += 1
+        logger.info(f"修复了掩码矩阵分段函数")
+
+    # 模式2: 更通用的错误分段函数模式
+    general_pattern = r'\\left\\{\s*([^,]+)\s*,\s*([^,]+)\s*([−\-]?\\infty)\s*,\s*([^\\]+)\\right\)\\left\(\s*\d+-\d+\s*\\right\)'
+
+    def replace_general_piecewise(match):
+        value1 = match.group(1).strip()
+        condition1 = match.group(2).strip()
+        value2 = match.group(3).strip()
+        condition2 = match.group(4).strip()
+
+        # 确保无穷大符号正确
+        if value2 == '\\infty':
+            value2 = '-\\infty'
+        elif not value2.startswith('-'):
+            value2 = '-\\infty'
+
+        return f'\\begin{{cases}} {value1}, & {condition1} \\\\\\\\ {value2}, & {condition2} \\end{{cases}}'
+
+    matches = re.findall(general_pattern, html_content)
+    if matches:
+        html_content = re.sub(general_pattern, replace_general_piecewise, html_content)
+        fixed_count += len(matches)
+        logger.info(f"修复了 {len(matches)} 个通用分段函数")
+
+    # 修复其他常见的数学符号问题
+    # 修复无穷大符号的错误连接
+    infinity_fixes = [
+        (r'j\s*−\s*\\infty', r'j \\\\\\\\ -\\infty'),
+        (r'j\s*-\s*\\infty', r'j \\\\\\\\ -\\infty'),
+        (r'j−\\infty', r'j \\\\\\\\ -\\infty'),
+        (r'j-\\infty', r'j \\\\\\\\ -\\infty'),
+    ]
+
+    for pattern, replacement_text in infinity_fixes:
+        if re.search(pattern, html_content):
+            html_content = re.sub(pattern, replacement_text, html_content)
+            fixed_count += 1
+            logger.info(f"修复了无穷大符号连接")
+            break
+
+    if fixed_count > 0:
+        logger.info(f"总共修复了 {fixed_count} 个数学公式问题")
+
+    return html_content
+
 @router.get("/{task_id}/html")
 async def get_preview_html(task_id: str):
     """
@@ -60,6 +129,9 @@ async def get_preview_html(task_id: str):
                 with open(html_path_to_use, 'r', encoding='utf-8') as f:
                     html_content = f.read()
                 logger.info(f"成功读取HTML文件: {html_path_to_use}")
+
+                # 自动修复数学公式（在发送给前端之前）
+                html_content = fix_math_formulas_in_html(html_content)
 
                 # 处理HTML中的图片路径，确保前端能正确加载图片
                 # 将相对路径的图片引用替换为API路径

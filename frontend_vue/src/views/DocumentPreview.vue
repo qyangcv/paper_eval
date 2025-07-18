@@ -43,6 +43,19 @@
     <div class="main-content">
       <div class="content-header">
         <h2>📖 文档预览</h2>
+
+        <!-- 分析状态指示器 -->
+        <div v-if="isAnalyzing" class="analysis-status">
+          <div class="analysis-indicator">
+            <div class="spinner"></div>
+            <span class="analysis-text">{{ analysisMessage }}</span>
+          </div>
+          <div class="analysis-tip">
+            <i class="tip-icon">💡</i>
+            <span>分析通常需要5-7分钟，页面将自动刷新显示结果</span>
+          </div>
+        </div>
+
         <div class="header-actions">
           <button
             class="analysis-button"
@@ -94,12 +107,14 @@
             <div class="issue-header">
               <span class="issue-type">{{ issue.type }}</span>
               <span class="severity-tag" :class="issue.severity">{{ issue.severity }}</span>
+              <!-- 移除模糊匹配徽章，让模糊匹配和正确匹配看起来一样 -->
             </div>
             <div class="issue-location">{{ issue.sub_chapter }}</div>
             <div class="issue-detail">{{ issue.detail }}</div>
             <div class="issue-suggestion">
               <strong>建议：</strong>{{ issue.suggestion }}
             </div>
+            <!-- 移除模糊匹配信息显示，让模糊匹配和正确匹配看起来一样 -->
           </div>
         </div>
       </div>
@@ -129,6 +144,12 @@ export default {
       documentStructure: [], // 动态从HTML解析或后端获取
       isLoaded: false, // 控制加载动效
       isTaskCompleted: false, // 任务是否完成
+      lastClickTime: 0, // 记录上次点击时间，用于防抖
+      documentContent: null, // 文档内容（用于模糊匹配）
+      autoRefreshTimer: null, // 自动刷新定时器
+      isAnalyzing: false, // 是否正在分析
+      analysisProgress: 0, // 分析进度（0-100）
+      analysisMessage: '', // 分析状态消息
       api // 添加API服务
     }
   },
@@ -160,6 +181,7 @@ export default {
     const preview = this.$refs.htmlPreview
     if (preview) {
       preview.removeEventListener('scroll', this.handleScroll)
+      preview.removeEventListener('scroll', this.handlePreviewScroll)
     }
 
     // 清理右侧issue面板滚动监听器
@@ -168,12 +190,23 @@ export default {
       issuePanel.removeEventListener('scroll', this.handleIssueScroll)
     }
 
+    // 清理自动刷新定时器
+    if (this.autoRefreshTimer) {
+      clearTimeout(this.autoRefreshTimer)
+      this.autoRefreshTimer = null
+    }
+
     // 清理连接线滚动监听器
     if (this.scrollHandlers) {
       this.scrollHandlers.forEach(({ element, handler }) => {
         element.removeEventListener('scroll', handler)
       })
       this.scrollHandlers = []
+    }
+
+    // 清理动画帧
+    if (this.updateLinesTimeout) {
+      cancelAnimationFrame(this.updateLinesTimeout)
     }
 
     // 清理高亮和连接线
@@ -614,8 +647,36 @@ export default {
           // 继续尝试加载问题数据
         }
 
+        // 检查评估状态
+        try {
+          const evalStatusResponse = await this.api.getEvaluationStatus(taskId)
+          const evalStatus = evalStatusResponse.data
+          console.log('评估状态:', evalStatus)
+
+          // 如果后台任务正在运行，设置自动刷新
+          if (evalStatus.background_task_running) {
+            console.log('后台评估任务正在运行，分析通常需要5-7分钟，将在2分钟后自动刷新')
+            this.isAnalyzing = true
+            this.analysisMessage = '正在进行深度分析，预计需要5-7分钟...'
+            this.scheduleAutoRefresh(120000) // 2分钟后刷新，给分析充足时间
+          } else if (!evalStatus.hard_eval_completed) {
+            // 如果评估还未完成但没有后台任务，可能需要启动
+            console.log('评估未完成，将在1分钟后检查状态')
+            this.isAnalyzing = true
+            this.analysisMessage = '准备开始分析...'
+            this.scheduleAutoRefresh(60000) // 1分钟后检查
+          } else {
+            // 分析已完成
+            this.isAnalyzing = false
+            this.analysisMessage = ''
+          }
+        } catch (evalStatusError) {
+          console.error('获取评估状态失败:', evalStatusError)
+          // 继续尝试加载问题数据
+        }
+
         console.log('开始请求问题数据API')
-        // 使用API服务
+        // 使用API服务，添加超时和降级处理
         try {
           const response = await this.api.getIssues(taskId)
           const data = response.data
@@ -629,27 +690,78 @@ export default {
           console.log(`[${new Date().toISOString()}] 设置后的by_chapter键数量:`, Object.keys(this.issueData.by_chapter || {}).length)
         } catch (apiError) {
           console.error('API请求失败:', apiError)
-          // 如果是404错误，可能是分析结果还没生成
+
+          // 处理不同类型的错误
           if (apiError.response && apiError.response.status === 404) {
             console.log('问题分析数据还未生成，使用空数据')
             this.issueData = { summary: { total_issues: 0, severity_distribution: {} }, by_chapter: {} }
+            return
+          } else if (apiError.response && apiError.response.status === 400) {
+            console.log('文档尚未处理完成，使用空数据')
+            this.issueData = { summary: { total_issues: 0, severity_distribution: {} }, by_chapter: {} }
+            return
+          } else if (apiError.code === 'ECONNABORTED' || apiError.message.includes('timeout')) {
+            console.log('请求超时，分析可能仍在进行中')
+            this.isAnalyzing = true
+            this.analysisMessage = '分析正在进行中，通常需要5-7分钟完成'
+            this.issueData = {
+              summary: {
+                total_issues: 0,
+                severity_distribution: {},
+                message: '分析正在进行中（通常需要5-7分钟），请稍后刷新页面查看结果'
+              },
+              by_chapter: {}
+            }
+            this.$message?.warning('分析正在进行中，通常需要5-7分钟完成。页面将自动刷新显示结果。')
+            // 设置较长的自动刷新时间
+            this.scheduleAutoRefresh(180000) // 3分钟后自动刷新
             return
           }
           throw apiError
         }
       } catch (error) {
         console.error('加载问题数据失败:', error)
-        this.issueData = { summary: { total_issues: 0, severity_distribution: {} }, by_chapter: {} }
-        // 只在非404错误时显示错误提示
-        if (!error.message.includes('404')) {
+        this.issueData = {
+          summary: {
+            total_issues: 0,
+            severity_distribution: {},
+            message: '数据加载失败'
+          },
+          by_chapter: {}
+        }
+        // 只在非预期错误时显示错误提示
+        if (!error.message.includes('404') && !error.message.includes('timeout')) {
           this.$message?.error('问题数据加载失败：' + (error.message || '未知错误'))
         }
+      }
+    },
+    scheduleAutoRefresh (delay = 120000) { // 默认2分钟
+      // 清除之前的定时器
+      if (this.autoRefreshTimer) {
+        clearTimeout(this.autoRefreshTimer)
+      }
+
+      // 设置新的定时器
+      this.autoRefreshTimer = setTimeout(() => {
+        console.log('自动刷新问题数据...')
+        this.loadIssueData()
+      }, delay)
+
+      const minutes = Math.floor(delay / 60000)
+      const seconds = Math.floor((delay % 60000) / 1000)
+      console.log(`已设置 ${minutes}分${seconds}秒后自动刷新`)
+
+      // 显示用户友好的提示
+      if (delay >= 60000) {
+        this.$message?.info(`分析正在进行中，将在${minutes}分钟后自动刷新结果`)
       }
     },
     setupScrollListener () {
       const preview = this.$refs.htmlPreview
       if (preview) {
         preview.addEventListener('scroll', this.handleScroll)
+        // 添加连接线更新监听器
+        preview.addEventListener('scroll', this.handlePreviewScroll)
       }
 
       // 添加右侧issue面板的滚动监听
@@ -929,41 +1041,134 @@ export default {
       return bestMatch
     },
 
-    highlightIssue (issue) {
+    async highlightIssue (issue) {
+      // 防抖：避免快速连续点击
+      const now = Date.now()
+      if (now - this.lastClickTime < 300) {
+        console.log('点击过于频繁，忽略此次点击')
+        return
+      }
+      this.lastClickTime = now
+
       // 高亮显示对应的问题文本
       console.log('高亮问题:', issue)
 
       const preview = this.$refs.htmlPreview
-      if (!preview || !issue.original_text) {
-        console.warn('无法找到预览区域或原文文本')
+      if (!preview) {
+        console.warn('无法找到预览区域')
         return
       }
 
       // 清除之前的高亮
       this.clearHighlights()
 
+      // 等待DOM更新完成后再进行查找
+      await this.$nextTick()
+
+      // 简化的文本搜索和定位逻辑
+      this.simpleTextSearchAndPosition(issue, preview)
+    },
+
+    simpleTextSearchAndPosition (issue, preview) {
       // 在HTML内容中查找原文
-      const documentContent = preview.querySelector('.document-content')
-      if (!documentContent) {
+      const documentHtmlContent = preview.querySelector('.document-content')
+      if (!documentHtmlContent) {
         console.warn('无法找到文档内容区域')
         return
       }
 
-      // 查找包含原文的元素
-      const targetElement = this.findTextInDocument(documentContent, issue.original_text)
+      let originalText = issue.original_text
+      let targetElement = null
+
+      // 直接查找原文
+      if (originalText && originalText.trim()) {
+        targetElement = this.findTextInDocument(documentHtmlContent, originalText)
+        console.log('直接查找结果:', targetElement ? '找到' : '未找到')
+      }
+
+      // 如果没有找到原文，尝试模糊匹配
       if (!targetElement) {
-        console.warn('未找到对应的原文:', issue.original_text)
+        console.log('未找到确切原文，尝试模糊匹配...')
+        console.log('问题详情:', {
+          type: issue.type,
+          detail: issue.detail,
+          suggestion: issue.suggestion,
+          original_text: issue.original_text
+        })
+
+        try {
+          const htmlTextContent = documentHtmlContent.textContent || documentHtmlContent.innerText || ''
+          console.log('HTML文本内容长度:', htmlTextContent.length)
+
+          if (htmlTextContent.length > 0) {
+            const queryText = this.extractQueryFromIssue(issue)
+            console.log('提取的查询文本:', queryText)
+
+            if (queryText && queryText.length > 3) {
+              const fuzzyResult = this.findBestMatchInHtmlContent(queryText, htmlTextContent, documentHtmlContent)
+              console.log('HTML模糊匹配结果:', fuzzyResult)
+
+              if (fuzzyResult && fuzzyResult.element) {
+                targetElement = fuzzyResult.element
+                originalText = fuzzyResult.actualMatchedText || fuzzyResult.matchedText
+                console.log(`HTML模糊匹配成功，相似度: ${(fuzzyResult.similarity * 100).toFixed(1)}%`)
+                console.log('查询文本:', queryText)
+                console.log('匹配的句子:', fuzzyResult.matchedText)
+                console.log('实际高亮文本:', originalText)
+              } else {
+                console.log('HTML模糊匹配未找到结果，尝试使用问题描述进行匹配...')
+                // 如果模糊匹配失败，尝试使用问题的详细描述进行匹配
+                const fallbackResult = this.tryFallbackMatching(issue, documentHtmlContent)
+                if (fallbackResult) {
+                  targetElement = fallbackResult.element
+                  originalText = fallbackResult.text
+                  console.log('备用匹配成功:', fallbackResult)
+                }
+              }
+            }
+          }
+        } catch (error) {
+          console.error('模糊匹配失败:', error)
+        }
+      }
+
+      if (!targetElement) {
+        console.warn('未找到对应的原文:', originalText || '无原文')
+        this.$message?.warning('未找到对应的原文内容，可能需要手动查找')
         return
       }
 
       // 高亮原文
-      this.highlightText(targetElement, issue.original_text, issue.id)
+      this.highlightText(targetElement, originalText, issue.id)
 
-      // 滚动到目标位置（居中显示）
-      this.scrollToTarget(targetElement)
+      // 等待DOM更新完成后，基于高亮元素进行定位
+      this.$nextTick(() => {
+        const highlightElement = this.findHighlightElement(issue.id)
+        if (highlightElement) {
+          console.log('基于高亮元素进行定位')
+          this.scrollToTarget(highlightElement)
+          this.createConnectionLine(issue.id, highlightElement)
+        } else {
+          console.log('未找到高亮元素，使用原始目标元素')
+          this.scrollToTarget(targetElement)
+          this.createConnectionLine(issue.id, targetElement)
+        }
+      })
+    },
 
-      // 创建连接线
-      this.createConnectionLine(issue.id, targetElement)
+    findHighlightElement (issueId) {
+      // 查找指定issue的高亮元素
+      const preview = this.$refs.htmlPreview
+      if (!preview) return null
+
+      const highlightElement = preview.querySelector(`.issue-highlight[data-issue-id="${issueId}"]`)
+      if (highlightElement) {
+        console.log('找到高亮元素:', highlightElement)
+        return highlightElement
+      }
+
+      console.warn('未找到高亮元素，issueId:', issueId)
+      return null
     },
 
     clearHighlights () {
@@ -971,20 +1176,383 @@ export default {
       const preview = this.$refs.htmlPreview
       if (!preview) return
 
+      // 记录当前滚动位置，避免清除高亮时影响滚动
+      const currentScrollTop = preview.scrollTop
+
       const highlights = preview.querySelectorAll('.issue-highlight')
       highlights.forEach(highlight => {
         const parent = highlight.parentNode
-        parent.replaceChild(document.createTextNode(highlight.textContent), highlight)
-        parent.normalize()
+        if (parent) {
+          // 创建文档片段来批量处理DOM操作，减少重排
+          const fragment = document.createDocumentFragment()
+          fragment.appendChild(document.createTextNode(highlight.textContent))
+          parent.replaceChild(fragment, highlight)
+          parent.normalize()
+        }
       })
 
       // 清除连接线
       const lines = document.querySelectorAll('.connection-line')
       lines.forEach(line => line.remove())
+
+      // 恢复滚动位置，确保清除高亮不会影响当前视图
+      if (preview.scrollTop !== currentScrollTop) {
+        preview.scrollTop = currentScrollTop
+      }
     },
 
     findTextInDocument (container, searchText) {
       // 递归查找包含指定文本的元素
+      if (!container || !searchText) return null
+
+      const walker = document.createTreeWalker(
+        container,
+        NodeFilter.SHOW_TEXT,
+        null,
+        false
+      )
+
+      let bestMatch = null
+      let bestMatchScore = 0
+      let node
+
+      // eslint-disable-next-line no-cond-assign
+      while ((node = walker.nextNode())) {
+        const nodeText = node.textContent
+        if (nodeText.includes(searchText)) {
+          // 精确匹配，直接返回
+          return node.parentElement
+        }
+
+        // 计算相似度，寻找最佳匹配
+        if (searchText.length > 10 && nodeText.length > 10) {
+          const similarity = this.calculateTextSimilarity(searchText, nodeText)
+          if (similarity > bestMatchScore && similarity > 0.6) {
+            bestMatchScore = similarity
+            bestMatch = node.parentElement
+          }
+        }
+      }
+
+      // 如果没有精确匹配，返回最佳相似匹配
+      if (bestMatch && bestMatchScore > 0.6) {
+        console.log(`使用相似匹配，相似度: ${(bestMatchScore * 100).toFixed(1)}%`)
+        return bestMatch
+      }
+
+      return null
+    },
+
+    findTextInDocumentPartial (container, searchText) {
+      // 部分匹配查找，支持更灵活的文本匹配
+      if (!searchText || searchText.length < 5) return null
+
+      const walker = document.createTreeWalker(
+        container,
+        NodeFilter.SHOW_TEXT,
+        null,
+        false
+      )
+
+      let bestMatch = null
+      let bestScore = 0
+
+      let node
+      // eslint-disable-next-line no-cond-assign
+      while ((node = walker.nextNode())) {
+        const nodeText = node.textContent.trim()
+        if (nodeText.length < 5) continue
+
+        // 计算相似度
+        const similarity = this.calculateTextSimilarity(searchText, nodeText)
+        if (similarity > bestScore && similarity > 0.3) {
+          bestScore = similarity
+          bestMatch = node.parentElement
+        }
+
+        // 也尝试部分包含匹配
+        const words = searchText.split(/\s+/).filter(word => word.length > 2)
+        if (words.length > 0) {
+          const matchedWords = words.filter(word => nodeText.includes(word))
+          const wordMatchRatio = matchedWords.length / words.length
+          if (wordMatchRatio > 0.5 && wordMatchRatio > bestScore) {
+            bestScore = wordMatchRatio
+            bestMatch = node.parentElement
+          }
+        }
+      }
+
+      return bestMatch
+    },
+
+    tryFallbackMatching (issue, documentContent) {
+      // 备用匹配策略：基于问题描述进行匹配
+      const searchTexts = []
+
+      // 从问题详情中提取关键词
+      if (issue.detail) {
+        // 提取引号内的内容
+        const quotedMatches = issue.detail.match(/["'""]([^"'""]*)["'"]/g)
+        if (quotedMatches) {
+          quotedMatches.forEach(match => {
+            const cleaned = match.replace(/^["'""]|["'""]$/g, '').trim()
+            if (cleaned.length > 3) {
+              searchTexts.push(cleaned)
+            }
+          })
+        }
+
+        // 提取较长的词组
+        const words = issue.detail.split(/[，。；！？\s]+/).filter(word => word.length > 5)
+        searchTexts.push(...words.slice(0, 3))
+      }
+
+      // 从建议中提取关键词
+      if (issue.suggestion) {
+        const words = issue.suggestion.split(/[，。；！？\s]+/).filter(word => word.length > 5)
+        searchTexts.push(...words.slice(0, 2))
+      }
+
+      // 尝试每个搜索文本
+      for (const searchText of searchTexts) {
+        const element = this.findTextInDocumentPartial(documentContent, searchText)
+        if (element) {
+          return {
+            element,
+            text: searchText,
+            similarity: 0.4 // 备用匹配的默认相似度
+          }
+        }
+      }
+
+      return null
+    },
+
+    calculateTextSimilarity (text1, text2) {
+      // 简单的文本相似度计算
+      if (!text1 || !text2) return 0
+
+      const len1 = text1.length
+      const len2 = text2.length
+      const maxLen = Math.max(len1, len2)
+
+      if (maxLen === 0) return 1
+
+      // 计算编辑距离
+      const matrix = Array(len1 + 1).fill(null).map(() => Array(len2 + 1).fill(0))
+
+      for (let i = 0; i <= len1; i++) matrix[i][0] = i
+      for (let j = 0; j <= len2; j++) matrix[0][j] = j
+
+      for (let i = 1; i <= len1; i++) {
+        for (let j = 1; j <= len2; j++) {
+          const cost = text1[i - 1] === text2[j - 1] ? 0 : 1
+          matrix[i][j] = Math.min(
+            matrix[i - 1][j] + 1,
+            matrix[i][j - 1] + 1,
+            matrix[i - 1][j - 1] + cost
+          )
+        }
+      }
+
+      return (maxLen - matrix[len1][len2]) / maxLen
+    },
+
+    extractQueryFromIssue (issue) {
+      // 从问题信息中提取查询文本
+      const queries = []
+
+      // 优先从detail中提取引号内容
+      const detail = issue.detail || ''
+      if (detail) {
+        const quotedText = this.extractQuotedText(detail)
+        if (quotedText && quotedText.length > 3) {
+          queries.push(quotedText)
+        }
+
+        // 提取detail中的关键短语
+        const cleanDetail = detail.replace(/建议|应该|需要|可以|问题|错误|不当|不合适/g, '')
+        const phrases = cleanDetail.split(/[，。；！？\s]+/).filter(phrase => phrase.length > 5)
+        queries.push(...phrases.slice(0, 3))
+      }
+
+      // 从suggestion中提取
+      const suggestion = issue.suggestion || ''
+      if (suggestion) {
+        const quotedText = this.extractQuotedText(suggestion)
+        if (quotedText && quotedText.length > 3) {
+          queries.push(quotedText)
+        }
+      }
+
+      // 如果已有原文，使用原文
+      if (issue.original_text && issue.original_text.trim()) {
+        queries.unshift(issue.original_text.trim())
+      }
+
+      // 使用问题类型作为备用查询
+      if (issue.type && issue.type.length > 2) {
+        queries.push(issue.type)
+      }
+
+      // 返回最长的有效查询文本
+      const validQueries = queries.filter(q => q && q.length > 3)
+      if (validQueries.length === 0) return ''
+
+      return validQueries.reduce((longest, current) =>
+        current.length > longest.length ? current : longest
+      )
+    },
+
+    extractQuotedText (text) {
+      // 从文本中提取引号内的内容
+      if (!text) return ''
+
+      const patterns = [
+        /"([^"]+)"/g, // 中文双引号
+        /'([^']+)'/g, // 中文单引号
+        /"([^"]+)"/g, // 英文双引号
+        /'([^']+)'/g // 英文单引号
+      ]
+
+      for (const pattern of patterns) {
+        const matches = text.match(pattern)
+        if (matches && matches.length > 0) {
+          const longest = matches.reduce((a, b) => a.length > b.length ? a : b)
+          return longest.replace(/^["'"]|["'"]$/g, '')
+        }
+      }
+
+      return ''
+    },
+
+    findBestMatchInHtmlContent (queryText, htmlTextContent, documentHtmlContent) {
+      // 在HTML内容中找到最佳匹配
+      if (!queryText || !htmlTextContent) return null
+
+      let bestMatch = null
+      let bestSimilarity = 0
+
+      // 按句子分割HTML文本内容
+      const sentences = htmlTextContent.split(/[。！？；：\n]/).filter(s => s.trim().length > 5)
+
+      for (const sentence of sentences) {
+        const trimmedSentence = sentence.trim()
+        const similarity = this.calculateTextSimilarity(queryText, trimmedSentence)
+        if (similarity > bestSimilarity && similarity > 0.2) {
+          bestSimilarity = similarity
+          // 在DOM中找到包含这个句子的元素
+          const element = this.findElementContainingText(documentHtmlContent, trimmedSentence)
+          if (element) {
+            // 找到实际可以高亮的文本片段
+            const actualMatchedText = this.findActualMatchableText(element, queryText, trimmedSentence)
+            bestMatch = {
+              element,
+              matchedText: trimmedSentence,
+              actualMatchedText: actualMatchedText || trimmedSentence,
+              similarity: bestSimilarity
+            }
+          }
+        }
+      }
+
+      // 如果没有找到好的匹配，尝试关键词匹配
+      if (!bestMatch || bestSimilarity < 0.3) {
+        const words = queryText.split(/\s+/).filter(word => word.length > 2)
+        for (const sentence of sentences) {
+          const trimmedSentence = sentence.trim()
+          const matchedWords = words.filter(word => trimmedSentence.includes(word))
+          const wordMatchRatio = matchedWords.length / words.length
+          if (wordMatchRatio > 0.5 && wordMatchRatio > bestSimilarity) {
+            const element = this.findElementContainingText(documentHtmlContent, trimmedSentence)
+            if (element) {
+              // 对于关键词匹配，尝试找到包含最多关键词的片段
+              const actualMatchedText = this.findKeywordMatchText(element, words, trimmedSentence)
+              bestMatch = {
+                element,
+                matchedText: trimmedSentence,
+                actualMatchedText: actualMatchedText || trimmedSentence,
+                similarity: wordMatchRatio
+              }
+              bestSimilarity = wordMatchRatio
+            }
+          }
+        }
+      }
+
+      return bestMatch
+    },
+
+    findActualMatchableText (element, queryText, sentenceText) {
+      // 在元素中找到实际可以匹配的文本片段
+      const elementText = element.textContent || element.innerText || ''
+
+      // 如果查询文本直接存在于元素中，返回查询文本
+      if (elementText.includes(queryText)) {
+        return queryText
+      }
+
+      // 如果句子文本存在于元素中，返回句子文本
+      if (elementText.includes(sentenceText)) {
+        return sentenceText
+      }
+
+      // 尝试找到最长的公共子串
+      const commonSubstring = this.findLongestCommonSubstring(queryText, elementText)
+      if (commonSubstring && commonSubstring.length > 5) {
+        return commonSubstring
+      }
+
+      // 返回元素中的一个合理长度的文本片段
+      const words = elementText.split(/\s+/)
+      if (words.length > 10) {
+        return words.slice(0, 10).join(' ')
+      }
+
+      return elementText.substring(0, Math.min(50, elementText.length))
+    },
+
+    findKeywordMatchText (element, keywords, sentenceText) {
+      // 找到包含最多关键词的文本片段
+      const elementText = element.textContent || element.innerText || ''
+
+      // 按句子分割元素文本
+      const elementSentences = elementText.split(/[。！？；：]/).filter(s => s.trim().length > 5)
+
+      let bestMatch = null
+      let maxKeywordCount = 0
+
+      for (const sentence of elementSentences) {
+        const matchedKeywords = keywords.filter(keyword => sentence.includes(keyword))
+        if (matchedKeywords.length > maxKeywordCount) {
+          maxKeywordCount = matchedKeywords.length
+          bestMatch = sentence.trim()
+        }
+      }
+
+      return bestMatch || sentenceText
+    },
+
+    findLongestCommonSubstring (str1, str2) {
+      // 找到两个字符串的最长公共子串
+      if (!str1 || !str2) return ''
+
+      let longest = ''
+      for (let i = 0; i < str1.length; i++) {
+        for (let j = i + 1; j <= str1.length; j++) {
+          const substring = str1.substring(i, j)
+          if (str2.includes(substring) && substring.length > longest.length) {
+            longest = substring
+          }
+        }
+      }
+      return longest
+    },
+
+    findElementContainingText (container, searchText) {
+      // 在DOM中找到包含指定文本的元素
+      if (!searchText || searchText.length < 5) return null
+
       const walker = document.createTreeWalker(
         container,
         NodeFilter.SHOW_TEXT,
@@ -999,11 +1567,37 @@ export default {
           return node.parentElement
         }
       }
-      return null
+
+      // 如果精确匹配失败，尝试部分匹配
+      const walker2 = document.createTreeWalker(
+        container,
+        NodeFilter.SHOW_TEXT,
+        null,
+        false
+      )
+
+      let bestMatch = null
+      let bestScore = 0
+
+      // eslint-disable-next-line no-cond-assign
+      while ((node = walker2.nextNode())) {
+        const nodeText = node.textContent.trim()
+        if (nodeText.length < 5) continue
+
+        const similarity = this.calculateTextSimilarity(searchText, nodeText)
+        if (similarity > bestScore && similarity > 0.3) {
+          bestScore = similarity
+          bestMatch = node.parentElement
+        }
+      }
+
+      return bestMatch
     },
 
     highlightText (element, searchText, issueId) {
       // 在元素中高亮指定文本，使用更安全的文本节点处理方式
+      console.log('高亮文本:', { element, searchText, issueId })
+
       const walker = document.createTreeWalker(
         element,
         NodeFilter.SHOW_TEXT,
@@ -1013,29 +1607,93 @@ export default {
 
       const textNodes = []
       let node
+      let foundExactMatch = false
+
+      // 首先尝试精确匹配
       // eslint-disable-next-line no-cond-assign
       while ((node = walker.nextNode())) {
         if (node.textContent.includes(searchText)) {
           textNodes.push(node)
+          foundExactMatch = true
         }
       }
 
+      // 如果没有找到精确匹配，尝试部分匹配（用于模糊搜索）
+      if (!foundExactMatch && searchText.length > 10) {
+        console.log('精确匹配失败，尝试部分匹配...')
+        const walker2 = document.createTreeWalker(
+          element,
+          NodeFilter.SHOW_TEXT,
+          null,
+          false
+        )
+
+        const words = searchText.split(/\s+/).filter(word => word.length > 2)
+        // eslint-disable-next-line no-cond-assign
+        while ((node = walker2.nextNode())) {
+          const nodeText = node.textContent
+          const matchedWords = words.filter(word => nodeText.includes(word))
+          if (matchedWords.length >= Math.min(2, words.length * 0.5)) {
+            textNodes.push(node)
+            console.log('找到部分匹配的节点:', nodeText.substring(0, 50))
+          }
+        }
+      }
+
+      if (textNodes.length === 0) {
+        console.warn('未找到可高亮的文本节点')
+        // 如果找不到文本节点，直接高亮整个元素
+        element.classList.add('issue-highlight')
+        element.setAttribute('data-issue-id', issueId)
+        return
+      }
+
       // 对每个包含目标文本的文本节点进行高亮处理
-      textNodes.forEach(textNode => {
+      textNodes.forEach((textNode, index) => {
         const parent = textNode.parentNode
         const text = textNode.textContent
-        const index = text.indexOf(searchText)
+        let highlightText = searchText
+        let textIndex = text.indexOf(searchText)
 
-        if (index !== -1) {
+        // 如果精确匹配失败，尝试找到最佳匹配的部分
+        if (textIndex === -1 && searchText.length > 10) {
+          const words = searchText.split(/\s+/).filter(word => word.length > 2)
+          for (const word of words) {
+            const wordIndex = text.indexOf(word)
+            if (wordIndex !== -1) {
+              // 找到一个匹配的词，扩展到周围的文本
+              const start = Math.max(0, wordIndex - 10)
+              const end = Math.min(text.length, wordIndex + word.length + 10)
+              highlightText = text.substring(start, end).trim()
+              textIndex = text.indexOf(highlightText)
+              break
+            }
+          }
+        }
+
+        if (textIndex !== -1) {
           // 创建高亮元素
           const highlightSpan = document.createElement('span')
           highlightSpan.className = 'issue-highlight'
           highlightSpan.setAttribute('data-issue-id', issueId)
-          highlightSpan.textContent = searchText
+          highlightSpan.textContent = highlightText
+
+          // 添加内联样式作为备用，确保样式生效
+          highlightSpan.style.cssText = `
+            background: #fbbf24 !important;
+            color: #92400e !important;
+            padding: 2px 4px !important;
+            border-radius: 4px !important;
+            font-weight: 600 !important;
+            box-shadow: 0 2px 4px rgba(251, 191, 36, 0.3) !important;
+            display: inline !important;
+            position: relative !important;
+            z-index: 10 !important;
+          `
 
           // 分割文本节点
-          const beforeText = text.substring(0, index)
-          const afterText = text.substring(index + searchText.length)
+          const beforeText = text.substring(0, textIndex)
+          const afterText = text.substring(textIndex + highlightText.length)
 
           // 创建新的文本节点
           const beforeNode = document.createTextNode(beforeText)
@@ -1046,6 +1704,36 @@ export default {
           parent.insertBefore(highlightSpan, textNode)
           parent.insertBefore(afterNode, textNode)
           parent.removeChild(textNode)
+
+          console.log('成功高亮文本:', highlightText)
+          console.log('高亮元素样式:', highlightSpan.style.cssText)
+          console.log('高亮元素类名:', highlightSpan.className)
+        } else if (index === 0) {
+          // 如果是第一个节点且无法精确匹配，高亮整个节点
+          const highlightSpan = document.createElement('span')
+          highlightSpan.className = 'issue-highlight'
+          highlightSpan.setAttribute('data-issue-id', issueId)
+          highlightSpan.textContent = text
+
+          // 添加内联样式作为备用，确保样式生效
+          highlightSpan.style.cssText = `
+            background: #fbbf24 !important;
+            color: #92400e !important;
+            padding: 2px 4px !important;
+            border-radius: 4px !important;
+            font-weight: 600 !important;
+            box-shadow: 0 2px 4px rgba(251, 191, 36, 0.3) !important;
+            display: inline !important;
+            position: relative !important;
+            z-index: 10 !important;
+          `
+
+          const parent = textNode.parentNode
+          parent.insertBefore(highlightSpan, textNode)
+          parent.removeChild(textNode)
+
+          console.log('高亮整个文本节点:', text.substring(0, 50))
+          console.log('高亮元素样式:', highlightSpan.style.cssText)
         }
       })
     },
@@ -1060,14 +1748,48 @@ export default {
       const preview = this.$refs.htmlPreview
       if (!preview || !element) return
 
-      const elementTop = element.offsetTop - preview.offsetTop
-      const previewHeight = preview.clientHeight
-      const targetScrollTop = elementTop - (previewHeight / 2)
+      console.log('开始滚动到目标元素:', element.className || element.tagName)
 
+      // 清除之前的滚动超时，避免冲突
+      if (this.scrollTimeout) {
+        clearTimeout(this.scrollTimeout)
+      }
+
+      // 设置滚动状态
+      this.isScrolling = true
+      this.lastScrollTime = Date.now()
+
+      // 获取元素的准确位置信息
+      const elementRect = element.getBoundingClientRect()
+      const previewRect = preview.getBoundingClientRect()
+
+      // 计算元素相对于预览容器的位置
+      const elementRelativeTop = elementRect.top - previewRect.top + preview.scrollTop
+      const previewHeight = preview.clientHeight
+      const elementHeight = elementRect.height
+
+      // 计算目标滚动位置，使元素在视野中央
+      const targetScrollTop = elementRelativeTop - (previewHeight / 2) + (elementHeight / 2)
+
+      console.log('滚动计算:', {
+        elementRelativeTop,
+        previewHeight,
+        elementHeight,
+        targetScrollTop: Math.max(0, targetScrollTop)
+      })
+
+      // 执行滚动，确保不会滚动到负值
+      const finalScrollTop = Math.max(0, targetScrollTop)
       preview.scrollTo({
-        top: Math.max(0, targetScrollTop),
+        top: finalScrollTop,
         behavior: 'smooth'
       })
+
+      // 设置超时来重置滚动状态
+      this.scrollTimeout = setTimeout(() => {
+        this.isScrolling = false
+        console.log('滚动完成')
+      }, 800)
     },
 
     createConnectionLine (issueId, targetElement) {
@@ -1094,8 +1816,23 @@ export default {
       // 计算连接线的位置和角度
       const startX = issueRect.left + issueRect.width / 2
       const startY = issueRect.top + issueRect.height / 2
-      const endX = targetRect.left + targetRect.width / 2
-      const endY = targetRect.top + targetRect.height / 2
+
+      // 优化端点计算：更精确地指向高亮元素的最后位置
+      // 如果目标元素是高亮元素，使用更精确的定位
+      const highlightElement = targetElement.querySelector('.issue-highlight') ||
+                              (targetElement.classList.contains('issue-highlight') ? targetElement : null)
+
+      let endX, endY
+      if (highlightElement) {
+        // 计算高亮元素的最后位置（如果跨多行，指向最后一行的末尾）
+        const endPosition = this.calculateHighlightEndPosition(highlightElement)
+        endX = endPosition.x
+        endY = endPosition.y
+      } else {
+        // 回退到原来的计算方式
+        endX = targetRect.right
+        endY = targetRect.top + targetRect.height / 2
+      }
 
       const length = Math.sqrt(Math.pow(endX - startX, 2) + Math.pow(endY - startY, 2))
       const angle = Math.atan2(endY - startY, endX - startX) * 180 / Math.PI
@@ -1120,71 +1857,43 @@ export default {
     },
 
     updateConnectionLineOnScroll (issueId) {
-      // 滚动时更新连接线位置
-      const updateLine = () => {
-        const line = document.querySelector(`.connection-line[data-issue-id="${issueId}"]`)
-        const issueElement = document.querySelector(`.issue-item[data-issue-id="${issueId}"]`)
-        const targetElement = document.querySelector(`.issue-highlight[data-issue-id="${issueId}"]`)
-
-        if (line && issueElement && targetElement) {
-          const issueRect = issueElement.getBoundingClientRect()
-          const targetRect = targetElement.getBoundingClientRect()
-
-          const startX = issueRect.left + issueRect.width / 2
-          const startY = issueRect.top + issueRect.height / 2
-          const endX = targetRect.left + targetRect.width / 2
-          const endY = targetRect.top + targetRect.height / 2
-
-          const length = Math.sqrt(Math.pow(endX - startX, 2) + Math.pow(endY - startY, 2))
-          const angle = Math.atan2(endY - startY, endX - startX) * 180 / Math.PI
-
-          line.style.left = startX + 'px'
-          line.style.top = startY + 'px'
-          line.style.width = length + 'px'
-          line.style.transform = `rotate(${angle}deg)`
-        }
+      // 注册连接线到全局更新列表中
+      if (!this.activeConnectionLines) {
+        this.activeConnectionLines = new Set()
       }
+      this.activeConnectionLines.add(issueId)
 
-      // 添加中间预览区域的滚动监听器
-      const preview = this.$refs.htmlPreview
-      if (preview) {
-        const scrollHandler = () => {
-          requestAnimationFrame(updateLine)
-        }
-        preview.addEventListener('scroll', scrollHandler)
-
-        // 存储处理器以便后续清理
-        if (!this.scrollHandlers) {
-          this.scrollHandlers = []
-        }
-        this.scrollHandlers.push({ element: preview, handler: scrollHandler })
-      }
-
-      // 添加右侧issue面板的滚动监听器
-      const issuePanel = this.$refs.issuePanel
-      if (issuePanel) {
-        const issuePanelScrollHandler = () => {
-          requestAnimationFrame(updateLine)
-        }
-        issuePanel.addEventListener('scroll', issuePanelScrollHandler)
-
-        // 存储处理器以便后续清理
-        if (!this.scrollHandlers) {
-          this.scrollHandlers = []
-        }
-        this.scrollHandlers.push({ element: issuePanel, handler: issuePanelScrollHandler })
-      }
+      // 立即更新一次连接线位置
+      this.updateSingleConnectionLine(issueId)
     },
 
     // 处理右侧issue面板滚动事件
     handleIssueScroll () {
       // 当右侧面板滚动时，更新所有连接线
-      const lines = document.querySelectorAll('.connection-line')
-      lines.forEach(line => {
-        const issueId = line.getAttribute('data-issue-id')
-        if (issueId) {
-          this.updateSingleConnectionLine(issueId)
-        }
+      this.updateAllConnectionLines()
+    },
+
+    // 处理预览区域滚动事件
+    handlePreviewScroll () {
+      // 当预览区域滚动时，更新所有连接线
+      this.updateAllConnectionLines()
+    },
+
+    // 更新所有连接线
+    updateAllConnectionLines () {
+      // 使用requestAnimationFrame来优化性能
+      if (this.updateLinesTimeout) {
+        cancelAnimationFrame(this.updateLinesTimeout)
+      }
+
+      this.updateLinesTimeout = requestAnimationFrame(() => {
+        const lines = document.querySelectorAll('.connection-line')
+        lines.forEach(line => {
+          const issueId = line.getAttribute('data-issue-id')
+          if (issueId) {
+            this.updateSingleConnectionLine(issueId)
+          }
+        })
       })
     },
 
@@ -1194,14 +1903,45 @@ export default {
       const issueElement = document.querySelector(`.issue-item[data-issue-id="${issueId}"]`)
       const targetElement = document.querySelector(`.issue-highlight[data-issue-id="${issueId}"]`)
 
-      if (line && issueElement && targetElement) {
+      if (!line) {
+        console.warn(`连接线不存在: ${issueId}`)
+        return
+      }
+
+      if (!issueElement) {
+        console.warn(`问题元素不存在: ${issueId}`)
+        return
+      }
+
+      if (!targetElement) {
+        console.warn(`目标高亮元素不存在: ${issueId}`)
+        return
+      }
+
+      try {
         const issueRect = issueElement.getBoundingClientRect()
         const targetRect = targetElement.getBoundingClientRect()
 
+        // 检查元素是否在视口中
+        const isIssueVisible = issueRect.width > 0 && issueRect.height > 0
+        const isTargetVisible = targetRect.width > 0 && targetRect.height > 0
+
+        if (!isIssueVisible || !isTargetVisible) {
+          // 如果任一元素不可见，隐藏连接线
+          line.style.opacity = '0'
+          return
+        }
+
+        // 恢复连接线可见性
+        line.style.opacity = '0.8'
+
         const startX = issueRect.left + issueRect.width / 2
         const startY = issueRect.top + issueRect.height / 2
-        const endX = targetRect.left + targetRect.width / 2
-        const endY = targetRect.top + targetRect.height / 2
+
+        // 修复端点计算：指向高亮元素的最后位置（如果跨多行，指向最后一行的末尾）
+        const endPosition = this.calculateHighlightEndPosition(targetElement)
+        const endX = endPosition.x
+        const endY = endPosition.y
 
         const length = Math.sqrt(Math.pow(endX - startX, 2) + Math.pow(endY - startY, 2))
         const angle = Math.atan2(endY - startY, endX - startX) * 180 / Math.PI
@@ -1210,7 +1950,119 @@ export default {
         line.style.top = startY + 'px'
         line.style.width = length + 'px'
         line.style.transform = `rotate(${angle}deg)`
+      } catch (error) {
+        console.error(`更新连接线失败 ${issueId}:`, error)
       }
+    },
+
+    // 计算高亮元素的最后位置（如果跨多行，指向最后一行的末尾）
+    calculateHighlightEndPosition (highlightElement) {
+      try {
+        const rect = highlightElement.getBoundingClientRect()
+
+        // 获取高亮元素的文本内容和样式
+        const text = highlightElement.textContent || highlightElement.innerText || ''
+        const computedStyle = window.getComputedStyle(highlightElement)
+        const lineHeight = parseFloat(computedStyle.lineHeight) || parseFloat(computedStyle.fontSize) * 1.2
+
+        // 创建一个临时的测量元素来计算文本布局
+        const measureElement = document.createElement('div')
+        measureElement.style.cssText = `
+          position: absolute;
+          visibility: hidden;
+          white-space: pre-wrap;
+          word-wrap: break-word;
+          font-family: ${computedStyle.fontFamily};
+          font-size: ${computedStyle.fontSize};
+          font-weight: ${computedStyle.fontWeight};
+          line-height: ${computedStyle.lineHeight};
+          letter-spacing: ${computedStyle.letterSpacing};
+          width: ${rect.width}px;
+          padding: ${computedStyle.padding};
+          margin: ${computedStyle.margin};
+          border: ${computedStyle.border};
+        `
+        measureElement.textContent = text
+        document.body.appendChild(measureElement)
+
+        const measureRect = measureElement.getBoundingClientRect()
+        const estimatedLines = Math.max(1, Math.round(measureRect.height / lineHeight))
+
+        // 清理临时元素
+        document.body.removeChild(measureElement)
+
+        // 如果只有一行，返回右边缘中心
+        if (estimatedLines <= 1) {
+          return {
+            x: rect.right,
+            y: rect.top + rect.height / 2
+          }
+        }
+
+        // 如果有多行，计算最后一行的位置
+        // 使用Range API来精确定位最后一个字符
+        const range = document.createRange()
+        const textNode = this.findLastTextNode(highlightElement)
+
+        if (textNode && textNode.textContent) {
+          // 选择最后一个字符
+          const lastCharIndex = textNode.textContent.length - 1
+          if (lastCharIndex >= 0) {
+            range.setStart(textNode, lastCharIndex)
+            range.setEnd(textNode, lastCharIndex + 1)
+
+            const rangeRect = range.getBoundingClientRect()
+            if (rangeRect.width > 0 && rangeRect.height > 0) {
+              return {
+                x: rangeRect.right,
+                y: rangeRect.top + rangeRect.height / 2
+              }
+            }
+          }
+        }
+
+        // 如果Range API失败，使用估算方法
+        // 假设最后一行在底部，计算最后一行的大概位置
+        const lastLineY = rect.bottom - lineHeight / 2
+
+        // 对于多行文本，假设最后一行可能不是满行，使用一个估算的X位置
+        // 这里使用一个简单的启发式：假设最后一行大约占总宽度的70%
+        const estimatedLastLineWidth = rect.width * 0.7
+        const lastLineX = rect.left + estimatedLastLineWidth
+
+        return {
+          x: Math.min(lastLineX, rect.right), // 确保不超过元素边界
+          y: lastLineY
+        }
+      } catch (error) {
+        console.error('计算高亮元素最后位置失败:', error)
+        // 发生错误时回退到简单的右边缘中心
+        const rect = highlightElement.getBoundingClientRect()
+        return {
+          x: rect.right,
+          y: rect.top + rect.height / 2
+        }
+      }
+    },
+
+    // 查找元素中的最后一个文本节点
+    findLastTextNode (element) {
+      const walker = document.createTreeWalker(
+        element,
+        NodeFilter.SHOW_TEXT,
+        null,
+        false
+      )
+
+      let lastTextNode = null
+      let node
+      while ((node = walker.nextNode())) {
+        if (node.textContent.trim()) {
+          lastTextNode = node
+        }
+      }
+
+      return lastTextNode
     },
 
     // 跳转到数据分析页面
@@ -1378,6 +2230,56 @@ export default {
   margin: 0;
   font-size: 16px;
   font-weight: 600;
+}
+
+/* 分析状态指示器样式 */
+.analysis-status {
+  margin: 10px 0;
+  padding: 15px;
+  background: linear-gradient(135deg, #fff3cd 0%, #ffeaa7 100%);
+  border: 1px solid #ffeaa7;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(255, 193, 7, 0.2);
+}
+
+.analysis-indicator {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 8px;
+}
+
+.spinner {
+  width: 20px;
+  height: 20px;
+  border: 2px solid #f3f3f3;
+  border-top: 2px solid #ff6b6b;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-right: 10px;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.analysis-text {
+  font-size: 14px;
+  font-weight: 500;
+  color: #856404;
+}
+
+.analysis-tip {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  color: #6c757d;
+}
+
+.tip-icon {
+  margin-right: 5px;
 }
 
 .directory-tree {
@@ -1692,6 +2594,8 @@ export default {
   justify-content: space-between;
   align-items: center;
   margin-bottom: 6px;
+  flex-wrap: wrap;
+  gap: 4px;
 }
 
 .issue-type {
@@ -1721,6 +2625,8 @@ export default {
   background: #48dbfb;
   color: white;
 }
+
+/* 移除模糊匹配相关样式，让模糊匹配和正确匹配看起来一样 */
 
 .issue-location {
   font-size: 11px;
@@ -1805,48 +2711,5 @@ export default {
   }
 }
 
-/* 高亮文本样式 */
-.issue-highlight {
-  background: linear-gradient(120deg, #fbbf24 0%, #f59e0b 100%);
-  color: #92400e;
-  padding: 2px 4px;
-  border-radius: 4px;
-  font-weight: 600;
-  box-shadow: 0 2px 4px rgba(251, 191, 36, 0.3);
-  animation: highlightPulse 2s ease-in-out;
-}
-
-@keyframes highlightPulse {
-  0% {
-    background: linear-gradient(120deg, #fbbf24 0%, #f59e0b 100%);
-    transform: scale(1);
-  }
-  50% {
-    background: linear-gradient(120deg, #fcd34d 0%, #fbbf24 100%);
-    transform: scale(1.02);
-  }
-  100% {
-    background: linear-gradient(120deg, #fbbf24 0%, #f59e0b 100%);
-    transform: scale(1);
-  }
-}
-
-/* 连接线样式 */
-.connection-line {
-  background: linear-gradient(90deg, #fbbf24, #f59e0b);
-  box-shadow: 0 0 8px rgba(251, 191, 36, 0.5);
-  border-radius: 1px;
-  animation: lineGlow 2s ease-in-out infinite alternate;
-}
-
-@keyframes lineGlow {
-  0% {
-    box-shadow: 0 0 8px rgba(251, 191, 36, 0.5);
-    opacity: 0.8;
-  }
-  100% {
-    box-shadow: 0 0 12px rgba(251, 191, 36, 0.8);
-    opacity: 1;
-  }
-}
+/* 高亮样式已移至全局样式文件 global.css 中，避免 scoped 样式作用域问题 */
 </style>
