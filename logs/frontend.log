@@ -12737,3 +12737,475 @@ fastapi.exceptions.ResponseValidationError: 2 validation errors:
 2025-07-17 22:17:15 [INFO] uvicorn.access: 127.0.0.1:50512 - "GET /api/analysis/e844f43b-a79d-4619-8d37-8f5434234f2d/issues HTTP/1.1" 200
 2025-07-17 22:17:15 [INFO] backend_fastapi.middleware.logging_middleware: [OUT] GET /api/analysis/e844f43b-a79d-4619-8d37-8f5434234f2d/evaluation - 200 - 0.2594s - 127.0.0.1
 2025-07-17 22:17:15 [INFO] uvicorn.access: 127.0.0.1:50511 - "GET /api/analysis/e844f43b-a79d-4619-8d37-8f5434234f2d/evaluation HTTP/1.1" 200
+2025-07-18 00:52:04 [INFO] backend_fastapi.main: 成功导入后端模块
+2025-07-18 00:52:32 [INFO] backend_fastapi.main: 成功导入后端模块
+2025-07-18 00:52:33 [INFO] backend_fastapi.main: 成功导入API路由
+2025-07-18 00:52:33 [INFO] backend_fastapi.main: 成功导入API路由
+2025-07-18 00:52:33 [INFO] backend_fastapi.main: 成功导入中间件和文档配置
+2025-07-18 00:52:33 [INFO] backend_fastapi.main: Redis模块导入成功
+2025-07-18 00:52:33 [INFO] backend_fastapi.main: 错误处理中间件已添加
+2025-07-18 00:52:33 [INFO] backend_fastapi.main: 日志记录中间件已添加
+2025-07-18 00:52:33 [INFO] backend_fastapi.main: OpenAPI文档配置已自定义
+2025-07-18 00:52:33 [INFO] backend_fastapi.main: API路由注册成功
+2025-07-18 00:52:33 [INFO] uvicorn.error: Started server process [16181]
+2025-07-18 00:52:33 [INFO] uvicorn.error: Waiting for application startup.
+2025-07-18 00:52:33 [INFO] utils.redis_init: 正在初始化Redis连接...
+2025-07-18 00:52:33 [INFO] utils.redis_client: Redis连接成功
+2025-07-18 00:52:33 [INFO] utils.redis_init: Redis连接初始化成功
+2025-07-18 00:52:33 [INFO] uvicorn.error: Application startup complete.
+2025-07-18 00:54:23 [INFO] backend_fastapi.middleware.logging_middleware: [IN] POST /api/upload - 127.0.0.1
+2025-07-18 00:54:23 [INFO] api.document: 开始上传文档: 龚礼盛-本科毕业论文.docx
+2025-07-18 00:54:23 [INFO] utils.redis_client: 文档存储成功: 41175b06-8bc8-405b-91fe-480945701299, 大小: 4507605 bytes
+2025-07-18 00:54:23 [INFO] api.document: 文档上传成功: 龚礼盛-本科毕业论文.docx, ID: 41175b06-8bc8-405b-91fe-480945701299
+2025-07-18 00:54:23 [INFO] backend_fastapi.middleware.logging_middleware: [OUT] POST /api/upload - 200 - 0.1245s - 127.0.0.1
+2025-07-18 00:54:23 [INFO] uvicorn.access: 127.0.0.1:61129 - "POST /api/upload HTTP/1.1" 200
+2025-07-18 00:54:52 [INFO] backend_fastapi.middleware.logging_middleware: [IN] POST /api/upload - 127.0.0.1
+2025-07-18 00:54:52 [INFO] api.document: 开始上传文档: 龚礼盛-本科毕业论文.docx
+2025-07-18 00:54:52 [INFO] utils.redis_client: 文档存储成功: 592f75cf-6087-4ade-8613-ca1ef845b81e, 大小: 4507605 bytes
+2025-07-18 00:54:52 [INFO] api.document: 文档上传成功: 龚礼盛-本科毕业论文.docx, ID: 592f75cf-6087-4ade-8613-ca1ef845b81e
+2025-07-18 00:54:52 [INFO] backend_fastapi.middleware.logging_middleware: [OUT] POST /api/upload - 200 - 0.0886s - 127.0.0.1
+2025-07-18 00:54:52 [INFO] uvicorn.access: 127.0.0.1:61145 - "POST /api/upload HTTP/1.1" 200
+2025-07-18 00:54:52 [INFO] backend_fastapi.middleware.logging_middleware: [IN] OPTIONS /api/process - 127.0.0.1
+2025-07-18 00:54:52 [INFO] backend_fastapi.middleware.logging_middleware: [OUT] OPTIONS /api/process - 200 - 0.0006s - 127.0.0.1
+2025-07-18 00:54:52 [INFO] uvicorn.access: 127.0.0.1:61145 - "OPTIONS /api/process HTTP/1.1" 200
+2025-07-18 00:54:52 [INFO] backend_fastapi.middleware.logging_middleware: [IN] POST /api/process - 127.0.0.1
+2025-07-18 00:54:52 [INFO] api.document: 开始处理文档: 592f75cf-6087-4ade-8613-ca1ef845b81e
+2025-07-18 00:54:52 [INFO] utils.redis_client: 文档存储成功: 592f75cf-6087-4ade-8613-ca1ef845b81e, 大小: 4507607 bytes
+2025-07-18 00:54:52 [INFO] api.document: 转换文档为Markdown: 592f75cf-6087-4ade-8613-ca1ef845b81e
+2025-07-18 00:54:52 [INFO] api.document: 提取文档图片: 592f75cf-6087-4ade-8613-ca1ef845b81e
+2025-07-18 00:54:52 [INFO] api.document: 未找到图片标题，使用默认值: img_1
+2025-07-18 00:54:52 [INFO] api.document: 未找到图片标题，使用默认值: img_2
+2025-07-18 00:54:52 [INFO] api.document: 找到图片标题: 图1-1  越狱的一个示例 -> 图1-1__越狱的一个示例
+2025-07-18 00:54:52 [INFO] api.document: 找到图片标题: 图2-1  Transformer Decoder结构图[23] -> 图2-1__Transformer_Decoder结构图[23]
+2025-07-18 00:54:52 [INFO] api.document: 找到图片标题: 图2-2  稀疏混合专家模型基本结构 -> 图2-2__稀疏混合专家模型基本结构
+2025-07-18 00:54:52 [INFO] api.document: 找到图片标题: 图2-3  LoRA结构图 -> 图2-3__LoRA结构图
+2025-07-18 00:54:52 [INFO] api.document: 找到图片标题: 图3-1  规则过滤方法的流程图 -> 图3-1__规则过滤方法的流程图
+2025-07-18 00:54:52 [INFO] api.document: 找到图片标题: 图3-2  基于困惑度过滤方法的流程图 -> 图3-2__基于困惑度过滤方法的流程图
+2025-07-18 00:54:52 [INFO] api.document: 找到图片标题: 图3-3  LoRA微调过程中的损失变化曲线 -> 图3-3__LoRA微调过程中的损失变化曲线
+2025-07-18 00:54:52 [INFO] api.document: 找到图片标题: 图3-4  LoRA微调过程中的损失变化曲线 -> 图3-4__LoRA微调过程中的损失变化曲线
+2025-07-18 00:54:52 [INFO] api.document: 找到图片标题: 图4-1  越狱评估使用的提示词 -> 图4-1__越狱评估使用的提示词
+2025-07-18 00:54:52 [INFO] api.document: 找到图片标题: 图4-2  JailBench++_train数据集的词频统计图 -> 图4-2__JailBench++_train数据集的词频统计图
+2025-07-18 00:54:52 [INFO] api.document: 找到图片标题: 图4-3  JailBench++_train数据集的词云图 -> 图4-3__JailBench++_train数据集的词云图
+2025-07-18 00:54:52 [INFO] api.document: 找到图片标题: 图4-4  测试集中越狱提示的困惑度分布统计直方图 -> 图4-4__测试集中越狱提示的困惑度分布统计直方图
+2025-07-18 00:54:52 [INFO] api.document: 找到图片标题: 图4-5  测试集中正常提示的困惑度分布统计直方图 -> 图4-5__测试集中正常提示的困惑度分布统计直方图
+2025-07-18 00:54:52 [INFO] api.document: 找到图片标题: 图4-6  启发式过滤方法在测试集上的混淆矩阵图。(a)规则过滤, (b)情感分析, (c)整体困惑度检测，(d)滑动窗口困惑度检测 -> 图4-6__启发式过滤方法在测试集上的混淆矩阵图。(a)规则过滤,_(b)情感分析,_(c)整体困惑度检测，(d)滑动窗口困惑度检测
+2025-07-18 00:54:52 [INFO] api.document: 找到图片标题: 图4-7  零样本和梯度分析方法在测试集上的混淆矩阵图。(a)GPT3.5, (b)GPT-4, (c)Qwen2-1.5B-Instruct，(d)GradSafe -> 图4-7__零样本和梯度分析方法在测试集上的混淆矩阵图。(a)GPT3.5,_(b)GPT-4,_(c)Qwen2-1.5B-Instruct，(d)GradSafe
+2025-07-18 00:54:52 [INFO] api.document: 找到图片标题: 图4-8  LEAD在测试集上的混淆矩阵 -> 图4-8__LEAD在测试集上的混淆矩阵
+2025-07-18 00:54:52 [INFO] api.document: 找到图片标题: 图4-9  模型在微调前后的效果对比图 -> 图4-9__模型在微调前后的效果对比图
+2025-07-18 00:54:52 [INFO] api.document: 提取到 19 张图片
+2025-07-18 00:54:52 [INFO] api.document: 提取参考文献: 592f75cf-6087-4ade-8613-ca1ef845b81e
+2025-07-18 00:54:52 [INFO] api.document: 找到参考文献章节，使用模式: #\s*参考文献
+2025-07-18 00:54:52 [INFO] api.document: 使用模式提取参考文献: (\d+)\.\s*(.+?)(?=\n\d+\.|\n#+|\Z)
+2025-07-18 00:54:52 [INFO] api.document: 提取到 1 条参考文献
+2025-07-18 00:54:52 [INFO] api.document: 转换为结构化数据: 592f75cf-6087-4ade-8613-ca1ef845b81e
+2025-07-18 00:54:52 [INFO] utils.redis_client: 文档存储成功: 592f75cf-6087-4ade-8613-ca1ef845b81e, 大小: 9020953 bytes
+2025-07-18 00:54:52 [INFO] api.document: 分析文档结构: 592f75cf-6087-4ade-8613-ca1ef845b81e
+2025-07-18 00:54:52 [INFO] utils.redis_client: 文档存储成功: 592f75cf-6087-4ade-8613-ca1ef845b81e, 大小: 9022355 bytes
+2025-07-18 00:54:52 [INFO] api.document: 执行硬指标评估: 592f75cf-6087-4ade-8613-ca1ef845b81e
+2025-07-18 00:54:52 [INFO] api.eval_module: 对文档 592f75cf-6087-4ade-8613-ca1ef845b81e 进行硬指标评价
+2025-07-18 00:54:52 [INFO] api.document: 获取文档 592f75cf-6087-4ade-8613-ca1ef845b81e 的Markdown内容
+2025-07-18 00:54:52 [INFO] api.document: 成功获取文档markdown内容: 592f75cf-6087-4ade-8613-ca1ef845b81e, 长度: 41461
+2025-07-18 00:54:52 [INFO] pipeline.hard_eval: INFER | 开始并行调用API进行写作质量问题分析...
+2025-07-18 00:56:11 [INFO] pipeline.hard_eval: INFER | Infer阶段完成，耗时: 78.28 秒
+2025-07-18 00:56:11 [INFO] pipeline.hard_eval: AGGREGATE | 开始调用API对结果进行优化...
+2025-07-18 00:56:11 [INFO] httpx: HTTP Request: POST https://api.deepseek.com/chat/completions "HTTP/1.1 200 OK"
+2025-07-18 00:58:14 [INFO] pipeline.hard_eval: AGGREGATE | Aggregate阶段完成，耗时: 123.39 秒
+2025-07-18 00:58:14 [INFO] api.eval_module: 硬指标评价结果已存储到Redis: 592f75cf-6087-4ade-8613-ca1ef845b81e
+2025-07-18 00:58:14 [INFO] utils.redis_client: 文档存储成功: 592f75cf-6087-4ade-8613-ca1ef845b81e, 大小: 9022497 bytes
+2025-07-18 00:58:14 [INFO] api.document: 执行软指标评估: 592f75cf-6087-4ade-8613-ca1ef845b81e
+2025-07-18 00:58:14 [INFO] api.eval_module: 对文档 592f75cf-6087-4ade-8613-ca1ef845b81e 进行软指标评价
+2025-07-18 00:58:14 [INFO] api.document: 获取文档 592f75cf-6087-4ade-8613-ca1ef845b81e 的Markdown内容
+2025-07-18 00:58:14 [INFO] api.document: 成功获取文档markdown内容: 592f75cf-6087-4ade-8613-ca1ef845b81e, 长度: 41461
+2025-07-18 00:58:14 [INFO] pipeline.soft_eval: 开始评估维度: logic
+2025-07-18 00:58:14 [INFO] models.deepseek: 正在调用DeepSeek模型: deepseek-chat
+2025-07-18 00:58:14 [INFO] httpx: HTTP Request: POST https://api.deepseek.com/chat/completions "HTTP/1.1 200 OK"
+2025-07-18 00:58:21 [INFO] models.deepseek: DeepSeek模型响应成功，响应长度: 111 字符
+2025-07-18 00:58:21 [INFO] pipeline.soft_eval: 成功解析选择的章节: ['1.1 研究背景及意义', '1.3 研究内容与创新点', '3.5 LEAD架构', '4.2 大模型评测', '4.3 LEAD对比实验', '5.1 论文工作总结']
+2025-07-18 00:58:21 [INFO] models.deepseek: 正在调用DeepSeek模型: deepseek-chat
+2025-07-18 00:58:21 [INFO] httpx: HTTP Request: POST https://api.deepseek.com/chat/completions "HTTP/1.1 200 OK"
+2025-07-18 00:58:57 [INFO] models.deepseek: DeepSeek模型响应成功，响应长度: 718 字符
+2025-07-18 00:58:57 [INFO] pipeline.soft_eval: 开始对维度 logic 进行幻觉检测
+2025-07-18 00:58:57 [INFO] models.deepseek: 正在调用DeepSeek模型: deepseek-chat
+2025-07-18 00:58:57 [INFO] httpx: HTTP Request: POST https://api.deepseek.com/chat/completions "HTTP/1.1 200 OK"
+2025-07-18 00:59:03 [INFO] models.deepseek: DeepSeek模型响应成功，响应长度: 64 字符
+2025-07-18 00:59:03 [INFO] pipeline.soft_eval: 未检测到幻觉，使用原始评估结果
+2025-07-18 00:59:03 [INFO] pipeline.soft_eval: 完成维度 logic 的评估
+2025-07-18 00:59:03 [INFO] pipeline.soft_eval: 开始评估维度: innovation
+2025-07-18 00:59:03 [INFO] models.deepseek: 正在调用DeepSeek模型: deepseek-chat
+2025-07-18 00:59:03 [INFO] httpx: HTTP Request: POST https://api.deepseek.com/chat/completions "HTTP/1.1 200 OK"
+2025-07-18 00:59:09 [INFO] models.deepseek: DeepSeek模型响应成功，响应长度: 96 字符
+2025-07-18 00:59:09 [INFO] pipeline.soft_eval: 成功解析选择的章节: ['1.3 研究内容与创新点', '3.5 LEAD架构', '4.2 大模型评测', '4.3 LEAD对比实验', '5.1 论文工作总结']
+2025-07-18 00:59:09 [INFO] models.deepseek: 正在调用DeepSeek模型: deepseek-chat
+2025-07-18 00:59:09 [INFO] httpx: HTTP Request: POST https://api.deepseek.com/chat/completions "HTTP/1.1 200 OK"
+2025-07-18 00:59:32 [INFO] models.deepseek: DeepSeek模型响应成功，响应长度: 704 字符
+2025-07-18 00:59:32 [INFO] pipeline.soft_eval: 开始对维度 innovation 进行幻觉检测
+2025-07-18 00:59:32 [INFO] models.deepseek: 正在调用DeepSeek模型: deepseek-chat
+2025-07-18 00:59:32 [INFO] httpx: HTTP Request: POST https://api.deepseek.com/chat/completions "HTTP/1.1 200 OK"
+2025-07-18 00:59:39 [INFO] models.deepseek: DeepSeek模型响应成功，响应长度: 64 字符
+2025-07-18 00:59:39 [INFO] pipeline.soft_eval: 未检测到幻觉，使用原始评估结果
+2025-07-18 00:59:39 [INFO] pipeline.soft_eval: 完成维度 innovation 的评估
+2025-07-18 00:59:39 [INFO] pipeline.soft_eval: 开始评估维度: depth
+2025-07-18 00:59:39 [INFO] models.deepseek: 正在调用DeepSeek模型: deepseek-chat
+2025-07-18 00:59:39 [INFO] httpx: HTTP Request: POST https://api.deepseek.com/chat/completions "HTTP/1.1 200 OK"
+2025-07-18 00:59:46 [INFO] models.deepseek: DeepSeek模型响应成功，响应长度: 97 字符
+2025-07-18 00:59:46 [INFO] pipeline.soft_eval: 成功解析选择的章节: ['1.2 国内外研究现状', '3.5 LEAD架构', '4.2.3 评测结果与分析', '4.3.3 实验结果', '5.2 未来工作展望']
+2025-07-18 00:59:46 [INFO] models.deepseek: 正在调用DeepSeek模型: deepseek-chat
+2025-07-18 00:59:46 [INFO] httpx: HTTP Request: POST https://api.deepseek.com/chat/completions "HTTP/1.1 200 OK"
+2025-07-18 01:00:12 [INFO] models.deepseek: DeepSeek模型响应成功，响应长度: 847 字符
+2025-07-18 01:00:12 [INFO] pipeline.soft_eval: 开始对维度 depth 进行幻觉检测
+2025-07-18 01:00:12 [INFO] models.deepseek: 正在调用DeepSeek模型: deepseek-chat
+2025-07-18 01:00:13 [INFO] httpx: HTTP Request: POST https://api.deepseek.com/chat/completions "HTTP/1.1 200 OK"
+2025-07-18 01:00:18 [INFO] models.deepseek: DeepSeek模型响应成功，响应长度: 64 字符
+2025-07-18 01:00:18 [INFO] pipeline.soft_eval: 未检测到幻觉，使用原始评估结果
+2025-07-18 01:00:18 [INFO] pipeline.soft_eval: 完成维度 depth 的评估
+2025-07-18 01:00:18 [INFO] pipeline.soft_eval: 开始评估维度: replicability
+2025-07-18 01:00:18 [INFO] models.deepseek: 正在调用DeepSeek模型: deepseek-chat
+2025-07-18 01:00:18 [INFO] httpx: HTTP Request: POST https://api.deepseek.com/chat/completions "HTTP/1.1 200 OK"
+2025-07-18 01:00:26 [INFO] models.deepseek: DeepSeek模型响应成功，响应长度: 134 字符
+2025-07-18 01:00:26 [INFO] pipeline.soft_eval: 成功解析选择的章节: ['3.5.1 数据集与预处理', '3.5.2 模型训练', '4.2.1 JailBench数据集', '4.2.2 评估实验设计', '4.3.1 评估指标', '4.3.2 基线方法', '4.3.3 实验结果']
+2025-07-18 01:00:26 [INFO] models.deepseek: 正在调用DeepSeek模型: deepseek-chat
+2025-07-18 01:00:26 [INFO] httpx: HTTP Request: POST https://api.deepseek.com/chat/completions "HTTP/1.1 200 OK"
+2025-07-18 01:00:48 [INFO] models.deepseek: DeepSeek模型响应成功，响应长度: 611 字符
+2025-07-18 01:00:48 [INFO] pipeline.soft_eval: 开始对维度 replicability 进行幻觉检测
+2025-07-18 01:00:48 [INFO] models.deepseek: 正在调用DeepSeek模型: deepseek-chat
+2025-07-18 01:00:48 [INFO] httpx: HTTP Request: POST https://api.deepseek.com/chat/completions "HTTP/1.1 200 OK"
+2025-07-18 01:00:53 [INFO] models.deepseek: DeepSeek模型响应成功，响应长度: 64 字符
+2025-07-18 01:00:53 [INFO] pipeline.soft_eval: 未检测到幻觉，使用原始评估结果
+2025-07-18 01:00:53 [INFO] pipeline.soft_eval: 完成维度 replicability 的评估
+2025-07-18 01:00:53 [INFO] pipeline.soft_eval: 一共完成4个维度的评估
+2025-07-18 01:00:53 [INFO] api.eval_module: 软指标评价结果已存储到Redis: 592f75cf-6087-4ade-8613-ca1ef845b81e
+2025-07-18 01:00:53 [INFO] utils.redis_client: 文档存储成功: 592f75cf-6087-4ade-8613-ca1ef845b81e, 大小: 9030134 bytes
+2025-07-18 01:00:53 [INFO] api.document: 跳过图片查重分析: 592f75cf-6087-4ade-8613-ca1ef845b81e
+2025-07-18 01:00:53 [INFO] api.document: 生成HTML预览文件: 592f75cf-6087-4ade-8613-ca1ef845b81e
+2025-07-18 01:00:53 [INFO] api.document: HTML预览文件生成成功: preview/592f75cf-6087-4ade-8613-ca1ef845b81e/document.html
+2025-07-18 01:00:53 [INFO] api.document: 补充保存 19 张提取的图片到 preview/592f75cf-6087-4ade-8613-ca1ef845b81e/images
+2025-07-18 01:00:53 [INFO] api.document: 图片 1 已存在，跳过: preview/592f75cf-6087-4ade-8613-ca1ef845b81e/images/image_1.png
+2025-07-18 01:00:53 [INFO] api.document: 图片 2 已存在，跳过: preview/592f75cf-6087-4ade-8613-ca1ef845b81e/images/image_2.png
+2025-07-18 01:00:53 [INFO] api.document: 图片 3 已存在，跳过: preview/592f75cf-6087-4ade-8613-ca1ef845b81e/images/image_3.png
+2025-07-18 01:00:53 [INFO] api.document: 图片 4 已存在，跳过: preview/592f75cf-6087-4ade-8613-ca1ef845b81e/images/image_4.png
+2025-07-18 01:00:53 [INFO] api.document: 图片 5 已存在，跳过: preview/592f75cf-6087-4ade-8613-ca1ef845b81e/images/image_5.png
+2025-07-18 01:00:53 [INFO] api.document: 图片 6 已存在，跳过: preview/592f75cf-6087-4ade-8613-ca1ef845b81e/images/image_6.png
+2025-07-18 01:00:53 [INFO] api.document: 图片 7 已存在，跳过: preview/592f75cf-6087-4ade-8613-ca1ef845b81e/images/image_7.png
+2025-07-18 01:00:53 [INFO] api.document: 图片 8 已存在，跳过: preview/592f75cf-6087-4ade-8613-ca1ef845b81e/images/image_8.png
+2025-07-18 01:00:53 [INFO] api.document: 图片 9 已存在，跳过: preview/592f75cf-6087-4ade-8613-ca1ef845b81e/images/image_9.png
+2025-07-18 01:00:53 [INFO] api.document: 图片 10 已存在，跳过: preview/592f75cf-6087-4ade-8613-ca1ef845b81e/images/image_10.png
+2025-07-18 01:00:53 [INFO] api.document: 图片 11 已存在，跳过: preview/592f75cf-6087-4ade-8613-ca1ef845b81e/images/image_11.png
+2025-07-18 01:00:53 [INFO] api.document: 图片 12 已存在，跳过: preview/592f75cf-6087-4ade-8613-ca1ef845b81e/images/image_12.png
+2025-07-18 01:00:53 [INFO] api.document: 图片 13 已存在，跳过: preview/592f75cf-6087-4ade-8613-ca1ef845b81e/images/image_13.png
+2025-07-18 01:00:53 [INFO] api.document: 图片 14 已存在，跳过: preview/592f75cf-6087-4ade-8613-ca1ef845b81e/images/image_14.png
+2025-07-18 01:00:53 [INFO] api.document: 图片 15 已存在，跳过: preview/592f75cf-6087-4ade-8613-ca1ef845b81e/images/image_15.png
+2025-07-18 01:00:53 [INFO] api.document: 图片 16 已存在，跳过: preview/592f75cf-6087-4ade-8613-ca1ef845b81e/images/image_16.png
+2025-07-18 01:00:53 [INFO] api.document: 图片 17 已存在，跳过: preview/592f75cf-6087-4ade-8613-ca1ef845b81e/images/image_17.png
+2025-07-18 01:00:53 [INFO] api.document: 图片 18 已存在，跳过: preview/592f75cf-6087-4ade-8613-ca1ef845b81e/images/image_18.png
+2025-07-18 01:00:53 [INFO] api.document: 补充保存图片 19: preview/592f75cf-6087-4ade-8613-ca1ef845b81e/images/image_19.png (大小: 316081 bytes)
+2025-07-18 01:00:53 [INFO] utils.redis_client: 文档存储成功: 592f75cf-6087-4ade-8613-ca1ef845b81e, 大小: 9030286 bytes
+2025-07-18 01:00:53 [INFO] api.document: 文档处理完成: 592f75cf-6087-4ade-8613-ca1ef845b81e
+2025-07-18 01:00:53 [INFO] backend_fastapi.middleware.logging_middleware: [OUT] POST /api/process - 200 - 361.4690s - 127.0.0.1
+2025-07-18 01:00:53 [INFO] uvicorn.access: 127.0.0.1:61145 - "POST /api/process HTTP/1.1" 200
+2025-07-18 01:00:54 [INFO] backend_fastapi.middleware.logging_middleware: [IN] GET /api/status/592f75cf-6087-4ade-8613-ca1ef845b81e - 127.0.0.1
+2025-07-18 01:00:55 [INFO] backend_fastapi.middleware.logging_middleware: [OUT] GET /api/status/592f75cf-6087-4ade-8613-ca1ef845b81e - 200 - 0.0796s - 127.0.0.1
+2025-07-18 01:00:55 [INFO] uvicorn.access: 127.0.0.1:61145 - "GET /api/status/592f75cf-6087-4ade-8613-ca1ef845b81e HTTP/1.1" 200
+2025-07-18 01:02:36 [INFO] backend_fastapi.middleware.logging_middleware: [IN] GET /api/status/592f75cf-6087-4ade-8613-ca1ef845b81e - 127.0.0.1
+2025-07-18 01:02:36 [INFO] backend_fastapi.middleware.logging_middleware: [OUT] GET /api/status/592f75cf-6087-4ade-8613-ca1ef845b81e - 200 - 0.1122s - 127.0.0.1
+2025-07-18 01:02:36 [INFO] uvicorn.access: 127.0.0.1:0 - "GET /api/status/592f75cf-6087-4ade-8613-ca1ef845b81e HTTP/1.1" 200
+2025-07-18 01:02:36 [INFO] backend_fastapi.middleware.logging_middleware: [IN] GET /api/preview/592f75cf-6087-4ade-8613-ca1ef845b81e/html - 127.0.0.1
+2025-07-18 01:02:36 [INFO] api.preview: 获取任务 592f75cf-6087-4ade-8613-ca1ef845b81e 的预览数据
+2025-07-18 01:02:36 [INFO] api.preview: 成功读取HTML文件: preview/592f75cf-6087-4ade-8613-ca1ef845b81e/document.html
+2025-07-18 01:02:36 [INFO] backend_fastapi.middleware.logging_middleware: [OUT] GET /api/preview/592f75cf-6087-4ade-8613-ca1ef845b81e/html - 200 - 0.0968s - 127.0.0.1
+2025-07-18 01:02:36 [INFO] uvicorn.access: 127.0.0.1:0 - "GET /api/preview/592f75cf-6087-4ade-8613-ca1ef845b81e/html HTTP/1.1" 200
+2025-07-18 01:02:36 [INFO] backend_fastapi.middleware.logging_middleware: [IN] GET /api/preview/592f75cf-6087-4ade-8613-ca1ef845b81e/image - 127.0.0.1
+2025-07-18 01:02:36 [INFO] api.preview: 获取任务 592f75cf-6087-4ade-8613-ca1ef845b81e 的图片: images/image_0.jpeg
+2025-07-18 01:02:36 [INFO] backend_fastapi.middleware.logging_middleware: [IN] GET /api/preview/592f75cf-6087-4ade-8613-ca1ef845b81e/image - 127.0.0.1
+2025-07-18 01:02:36 [INFO] api.preview: 获取任务 592f75cf-6087-4ade-8613-ca1ef845b81e 的图片: images/image_1.png
+2025-07-18 01:02:36 [INFO] backend_fastapi.middleware.logging_middleware: [IN] GET /api/preview/592f75cf-6087-4ade-8613-ca1ef845b81e/image - 127.0.0.1
+2025-07-18 01:02:36 [INFO] api.preview: 获取任务 592f75cf-6087-4ade-8613-ca1ef845b81e 的图片: images/image_2.png
+2025-07-18 01:02:36 [INFO] backend_fastapi.middleware.logging_middleware: [IN] GET /api/preview/592f75cf-6087-4ade-8613-ca1ef845b81e/image - 127.0.0.1
+2025-07-18 01:02:36 [INFO] api.preview: 获取任务 592f75cf-6087-4ade-8613-ca1ef845b81e 的图片: images/image_3.png
+2025-07-18 01:02:36 [INFO] backend_fastapi.middleware.logging_middleware: [IN] GET /api/preview/592f75cf-6087-4ade-8613-ca1ef845b81e/image - 127.0.0.1
+2025-07-18 01:02:36 [INFO] backend_fastapi.middleware.logging_middleware: [IN] GET /api/preview/592f75cf-6087-4ade-8613-ca1ef845b81e/image - 127.0.0.1
+2025-07-18 01:02:36 [INFO] api.preview: 获取任务 592f75cf-6087-4ade-8613-ca1ef845b81e 的图片: images/image_4.png
+2025-07-18 01:02:36 [INFO] api.preview: 获取任务 592f75cf-6087-4ade-8613-ca1ef845b81e 的图片: images/image_5.png
+2025-07-18 01:02:36 [INFO] api.preview: 从预览目录读取图片: preview/592f75cf-6087-4ade-8613-ca1ef845b81e/images/image_0.jpeg
+2025-07-18 01:02:36 [INFO] backend_fastapi.middleware.logging_middleware: [OUT] GET /api/preview/592f75cf-6087-4ade-8613-ca1ef845b81e/image - 200 - 0.0758s - 127.0.0.1
+2025-07-18 01:02:36 [INFO] uvicorn.access: 127.0.0.1:0 - "GET /api/preview/592f75cf-6087-4ade-8613-ca1ef845b81e/image?path=images/image_0.jpeg HTTP/1.1" 200
+2025-07-18 01:02:36 [INFO] backend_fastapi.middleware.logging_middleware: [IN] GET /api/preview/592f75cf-6087-4ade-8613-ca1ef845b81e/image - 127.0.0.1
+2025-07-18 01:02:36 [INFO] api.preview: 获取任务 592f75cf-6087-4ade-8613-ca1ef845b81e 的图片: images/image_6.png
+2025-07-18 01:02:36 [INFO] api.preview: 从预览目录读取图片: preview/592f75cf-6087-4ade-8613-ca1ef845b81e/images/image_2.png
+2025-07-18 01:02:36 [INFO] backend_fastapi.middleware.logging_middleware: [OUT] GET /api/preview/592f75cf-6087-4ade-8613-ca1ef845b81e/image - 200 - 0.1074s - 127.0.0.1
+2025-07-18 01:02:36 [INFO] uvicorn.access: 127.0.0.1:0 - "GET /api/preview/592f75cf-6087-4ade-8613-ca1ef845b81e/image?path=images/image_2.png HTTP/1.1" 200
+2025-07-18 01:02:36 [INFO] api.preview: 从预览目录读取图片: preview/592f75cf-6087-4ade-8613-ca1ef845b81e/images/image_1.png
+2025-07-18 01:02:36 [INFO] backend_fastapi.middleware.logging_middleware: [IN] GET /api/preview/592f75cf-6087-4ade-8613-ca1ef845b81e/image - 127.0.0.1
+2025-07-18 01:02:36 [INFO] backend_fastapi.middleware.logging_middleware: [OUT] GET /api/preview/592f75cf-6087-4ade-8613-ca1ef845b81e/image - 200 - 0.1461s - 127.0.0.1
+2025-07-18 01:02:36 [INFO] uvicorn.access: 127.0.0.1:0 - "GET /api/preview/592f75cf-6087-4ade-8613-ca1ef845b81e/image?path=images/image_1.png HTTP/1.1" 200
+2025-07-18 01:02:36 [INFO] api.preview: 获取任务 592f75cf-6087-4ade-8613-ca1ef845b81e 的图片: images/image_7.png
+2025-07-18 01:02:36 [INFO] backend_fastapi.middleware.logging_middleware: [IN] GET /api/preview/592f75cf-6087-4ade-8613-ca1ef845b81e/image - 127.0.0.1
+2025-07-18 01:02:36 [INFO] api.preview: 获取任务 592f75cf-6087-4ade-8613-ca1ef845b81e 的图片: images/image_8.png
+2025-07-18 01:02:36 [INFO] api.preview: 从预览目录读取图片: preview/592f75cf-6087-4ade-8613-ca1ef845b81e/images/image_3.png
+2025-07-18 01:02:36 [INFO] backend_fastapi.middleware.logging_middleware: [OUT] GET /api/preview/592f75cf-6087-4ade-8613-ca1ef845b81e/image - 200 - 0.1918s - 127.0.0.1
+2025-07-18 01:02:36 [INFO] uvicorn.access: 127.0.0.1:0 - "GET /api/preview/592f75cf-6087-4ade-8613-ca1ef845b81e/image?path=images/image_3.png HTTP/1.1" 200
+2025-07-18 01:02:36 [INFO] api.preview: 从预览目录读取图片: preview/592f75cf-6087-4ade-8613-ca1ef845b81e/images/image_4.png
+2025-07-18 01:02:36 [INFO] backend_fastapi.middleware.logging_middleware: [IN] GET /api/preview/592f75cf-6087-4ade-8613-ca1ef845b81e/image - 127.0.0.1
+2025-07-18 01:02:36 [INFO] backend_fastapi.middleware.logging_middleware: [OUT] GET /api/preview/592f75cf-6087-4ade-8613-ca1ef845b81e/image - 200 - 0.2083s - 127.0.0.1
+2025-07-18 01:02:36 [INFO] uvicorn.access: 127.0.0.1:0 - "GET /api/preview/592f75cf-6087-4ade-8613-ca1ef845b81e/image?path=images/image_4.png HTTP/1.1" 200
+2025-07-18 01:02:36 [INFO] api.preview: 获取任务 592f75cf-6087-4ade-8613-ca1ef845b81e 的图片: images/image_9.png
+2025-07-18 01:02:36 [INFO] api.preview: 从预览目录读取图片: preview/592f75cf-6087-4ade-8613-ca1ef845b81e/images/image_5.png
+2025-07-18 01:02:36 [INFO] backend_fastapi.middleware.logging_middleware: [OUT] GET /api/preview/592f75cf-6087-4ade-8613-ca1ef845b81e/image - 200 - 0.2423s - 127.0.0.1
+2025-07-18 01:02:36 [INFO] uvicorn.access: 127.0.0.1:0 - "GET /api/preview/592f75cf-6087-4ade-8613-ca1ef845b81e/image?path=images/image_5.png HTTP/1.1" 200
+2025-07-18 01:02:36 [INFO] api.preview: 从预览目录读取图片: preview/592f75cf-6087-4ade-8613-ca1ef845b81e/images/image_6.png
+2025-07-18 01:02:36 [INFO] backend_fastapi.middleware.logging_middleware: [IN] GET /api/preview/592f75cf-6087-4ade-8613-ca1ef845b81e/image - 127.0.0.1
+2025-07-18 01:02:36 [INFO] backend_fastapi.middleware.logging_middleware: [IN] GET /api/preview/592f75cf-6087-4ade-8613-ca1ef845b81e/image - 127.0.0.1
+2025-07-18 01:02:36 [INFO] api.preview: 获取任务 592f75cf-6087-4ade-8613-ca1ef845b81e 的图片: images/image_10.png
+2025-07-18 01:02:36 [INFO] backend_fastapi.middleware.logging_middleware: [OUT] GET /api/preview/592f75cf-6087-4ade-8613-ca1ef845b81e/image - 200 - 0.2530s - 127.0.0.1
+2025-07-18 01:02:36 [INFO] uvicorn.access: 127.0.0.1:0 - "GET /api/preview/592f75cf-6087-4ade-8613-ca1ef845b81e/image?path=images/image_6.png HTTP/1.1" 200
+2025-07-18 01:02:36 [INFO] api.preview: 获取任务 592f75cf-6087-4ade-8613-ca1ef845b81e 的图片: images/image_11.png
+2025-07-18 01:02:36 [INFO] api.preview: 从预览目录读取图片: preview/592f75cf-6087-4ade-8613-ca1ef845b81e/images/image_7.png
+2025-07-18 01:02:36 [INFO] backend_fastapi.middleware.logging_middleware: [IN] GET /api/preview/592f75cf-6087-4ade-8613-ca1ef845b81e/image - 127.0.0.1
+2025-07-18 01:02:36 [INFO] api.preview: 获取任务 592f75cf-6087-4ade-8613-ca1ef845b81e 的图片: images/image_12.png
+2025-07-18 01:02:36 [INFO] backend_fastapi.middleware.logging_middleware: [OUT] GET /api/preview/592f75cf-6087-4ade-8613-ca1ef845b81e/image - 200 - 0.2251s - 127.0.0.1
+2025-07-18 01:02:36 [INFO] uvicorn.access: 127.0.0.1:0 - "GET /api/preview/592f75cf-6087-4ade-8613-ca1ef845b81e/image?path=images/image_7.png HTTP/1.1" 200
+2025-07-18 01:02:36 [INFO] api.preview: 从预览目录读取图片: preview/592f75cf-6087-4ade-8613-ca1ef845b81e/images/image_8.png
+2025-07-18 01:02:36 [INFO] backend_fastapi.middleware.logging_middleware: [IN] GET /api/preview/592f75cf-6087-4ade-8613-ca1ef845b81e/image - 127.0.0.1
+2025-07-18 01:02:36 [INFO] api.preview: 获取任务 592f75cf-6087-4ade-8613-ca1ef845b81e 的图片: images/image_13.png
+2025-07-18 01:02:36 [INFO] backend_fastapi.middleware.logging_middleware: [OUT] GET /api/preview/592f75cf-6087-4ade-8613-ca1ef845b81e/image - 200 - 0.2623s - 127.0.0.1
+2025-07-18 01:02:36 [INFO] uvicorn.access: 127.0.0.1:0 - "GET /api/preview/592f75cf-6087-4ade-8613-ca1ef845b81e/image?path=images/image_8.png HTTP/1.1" 200
+2025-07-18 01:02:36 [INFO] backend_fastapi.middleware.logging_middleware: [IN] GET /api/preview/592f75cf-6087-4ade-8613-ca1ef845b81e/image - 127.0.0.1
+2025-07-18 01:02:36 [INFO] api.preview: 从预览目录读取图片: preview/592f75cf-6087-4ade-8613-ca1ef845b81e/images/image_9.png
+2025-07-18 01:02:36 [INFO] api.preview: 获取任务 592f75cf-6087-4ade-8613-ca1ef845b81e 的图片: images/image_14.png
+2025-07-18 01:02:36 [INFO] backend_fastapi.middleware.logging_middleware: [OUT] GET /api/preview/592f75cf-6087-4ade-8613-ca1ef845b81e/image - 200 - 0.2221s - 127.0.0.1
+2025-07-18 01:02:36 [INFO] uvicorn.access: 127.0.0.1:0 - "GET /api/preview/592f75cf-6087-4ade-8613-ca1ef845b81e/image?path=images/image_9.png HTTP/1.1" 200
+2025-07-18 01:02:36 [INFO] api.preview: 从预览目录读取图片: preview/592f75cf-6087-4ade-8613-ca1ef845b81e/images/image_10.png
+2025-07-18 01:02:36 [INFO] backend_fastapi.middleware.logging_middleware: [IN] GET /api/preview/592f75cf-6087-4ade-8613-ca1ef845b81e/image - 127.0.0.1
+2025-07-18 01:02:36 [INFO] api.preview: 从预览目录读取图片: preview/592f75cf-6087-4ade-8613-ca1ef845b81e/images/image_11.png
+2025-07-18 01:02:36 [INFO] backend_fastapi.middleware.logging_middleware: [OUT] GET /api/preview/592f75cf-6087-4ade-8613-ca1ef845b81e/image - 200 - 0.2041s - 127.0.0.1
+2025-07-18 01:02:36 [INFO] uvicorn.access: 127.0.0.1:0 - "GET /api/preview/592f75cf-6087-4ade-8613-ca1ef845b81e/image?path=images/image_10.png HTTP/1.1" 200
+2025-07-18 01:02:36 [INFO] api.preview: 获取任务 592f75cf-6087-4ade-8613-ca1ef845b81e 的图片: images/image_15.png
+2025-07-18 01:02:36 [INFO] backend_fastapi.middleware.logging_middleware: [OUT] GET /api/preview/592f75cf-6087-4ade-8613-ca1ef845b81e/image - 200 - 0.2056s - 127.0.0.1
+2025-07-18 01:02:36 [INFO] uvicorn.access: 127.0.0.1:0 - "GET /api/preview/592f75cf-6087-4ade-8613-ca1ef845b81e/image?path=images/image_11.png HTTP/1.1" 200
+2025-07-18 01:02:36 [INFO] api.preview: 从预览目录读取图片: preview/592f75cf-6087-4ade-8613-ca1ef845b81e/images/image_12.png
+2025-07-18 01:02:36 [INFO] backend_fastapi.middleware.logging_middleware: [IN] GET /api/preview/592f75cf-6087-4ade-8613-ca1ef845b81e/image - 127.0.0.1
+2025-07-18 01:02:36 [INFO] backend_fastapi.middleware.logging_middleware: [IN] GET /api/preview/592f75cf-6087-4ade-8613-ca1ef845b81e/image - 127.0.0.1
+2025-07-18 01:02:36 [INFO] backend_fastapi.middleware.logging_middleware: [OUT] GET /api/preview/592f75cf-6087-4ade-8613-ca1ef845b81e/image - 200 - 0.2004s - 127.0.0.1
+2025-07-18 01:02:36 [INFO] uvicorn.access: 127.0.0.1:0 - "GET /api/preview/592f75cf-6087-4ade-8613-ca1ef845b81e/image?path=images/image_12.png HTTP/1.1" 200
+2025-07-18 01:02:36 [INFO] api.preview: 获取任务 592f75cf-6087-4ade-8613-ca1ef845b81e 的图片: images/image_16.png
+2025-07-18 01:02:36 [INFO] api.preview: 获取任务 592f75cf-6087-4ade-8613-ca1ef845b81e 的图片: images/image_17.png
+2025-07-18 01:02:37 [INFO] api.preview: 从预览目录读取图片: preview/592f75cf-6087-4ade-8613-ca1ef845b81e/images/image_13.png
+2025-07-18 01:02:37 [INFO] backend_fastapi.middleware.logging_middleware: [IN] GET /api/preview/592f75cf-6087-4ade-8613-ca1ef845b81e/image - 127.0.0.1
+2025-07-18 01:02:37 [INFO] backend_fastapi.middleware.logging_middleware: [OUT] GET /api/preview/592f75cf-6087-4ade-8613-ca1ef845b81e/image - 200 - 0.1901s - 127.0.0.1
+2025-07-18 01:02:37 [INFO] uvicorn.access: 127.0.0.1:0 - "GET /api/preview/592f75cf-6087-4ade-8613-ca1ef845b81e/image?path=images/image_13.png HTTP/1.1" 200
+2025-07-18 01:02:37 [INFO] api.preview: 获取任务 592f75cf-6087-4ade-8613-ca1ef845b81e 的图片: images/image_18.png
+2025-07-18 01:02:37 [INFO] api.preview: 从预览目录读取图片: preview/592f75cf-6087-4ade-8613-ca1ef845b81e/images/image_14.png
+2025-07-18 01:02:37 [INFO] backend_fastapi.middleware.logging_middleware: [IN] GET /api/status/592f75cf-6087-4ade-8613-ca1ef845b81e - 127.0.0.1
+2025-07-18 01:02:37 [INFO] backend_fastapi.middleware.logging_middleware: [OUT] GET /api/preview/592f75cf-6087-4ade-8613-ca1ef845b81e/image - 200 - 0.2146s - 127.0.0.1
+2025-07-18 01:02:37 [INFO] uvicorn.access: 127.0.0.1:0 - "GET /api/preview/592f75cf-6087-4ade-8613-ca1ef845b81e/image?path=images/image_14.png HTTP/1.1" 200
+2025-07-18 01:02:37 [INFO] api.preview: 从预览目录读取图片: preview/592f75cf-6087-4ade-8613-ca1ef845b81e/images/image_15.png
+2025-07-18 01:02:37 [INFO] backend_fastapi.middleware.logging_middleware: [OUT] GET /api/preview/592f75cf-6087-4ade-8613-ca1ef845b81e/image - 200 - 0.1912s - 127.0.0.1
+2025-07-18 01:02:37 [INFO] uvicorn.access: 127.0.0.1:0 - "GET /api/preview/592f75cf-6087-4ade-8613-ca1ef845b81e/image?path=images/image_15.png HTTP/1.1" 200
+2025-07-18 01:02:37 [INFO] api.preview: 从预览目录读取图片: preview/592f75cf-6087-4ade-8613-ca1ef845b81e/images/image_16.png
+2025-07-18 01:02:37 [INFO] api.preview: 从预览目录读取图片: preview/592f75cf-6087-4ade-8613-ca1ef845b81e/images/image_17.png
+2025-07-18 01:02:37 [INFO] backend_fastapi.middleware.logging_middleware: [OUT] GET /api/preview/592f75cf-6087-4ade-8613-ca1ef845b81e/image - 200 - 0.1911s - 127.0.0.1
+2025-07-18 01:02:37 [INFO] uvicorn.access: 127.0.0.1:0 - "GET /api/preview/592f75cf-6087-4ade-8613-ca1ef845b81e/image?path=images/image_16.png HTTP/1.1" 200
+2025-07-18 01:02:37 [INFO] backend_fastapi.middleware.logging_middleware: [OUT] GET /api/preview/592f75cf-6087-4ade-8613-ca1ef845b81e/image - 200 - 0.1924s - 127.0.0.1
+2025-07-18 01:02:37 [INFO] uvicorn.access: 127.0.0.1:0 - "GET /api/preview/592f75cf-6087-4ade-8613-ca1ef845b81e/image?path=images/image_17.png HTTP/1.1" 200
+2025-07-18 01:02:37 [INFO] api.preview: 从预览目录读取图片: preview/592f75cf-6087-4ade-8613-ca1ef845b81e/images/image_18.png
+2025-07-18 01:02:37 [INFO] backend_fastapi.middleware.logging_middleware: [OUT] GET /api/preview/592f75cf-6087-4ade-8613-ca1ef845b81e/image - 200 - 0.1859s - 127.0.0.1
+2025-07-18 01:02:37 [INFO] uvicorn.access: 127.0.0.1:0 - "GET /api/preview/592f75cf-6087-4ade-8613-ca1ef845b81e/image?path=images/image_18.png HTTP/1.1" 200
+2025-07-18 01:02:37 [INFO] backend_fastapi.middleware.logging_middleware: [OUT] GET /api/status/592f75cf-6087-4ade-8613-ca1ef845b81e - 200 - 0.1774s - 127.0.0.1
+2025-07-18 01:02:37 [INFO] uvicorn.access: 127.0.0.1:0 - "GET /api/status/592f75cf-6087-4ade-8613-ca1ef845b81e HTTP/1.1" 200
+2025-07-18 01:02:37 [INFO] backend_fastapi.middleware.logging_middleware: [IN] GET /api/analysis/592f75cf-6087-4ade-8613-ca1ef845b81e/issues - 127.0.0.1
+2025-07-18 01:02:37 [INFO] api.analysis: 获取任务 592f75cf-6087-4ade-8613-ca1ef845b81e 的问题分析数据
+2025-07-18 01:02:37 [INFO] backend_fastapi.middleware.logging_middleware: [OUT] GET /api/analysis/592f75cf-6087-4ade-8613-ca1ef845b81e/issues - 200 - 0.0311s - 127.0.0.1
+2025-07-18 01:02:37 [INFO] uvicorn.access: 127.0.0.1:61439 - "GET /api/analysis/592f75cf-6087-4ade-8613-ca1ef845b81e/issues HTTP/1.1" 200
+2025-07-18 01:02:55 [INFO] backend_fastapi.middleware.logging_middleware: [IN] GET /api/status/592f75cf-6087-4ade-8613-ca1ef845b81e - 127.0.0.1
+2025-07-18 01:02:55 [INFO] backend_fastapi.middleware.logging_middleware: [OUT] GET /api/status/592f75cf-6087-4ade-8613-ca1ef845b81e - 200 - 0.0758s - 127.0.0.1
+2025-07-18 01:02:55 [INFO] uvicorn.access: 127.0.0.1:61447 - "GET /api/status/592f75cf-6087-4ade-8613-ca1ef845b81e HTTP/1.1" 200
+2025-07-18 01:02:55 [INFO] backend_fastapi.middleware.logging_middleware: [IN] GET /api/analysis/592f75cf-6087-4ade-8613-ca1ef845b81e/basic-info - 127.0.0.1
+2025-07-18 01:02:55 [INFO] api.analysis: 获取任务 592f75cf-6087-4ade-8613-ca1ef845b81e 的基础信息
+2025-07-18 01:02:55 [INFO] backend_fastapi.middleware.logging_middleware: [IN] GET /api/analysis/592f75cf-6087-4ade-8613-ca1ef845b81e/overall-stats - 127.0.0.1
+2025-07-18 01:02:55 [INFO] api.analysis: 获取任务 592f75cf-6087-4ade-8613-ca1ef845b81e 的整体统计数据
+2025-07-18 01:02:55 [INFO] backend_fastapi.middleware.logging_middleware: [IN] GET /api/analysis/592f75cf-6087-4ade-8613-ca1ef845b81e/chapter-stats - 127.0.0.1
+2025-07-18 01:02:55 [INFO] backend_fastapi.middleware.logging_middleware: [IN] GET /api/analysis/592f75cf-6087-4ade-8613-ca1ef845b81e/reference-stats - 127.0.0.1
+2025-07-18 01:02:55 [INFO] backend_fastapi.middleware.logging_middleware: [OUT] GET /api/analysis/592f75cf-6087-4ade-8613-ca1ef845b81e/basic-info - 200 - 0.1178s - 127.0.0.1
+2025-07-18 01:02:55 [INFO] uvicorn.access: 127.0.0.1:61447 - "GET /api/analysis/592f75cf-6087-4ade-8613-ca1ef845b81e/basic-info HTTP/1.1" 200
+2025-07-18 01:02:55 [INFO] api.analysis: 获取任务 592f75cf-6087-4ade-8613-ca1ef845b81e 的章节统计数据
+2025-07-18 01:02:55 [INFO] backend_fastapi.middleware.logging_middleware: [IN] GET /api/analysis/592f75cf-6087-4ade-8613-ca1ef845b81e/evaluation - 127.0.0.1
+2025-07-18 01:02:55 [INFO] api.analysis: 获取任务 592f75cf-6087-4ade-8613-ca1ef845b81e 的参考文献统计
+2025-07-18 01:02:55 [INFO] backend_fastapi.middleware.logging_middleware: [IN] GET /api/analysis/592f75cf-6087-4ade-8613-ca1ef845b81e/issues - 127.0.0.1
+2025-07-18 01:02:55 [INFO] api.analysis: 获取任务 592f75cf-6087-4ade-8613-ca1ef845b81e 的软指标评估数据
+2025-07-18 01:02:55 [INFO] api.analysis: 获取任务 592f75cf-6087-4ade-8613-ca1ef845b81e 的问题分析数据
+2025-07-18 01:02:55 [INFO] backend_fastapi.middleware.logging_middleware: [OUT] GET /api/analysis/592f75cf-6087-4ade-8613-ca1ef845b81e/issues - 200 - 0.0589s - 127.0.0.1
+2025-07-18 01:02:55 [INFO] uvicorn.access: 127.0.0.1:61452 - "GET /api/analysis/592f75cf-6087-4ade-8613-ca1ef845b81e/issues HTTP/1.1" 200
+2025-07-18 01:02:57 [INFO] backend_fastapi.middleware.logging_middleware: [OUT] GET /api/analysis/592f75cf-6087-4ade-8613-ca1ef845b81e/chapter-stats - 200 - 1.6628s - 127.0.0.1
+2025-07-18 01:02:57 [INFO] uvicorn.access: 127.0.0.1:61449 - "GET /api/analysis/592f75cf-6087-4ade-8613-ca1ef845b81e/chapter-stats HTTP/1.1" 200
+2025-07-18 01:02:57 [INFO] backend_fastapi.middleware.logging_middleware: [OUT] GET /api/analysis/592f75cf-6087-4ade-8613-ca1ef845b81e/overall-stats - 200 - 1.7751s - 127.0.0.1
+2025-07-18 01:02:57 [INFO] uvicorn.access: 127.0.0.1:61448 - "GET /api/analysis/592f75cf-6087-4ade-8613-ca1ef845b81e/overall-stats HTTP/1.1" 200
+2025-07-18 01:02:57 [INFO] backend_fastapi.middleware.logging_middleware: [OUT] GET /api/analysis/592f75cf-6087-4ade-8613-ca1ef845b81e/reference-stats - 200 - 1.7841s - 127.0.0.1
+2025-07-18 01:02:57 [INFO] uvicorn.access: 127.0.0.1:61450 - "GET /api/analysis/592f75cf-6087-4ade-8613-ca1ef845b81e/reference-stats HTTP/1.1" 200
+2025-07-18 01:02:57 [INFO] backend_fastapi.middleware.logging_middleware: [OUT] GET /api/analysis/592f75cf-6087-4ade-8613-ca1ef845b81e/evaluation - 200 - 1.7836s - 127.0.0.1
+2025-07-18 01:02:57 [INFO] uvicorn.access: 127.0.0.1:61451 - "GET /api/analysis/592f75cf-6087-4ade-8613-ca1ef845b81e/evaluation HTTP/1.1" 200
+2025-07-18 01:04:31 [INFO] backend_fastapi.middleware.logging_middleware: [IN] GET /api/status/592f75cf-6087-4ade-8613-ca1ef845b81e - 127.0.0.1
+2025-07-18 01:04:31 [INFO] backend_fastapi.middleware.logging_middleware: [OUT] GET /api/status/592f75cf-6087-4ade-8613-ca1ef845b81e - 200 - 0.0687s - 127.0.0.1
+2025-07-18 01:04:31 [INFO] uvicorn.access: 127.0.0.1:0 - "GET /api/status/592f75cf-6087-4ade-8613-ca1ef845b81e HTTP/1.1" 200
+2025-07-18 01:04:31 [INFO] backend_fastapi.middleware.logging_middleware: [IN] GET /api/preview/592f75cf-6087-4ade-8613-ca1ef845b81e/html - 127.0.0.1
+2025-07-18 01:04:31 [INFO] api.preview: 获取任务 592f75cf-6087-4ade-8613-ca1ef845b81e 的预览数据
+2025-07-18 01:04:31 [INFO] api.preview: 成功读取HTML文件: preview/592f75cf-6087-4ade-8613-ca1ef845b81e/document.html
+2025-07-18 01:04:31 [INFO] backend_fastapi.middleware.logging_middleware: [OUT] GET /api/preview/592f75cf-6087-4ade-8613-ca1ef845b81e/html - 200 - 0.0514s - 127.0.0.1
+2025-07-18 01:04:31 [INFO] uvicorn.access: 127.0.0.1:0 - "GET /api/preview/592f75cf-6087-4ade-8613-ca1ef845b81e/html HTTP/1.1" 200
+2025-07-18 01:04:31 [INFO] backend_fastapi.middleware.logging_middleware: [IN] GET /api/status/592f75cf-6087-4ade-8613-ca1ef845b81e - 127.0.0.1
+2025-07-18 01:04:31 [INFO] backend_fastapi.middleware.logging_middleware: [OUT] GET /api/status/592f75cf-6087-4ade-8613-ca1ef845b81e - 200 - 0.0444s - 127.0.0.1
+2025-07-18 01:04:31 [INFO] uvicorn.access: 127.0.0.1:0 - "GET /api/status/592f75cf-6087-4ade-8613-ca1ef845b81e HTTP/1.1" 200
+2025-07-18 01:04:32 [INFO] backend_fastapi.middleware.logging_middleware: [IN] GET /api/analysis/592f75cf-6087-4ade-8613-ca1ef845b81e/issues - 127.0.0.1
+2025-07-18 01:04:32 [INFO] api.analysis: 获取任务 592f75cf-6087-4ade-8613-ca1ef845b81e 的问题分析数据
+2025-07-18 01:04:32 [INFO] backend_fastapi.middleware.logging_middleware: [OUT] GET /api/analysis/592f75cf-6087-4ade-8613-ca1ef845b81e/issues - 200 - 0.0408s - 127.0.0.1
+2025-07-18 01:04:32 [INFO] uvicorn.access: 127.0.0.1:61483 - "GET /api/analysis/592f75cf-6087-4ade-8613-ca1ef845b81e/issues HTTP/1.1" 200
+2025-07-18 01:04:38 [INFO] backend_fastapi.middleware.logging_middleware: [IN] GET /api/status/592f75cf-6087-4ade-8613-ca1ef845b81e - 127.0.0.1
+2025-07-18 01:04:38 [INFO] backend_fastapi.middleware.logging_middleware: [OUT] GET /api/status/592f75cf-6087-4ade-8613-ca1ef845b81e - 200 - 0.0559s - 127.0.0.1
+2025-07-18 01:04:38 [INFO] uvicorn.access: 127.0.0.1:61485 - "GET /api/status/592f75cf-6087-4ade-8613-ca1ef845b81e HTTP/1.1" 200
+2025-07-18 01:04:38 [INFO] backend_fastapi.middleware.logging_middleware: [IN] GET /api/analysis/592f75cf-6087-4ade-8613-ca1ef845b81e/basic-info - 127.0.0.1
+2025-07-18 01:04:38 [INFO] api.analysis: 获取任务 592f75cf-6087-4ade-8613-ca1ef845b81e 的基础信息
+2025-07-18 01:04:38 [INFO] backend_fastapi.middleware.logging_middleware: [IN] GET /api/analysis/592f75cf-6087-4ade-8613-ca1ef845b81e/overall-stats - 127.0.0.1
+2025-07-18 01:04:38 [INFO] api.analysis: 获取任务 592f75cf-6087-4ade-8613-ca1ef845b81e 的整体统计数据
+2025-07-18 01:04:38 [INFO] backend_fastapi.middleware.logging_middleware: [IN] GET /api/analysis/592f75cf-6087-4ade-8613-ca1ef845b81e/chapter-stats - 127.0.0.1
+2025-07-18 01:04:38 [INFO] backend_fastapi.middleware.logging_middleware: [IN] GET /api/analysis/592f75cf-6087-4ade-8613-ca1ef845b81e/reference-stats - 127.0.0.1
+2025-07-18 01:04:38 [INFO] backend_fastapi.middleware.logging_middleware: [OUT] GET /api/analysis/592f75cf-6087-4ade-8613-ca1ef845b81e/basic-info - 200 - 0.1220s - 127.0.0.1
+2025-07-18 01:04:38 [INFO] uvicorn.access: 127.0.0.1:61485 - "GET /api/analysis/592f75cf-6087-4ade-8613-ca1ef845b81e/basic-info HTTP/1.1" 200
+2025-07-18 01:04:38 [INFO] api.analysis: 获取任务 592f75cf-6087-4ade-8613-ca1ef845b81e 的章节统计数据
+2025-07-18 01:04:38 [INFO] backend_fastapi.middleware.logging_middleware: [IN] GET /api/analysis/592f75cf-6087-4ade-8613-ca1ef845b81e/evaluation - 127.0.0.1
+2025-07-18 01:04:38 [INFO] api.analysis: 获取任务 592f75cf-6087-4ade-8613-ca1ef845b81e 的参考文献统计
+2025-07-18 01:04:38 [INFO] backend_fastapi.middleware.logging_middleware: [IN] GET /api/analysis/592f75cf-6087-4ade-8613-ca1ef845b81e/issues - 127.0.0.1
+2025-07-18 01:04:38 [INFO] api.analysis: 获取任务 592f75cf-6087-4ade-8613-ca1ef845b81e 的软指标评估数据
+2025-07-18 01:04:38 [INFO] api.analysis: 获取任务 592f75cf-6087-4ade-8613-ca1ef845b81e 的问题分析数据
+2025-07-18 01:04:40 [INFO] backend_fastapi.middleware.logging_middleware: [OUT] GET /api/analysis/592f75cf-6087-4ade-8613-ca1ef845b81e/chapter-stats - 200 - 1.5939s - 127.0.0.1
+2025-07-18 01:04:40 [INFO] uvicorn.access: 127.0.0.1:61487 - "GET /api/analysis/592f75cf-6087-4ade-8613-ca1ef845b81e/chapter-stats HTTP/1.1" 200
+2025-07-18 01:04:40 [INFO] backend_fastapi.middleware.logging_middleware: [OUT] GET /api/analysis/592f75cf-6087-4ade-8613-ca1ef845b81e/overall-stats - 200 - 1.9703s - 127.0.0.1
+2025-07-18 01:04:40 [INFO] uvicorn.access: 127.0.0.1:61486 - "GET /api/analysis/592f75cf-6087-4ade-8613-ca1ef845b81e/overall-stats HTTP/1.1" 200
+2025-07-18 01:04:40 [INFO] backend_fastapi.middleware.logging_middleware: [OUT] GET /api/analysis/592f75cf-6087-4ade-8613-ca1ef845b81e/evaluation - 200 - 1.8898s - 127.0.0.1
+2025-07-18 01:04:40 [INFO] uvicorn.access: 127.0.0.1:61489 - "GET /api/analysis/592f75cf-6087-4ade-8613-ca1ef845b81e/evaluation HTTP/1.1" 200
+2025-07-18 01:04:40 [INFO] backend_fastapi.middleware.logging_middleware: [OUT] GET /api/analysis/592f75cf-6087-4ade-8613-ca1ef845b81e/issues - 200 - 1.9132s - 127.0.0.1
+2025-07-18 01:04:40 [INFO] uvicorn.access: 127.0.0.1:61490 - "GET /api/analysis/592f75cf-6087-4ade-8613-ca1ef845b81e/issues HTTP/1.1" 200
+2025-07-18 01:04:40 [INFO] backend_fastapi.middleware.logging_middleware: [OUT] GET /api/analysis/592f75cf-6087-4ade-8613-ca1ef845b81e/reference-stats - 200 - 2.0084s - 127.0.0.1
+2025-07-18 01:04:40 [INFO] uvicorn.access: 127.0.0.1:61488 - "GET /api/analysis/592f75cf-6087-4ade-8613-ca1ef845b81e/reference-stats HTTP/1.1" 200
+2025-07-18 01:05:32 [INFO] backend_fastapi.middleware.logging_middleware: [IN] GET /api/status/592f75cf-6087-4ade-8613-ca1ef845b81e - 127.0.0.1
+2025-07-18 01:05:32 [INFO] backend_fastapi.middleware.logging_middleware: [OUT] GET /api/status/592f75cf-6087-4ade-8613-ca1ef845b81e - 200 - 0.0588s - 127.0.0.1
+2025-07-18 01:05:32 [INFO] uvicorn.access: 127.0.0.1:0 - "GET /api/status/592f75cf-6087-4ade-8613-ca1ef845b81e HTTP/1.1" 200
+2025-07-18 01:05:32 [INFO] backend_fastapi.middleware.logging_middleware: [IN] GET /api/preview/592f75cf-6087-4ade-8613-ca1ef845b81e/html - 127.0.0.1
+2025-07-18 01:05:32 [INFO] api.preview: 获取任务 592f75cf-6087-4ade-8613-ca1ef845b81e 的预览数据
+2025-07-18 01:05:32 [INFO] api.preview: 成功读取HTML文件: preview/592f75cf-6087-4ade-8613-ca1ef845b81e/document.html
+2025-07-18 01:05:32 [INFO] backend_fastapi.middleware.logging_middleware: [OUT] GET /api/preview/592f75cf-6087-4ade-8613-ca1ef845b81e/html - 200 - 0.0434s - 127.0.0.1
+2025-07-18 01:05:32 [INFO] uvicorn.access: 127.0.0.1:0 - "GET /api/preview/592f75cf-6087-4ade-8613-ca1ef845b81e/html HTTP/1.1" 200
+2025-07-18 01:05:32 [INFO] backend_fastapi.middleware.logging_middleware: [IN] GET /api/status/592f75cf-6087-4ade-8613-ca1ef845b81e - 127.0.0.1
+2025-07-18 01:05:32 [INFO] backend_fastapi.middleware.logging_middleware: [OUT] GET /api/status/592f75cf-6087-4ade-8613-ca1ef845b81e - 200 - 0.0413s - 127.0.0.1
+2025-07-18 01:05:32 [INFO] uvicorn.access: 127.0.0.1:0 - "GET /api/status/592f75cf-6087-4ade-8613-ca1ef845b81e HTTP/1.1" 200
+2025-07-18 01:05:33 [INFO] backend_fastapi.middleware.logging_middleware: [IN] GET /api/analysis/592f75cf-6087-4ade-8613-ca1ef845b81e/issues - 127.0.0.1
+2025-07-18 01:05:33 [INFO] api.analysis: 获取任务 592f75cf-6087-4ade-8613-ca1ef845b81e 的问题分析数据
+2025-07-18 01:05:33 [INFO] backend_fastapi.middleware.logging_middleware: [OUT] GET /api/analysis/592f75cf-6087-4ade-8613-ca1ef845b81e/issues - 200 - 0.0480s - 127.0.0.1
+2025-07-18 01:05:33 [INFO] uvicorn.access: 127.0.0.1:61528 - "GET /api/analysis/592f75cf-6087-4ade-8613-ca1ef845b81e/issues HTTP/1.1" 200
+2025-07-18 10:57:19 [INFO] backend_fastapi.middleware.logging_middleware: [IN] GET /api/status/592f75cf-6087-4ade-8613-ca1ef845b81e - 127.0.0.1
+2025-07-18 10:57:19 [INFO] backend_fastapi.middleware.logging_middleware: [OUT] GET /api/status/592f75cf-6087-4ade-8613-ca1ef845b81e - 200 - 0.2461s - 127.0.0.1
+2025-07-18 10:57:19 [INFO] uvicorn.access: 127.0.0.1:0 - "GET /api/status/592f75cf-6087-4ade-8613-ca1ef845b81e HTTP/1.1" 200
+2025-07-18 10:57:19 [INFO] backend_fastapi.middleware.logging_middleware: [IN] GET /api/preview/592f75cf-6087-4ade-8613-ca1ef845b81e/html - 127.0.0.1
+2025-07-18 10:57:19 [INFO] api.preview: 获取任务 592f75cf-6087-4ade-8613-ca1ef845b81e 的预览数据
+2025-07-18 10:57:19 [INFO] api.preview: 成功读取HTML文件: preview/592f75cf-6087-4ade-8613-ca1ef845b81e/document.html
+2025-07-18 10:57:19 [INFO] backend_fastapi.middleware.logging_middleware: [OUT] GET /api/preview/592f75cf-6087-4ade-8613-ca1ef845b81e/html - 200 - 0.0976s - 127.0.0.1
+2025-07-18 10:57:19 [INFO] uvicorn.access: 127.0.0.1:0 - "GET /api/preview/592f75cf-6087-4ade-8613-ca1ef845b81e/html HTTP/1.1" 200
+2025-07-18 10:57:19 [INFO] backend_fastapi.middleware.logging_middleware: [IN] GET /api/preview/592f75cf-6087-4ade-8613-ca1ef845b81e/image - 127.0.0.1
+2025-07-18 10:57:19 [INFO] api.preview: 获取任务 592f75cf-6087-4ade-8613-ca1ef845b81e 的图片: images/image_0.jpeg
+2025-07-18 10:57:19 [INFO] backend_fastapi.middleware.logging_middleware: [IN] GET /api/preview/592f75cf-6087-4ade-8613-ca1ef845b81e/image - 127.0.0.1
+2025-07-18 10:57:19 [INFO] api.preview: 获取任务 592f75cf-6087-4ade-8613-ca1ef845b81e 的图片: images/image_1.png
+2025-07-18 10:57:19 [INFO] backend_fastapi.middleware.logging_middleware: [IN] GET /api/preview/592f75cf-6087-4ade-8613-ca1ef845b81e/image - 127.0.0.1
+2025-07-18 10:57:19 [INFO] api.preview: 获取任务 592f75cf-6087-4ade-8613-ca1ef845b81e 的图片: images/image_2.png
+2025-07-18 10:57:19 [INFO] backend_fastapi.middleware.logging_middleware: [IN] GET /api/preview/592f75cf-6087-4ade-8613-ca1ef845b81e/image - 127.0.0.1
+2025-07-18 10:57:19 [INFO] api.preview: 获取任务 592f75cf-6087-4ade-8613-ca1ef845b81e 的图片: images/image_3.png
+2025-07-18 10:57:19 [INFO] backend_fastapi.middleware.logging_middleware: [IN] GET /api/preview/592f75cf-6087-4ade-8613-ca1ef845b81e/image - 127.0.0.1
+2025-07-18 10:57:19 [INFO] api.preview: 获取任务 592f75cf-6087-4ade-8613-ca1ef845b81e 的图片: images/image_4.png
+2025-07-18 10:57:19 [INFO] backend_fastapi.middleware.logging_middleware: [IN] GET /api/preview/592f75cf-6087-4ade-8613-ca1ef845b81e/image - 127.0.0.1
+2025-07-18 10:57:19 [INFO] api.preview: 获取任务 592f75cf-6087-4ade-8613-ca1ef845b81e 的图片: images/image_5.png
+2025-07-18 10:57:19 [INFO] api.preview: 从预览目录读取图片: preview/592f75cf-6087-4ade-8613-ca1ef845b81e/images/image_0.jpeg
+2025-07-18 10:57:19 [INFO] backend_fastapi.middleware.logging_middleware: [OUT] GET /api/preview/592f75cf-6087-4ade-8613-ca1ef845b81e/image - 200 - 0.1034s - 127.0.0.1
+2025-07-18 10:57:19 [INFO] uvicorn.access: 127.0.0.1:0 - "GET /api/preview/592f75cf-6087-4ade-8613-ca1ef845b81e/image?path=images/image_0.jpeg HTTP/1.1" 200
+2025-07-18 10:57:19 [INFO] api.preview: 从预览目录读取图片: preview/592f75cf-6087-4ade-8613-ca1ef845b81e/images/image_1.png
+2025-07-18 10:57:19 [INFO] backend_fastapi.middleware.logging_middleware: [OUT] GET /api/preview/592f75cf-6087-4ade-8613-ca1ef845b81e/image - 200 - 0.1383s - 127.0.0.1
+2025-07-18 10:57:19 [INFO] uvicorn.access: 127.0.0.1:0 - "GET /api/preview/592f75cf-6087-4ade-8613-ca1ef845b81e/image?path=images/image_1.png HTTP/1.1" 200
+2025-07-18 10:57:19 [INFO] backend_fastapi.middleware.logging_middleware: [IN] GET /api/preview/592f75cf-6087-4ade-8613-ca1ef845b81e/image - 127.0.0.1
+2025-07-18 10:57:19 [INFO] backend_fastapi.middleware.logging_middleware: [IN] GET /api/preview/592f75cf-6087-4ade-8613-ca1ef845b81e/image - 127.0.0.1
+2025-07-18 10:57:19 [INFO] api.preview: 获取任务 592f75cf-6087-4ade-8613-ca1ef845b81e 的图片: images/image_6.png
+2025-07-18 10:57:19 [INFO] api.preview: 获取任务 592f75cf-6087-4ade-8613-ca1ef845b81e 的图片: images/image_7.png
+2025-07-18 10:57:19 [INFO] api.preview: 从预览目录读取图片: preview/592f75cf-6087-4ade-8613-ca1ef845b81e/images/image_2.png
+2025-07-18 10:57:19 [INFO] api.preview: 从预览目录读取图片: preview/592f75cf-6087-4ade-8613-ca1ef845b81e/images/image_3.png
+2025-07-18 10:57:19 [INFO] backend_fastapi.middleware.logging_middleware: [OUT] GET /api/preview/592f75cf-6087-4ade-8613-ca1ef845b81e/image - 200 - 0.2388s - 127.0.0.1
+2025-07-18 10:57:19 [INFO] uvicorn.access: 127.0.0.1:0 - "GET /api/preview/592f75cf-6087-4ade-8613-ca1ef845b81e/image?path=images/image_2.png HTTP/1.1" 200
+2025-07-18 10:57:19 [INFO] backend_fastapi.middleware.logging_middleware: [OUT] GET /api/preview/592f75cf-6087-4ade-8613-ca1ef845b81e/image - 200 - 0.2292s - 127.0.0.1
+2025-07-18 10:57:19 [INFO] uvicorn.access: 127.0.0.1:0 - "GET /api/preview/592f75cf-6087-4ade-8613-ca1ef845b81e/image?path=images/image_3.png HTTP/1.1" 200
+2025-07-18 10:57:19 [INFO] api.preview: 从预览目录读取图片: preview/592f75cf-6087-4ade-8613-ca1ef845b81e/images/image_4.png
+2025-07-18 10:57:19 [INFO] backend_fastapi.middleware.logging_middleware: [IN] GET /api/preview/592f75cf-6087-4ade-8613-ca1ef845b81e/image - 127.0.0.1
+2025-07-18 10:57:19 [INFO] backend_fastapi.middleware.logging_middleware: [OUT] GET /api/preview/592f75cf-6087-4ade-8613-ca1ef845b81e/image - 200 - 0.2648s - 127.0.0.1
+2025-07-18 10:57:19 [INFO] uvicorn.access: 127.0.0.1:0 - "GET /api/preview/592f75cf-6087-4ade-8613-ca1ef845b81e/image?path=images/image_4.png HTTP/1.1" 200
+2025-07-18 10:57:19 [INFO] api.preview: 获取任务 592f75cf-6087-4ade-8613-ca1ef845b81e 的图片: images/image_8.png
+2025-07-18 10:57:19 [INFO] backend_fastapi.middleware.logging_middleware: [IN] GET /api/preview/592f75cf-6087-4ade-8613-ca1ef845b81e/image - 127.0.0.1
+2025-07-18 10:57:19 [INFO] api.preview: 从预览目录读取图片: preview/592f75cf-6087-4ade-8613-ca1ef845b81e/images/image_5.png
+2025-07-18 10:57:19 [INFO] api.preview: 获取任务 592f75cf-6087-4ade-8613-ca1ef845b81e 的图片: images/image_9.png
+2025-07-18 10:57:19 [INFO] backend_fastapi.middleware.logging_middleware: [IN] GET /api/preview/592f75cf-6087-4ade-8613-ca1ef845b81e/image - 127.0.0.1
+2025-07-18 10:57:19 [INFO] backend_fastapi.middleware.logging_middleware: [OUT] GET /api/preview/592f75cf-6087-4ade-8613-ca1ef845b81e/image - 200 - 0.3000s - 127.0.0.1
+2025-07-18 10:57:19 [INFO] uvicorn.access: 127.0.0.1:0 - "GET /api/preview/592f75cf-6087-4ade-8613-ca1ef845b81e/image?path=images/image_5.png HTTP/1.1" 200
+2025-07-18 10:57:19 [INFO] api.preview: 获取任务 592f75cf-6087-4ade-8613-ca1ef845b81e 的图片: images/image_10.png
+2025-07-18 10:57:19 [INFO] backend_fastapi.middleware.logging_middleware: [IN] GET /api/preview/592f75cf-6087-4ade-8613-ca1ef845b81e/image - 127.0.0.1
+2025-07-18 10:57:19 [INFO] api.preview: 获取任务 592f75cf-6087-4ade-8613-ca1ef845b81e 的图片: images/image_11.png
+2025-07-18 10:57:19 [INFO] api.preview: 从预览目录读取图片: preview/592f75cf-6087-4ade-8613-ca1ef845b81e/images/image_6.png
+2025-07-18 10:57:20 [INFO] api.preview: 从预览目录读取图片: preview/592f75cf-6087-4ade-8613-ca1ef845b81e/images/image_7.png
+2025-07-18 10:57:20 [INFO] backend_fastapi.middleware.logging_middleware: [OUT] GET /api/preview/592f75cf-6087-4ade-8613-ca1ef845b81e/image - 200 - 0.2784s - 127.0.0.1
+2025-07-18 10:57:20 [INFO] uvicorn.access: 127.0.0.1:0 - "GET /api/preview/592f75cf-6087-4ade-8613-ca1ef845b81e/image?path=images/image_6.png HTTP/1.1" 200
+2025-07-18 10:57:20 [INFO] backend_fastapi.middleware.logging_middleware: [OUT] GET /api/preview/592f75cf-6087-4ade-8613-ca1ef845b81e/image - 200 - 0.2793s - 127.0.0.1
+2025-07-18 10:57:20 [INFO] uvicorn.access: 127.0.0.1:0 - "GET /api/preview/592f75cf-6087-4ade-8613-ca1ef845b81e/image?path=images/image_7.png HTTP/1.1" 200
+2025-07-18 10:57:20 [INFO] backend_fastapi.middleware.logging_middleware: [IN] GET /api/preview/592f75cf-6087-4ade-8613-ca1ef845b81e/image - 127.0.0.1
+2025-07-18 10:57:20 [INFO] api.preview: 从预览目录读取图片: preview/592f75cf-6087-4ade-8613-ca1ef845b81e/images/image_8.png
+2025-07-18 10:57:20 [INFO] backend_fastapi.middleware.logging_middleware: [IN] GET /api/preview/592f75cf-6087-4ade-8613-ca1ef845b81e/image - 127.0.0.1
+2025-07-18 10:57:20 [INFO] api.preview: 获取任务 592f75cf-6087-4ade-8613-ca1ef845b81e 的图片: images/image_12.png
+2025-07-18 10:57:20 [INFO] api.preview: 获取任务 592f75cf-6087-4ade-8613-ca1ef845b81e 的图片: images/image_13.png
+2025-07-18 10:57:20 [INFO] backend_fastapi.middleware.logging_middleware: [OUT] GET /api/preview/592f75cf-6087-4ade-8613-ca1ef845b81e/image - 200 - 0.1885s - 127.0.0.1
+2025-07-18 10:57:20 [INFO] uvicorn.access: 127.0.0.1:0 - "GET /api/preview/592f75cf-6087-4ade-8613-ca1ef845b81e/image?path=images/image_8.png HTTP/1.1" 200
+2025-07-18 10:57:20 [INFO] api.preview: 从预览目录读取图片: preview/592f75cf-6087-4ade-8613-ca1ef845b81e/images/image_9.png
+2025-07-18 10:57:20 [INFO] api.preview: 从预览目录读取图片: preview/592f75cf-6087-4ade-8613-ca1ef845b81e/images/image_10.png
+2025-07-18 10:57:20 [INFO] backend_fastapi.middleware.logging_middleware: [OUT] GET /api/preview/592f75cf-6087-4ade-8613-ca1ef845b81e/image - 200 - 0.2997s - 127.0.0.1
+2025-07-18 10:57:20 [INFO] uvicorn.access: 127.0.0.1:0 - "GET /api/preview/592f75cf-6087-4ade-8613-ca1ef845b81e/image?path=images/image_9.png HTTP/1.1" 200
+2025-07-18 10:57:20 [INFO] backend_fastapi.middleware.logging_middleware: [IN] GET /api/preview/592f75cf-6087-4ade-8613-ca1ef845b81e/image - 127.0.0.1
+2025-07-18 10:57:20 [INFO] backend_fastapi.middleware.logging_middleware: [OUT] GET /api/preview/592f75cf-6087-4ade-8613-ca1ef845b81e/image - 200 - 0.2669s - 127.0.0.1
+2025-07-18 10:57:20 [INFO] uvicorn.access: 127.0.0.1:0 - "GET /api/preview/592f75cf-6087-4ade-8613-ca1ef845b81e/image?path=images/image_10.png HTTP/1.1" 200
+2025-07-18 10:57:20 [INFO] api.preview: 获取任务 592f75cf-6087-4ade-8613-ca1ef845b81e 的图片: images/image_14.png
+2025-07-18 10:57:20 [INFO] api.preview: 从预览目录读取图片: preview/592f75cf-6087-4ade-8613-ca1ef845b81e/images/image_11.png
+2025-07-18 10:57:20 [INFO] backend_fastapi.middleware.logging_middleware: [IN] GET /api/preview/592f75cf-6087-4ade-8613-ca1ef845b81e/image - 127.0.0.1
+2025-07-18 10:57:20 [INFO] backend_fastapi.middleware.logging_middleware: [IN] GET /api/preview/592f75cf-6087-4ade-8613-ca1ef845b81e/image - 127.0.0.1
+2025-07-18 10:57:20 [INFO] backend_fastapi.middleware.logging_middleware: [OUT] GET /api/preview/592f75cf-6087-4ade-8613-ca1ef845b81e/image - 200 - 0.3283s - 127.0.0.1
+2025-07-18 10:57:20 [INFO] uvicorn.access: 127.0.0.1:0 - "GET /api/preview/592f75cf-6087-4ade-8613-ca1ef845b81e/image?path=images/image_11.png HTTP/1.1" 200
+2025-07-18 10:57:20 [INFO] api.preview: 获取任务 592f75cf-6087-4ade-8613-ca1ef845b81e 的图片: images/image_15.png
+2025-07-18 10:57:20 [INFO] api.preview: 获取任务 592f75cf-6087-4ade-8613-ca1ef845b81e 的图片: images/image_16.png
+2025-07-18 10:57:20 [INFO] backend_fastapi.middleware.logging_middleware: [IN] GET /api/preview/592f75cf-6087-4ade-8613-ca1ef845b81e/image - 127.0.0.1
+2025-07-18 10:57:20 [INFO] api.preview: 从预览目录读取图片: preview/592f75cf-6087-4ade-8613-ca1ef845b81e/images/image_12.png
+2025-07-18 10:57:20 [INFO] api.preview: 获取任务 592f75cf-6087-4ade-8613-ca1ef845b81e 的图片: images/image_17.png
+2025-07-18 10:57:20 [INFO] api.preview: 从预览目录读取图片: preview/592f75cf-6087-4ade-8613-ca1ef845b81e/images/image_13.png
+2025-07-18 10:57:20 [INFO] backend_fastapi.middleware.logging_middleware: [OUT] GET /api/preview/592f75cf-6087-4ade-8613-ca1ef845b81e/image - 200 - 0.4191s - 127.0.0.1
+2025-07-18 10:57:20 [INFO] uvicorn.access: 127.0.0.1:0 - "GET /api/preview/592f75cf-6087-4ade-8613-ca1ef845b81e/image?path=images/image_12.png HTTP/1.1" 200
+2025-07-18 10:57:20 [INFO] backend_fastapi.middleware.logging_middleware: [OUT] GET /api/preview/592f75cf-6087-4ade-8613-ca1ef845b81e/image - 200 - 0.3858s - 127.0.0.1
+2025-07-18 10:57:20 [INFO] uvicorn.access: 127.0.0.1:0 - "GET /api/preview/592f75cf-6087-4ade-8613-ca1ef845b81e/image?path=images/image_13.png HTTP/1.1" 200
+2025-07-18 10:57:20 [INFO] api.preview: 从预览目录读取图片: preview/592f75cf-6087-4ade-8613-ca1ef845b81e/images/image_14.png
+2025-07-18 10:57:20 [INFO] backend_fastapi.middleware.logging_middleware: [IN] GET /api/preview/592f75cf-6087-4ade-8613-ca1ef845b81e/image - 127.0.0.1
+2025-07-18 10:57:20 [INFO] backend_fastapi.middleware.logging_middleware: [IN] GET /api/status/592f75cf-6087-4ade-8613-ca1ef845b81e - 127.0.0.1
+2025-07-18 10:57:20 [INFO] backend_fastapi.middleware.logging_middleware: [OUT] GET /api/preview/592f75cf-6087-4ade-8613-ca1ef845b81e/image - 200 - 0.2993s - 127.0.0.1
+2025-07-18 10:57:20 [INFO] uvicorn.access: 127.0.0.1:0 - "GET /api/preview/592f75cf-6087-4ade-8613-ca1ef845b81e/image?path=images/image_14.png HTTP/1.1" 200
+2025-07-18 10:57:20 [INFO] api.preview: 获取任务 592f75cf-6087-4ade-8613-ca1ef845b81e 的图片: images/image_18.png
+2025-07-18 10:57:20 [INFO] api.preview: 从预览目录读取图片: preview/592f75cf-6087-4ade-8613-ca1ef845b81e/images/image_15.png
+2025-07-18 10:57:20 [INFO] backend_fastapi.middleware.logging_middleware: [OUT] GET /api/preview/592f75cf-6087-4ade-8613-ca1ef845b81e/image - 200 - 0.2636s - 127.0.0.1
+2025-07-18 10:57:20 [INFO] uvicorn.access: 127.0.0.1:0 - "GET /api/preview/592f75cf-6087-4ade-8613-ca1ef845b81e/image?path=images/image_15.png HTTP/1.1" 200
+2025-07-18 10:57:20 [INFO] api.preview: 从预览目录读取图片: preview/592f75cf-6087-4ade-8613-ca1ef845b81e/images/image_16.png
+2025-07-18 10:57:20 [INFO] backend_fastapi.middleware.logging_middleware: [OUT] GET /api/preview/592f75cf-6087-4ade-8613-ca1ef845b81e/image - 200 - 0.3010s - 127.0.0.1
+2025-07-18 10:57:20 [INFO] uvicorn.access: 127.0.0.1:0 - "GET /api/preview/592f75cf-6087-4ade-8613-ca1ef845b81e/image?path=images/image_16.png HTTP/1.1" 200
+2025-07-18 10:57:20 [INFO] api.preview: 从预览目录读取图片: preview/592f75cf-6087-4ade-8613-ca1ef845b81e/images/image_17.png
+2025-07-18 10:57:20 [INFO] backend_fastapi.middleware.logging_middleware: [OUT] GET /api/preview/592f75cf-6087-4ade-8613-ca1ef845b81e/image - 200 - 0.3197s - 127.0.0.1
+2025-07-18 10:57:20 [INFO] uvicorn.access: 127.0.0.1:0 - "GET /api/preview/592f75cf-6087-4ade-8613-ca1ef845b81e/image?path=images/image_17.png HTTP/1.1" 200
+2025-07-18 10:57:20 [INFO] api.preview: 从预览目录读取图片: preview/592f75cf-6087-4ade-8613-ca1ef845b81e/images/image_18.png
+2025-07-18 10:57:20 [INFO] backend_fastapi.middleware.logging_middleware: [OUT] GET /api/preview/592f75cf-6087-4ade-8613-ca1ef845b81e/image - 200 - 0.1649s - 127.0.0.1
+2025-07-18 10:57:20 [INFO] uvicorn.access: 127.0.0.1:0 - "GET /api/preview/592f75cf-6087-4ade-8613-ca1ef845b81e/image?path=images/image_18.png HTTP/1.1" 200
+2025-07-18 10:57:20 [INFO] backend_fastapi.middleware.logging_middleware: [OUT] GET /api/status/592f75cf-6087-4ade-8613-ca1ef845b81e - 200 - 0.1972s - 127.0.0.1
+2025-07-18 10:57:20 [INFO] uvicorn.access: 127.0.0.1:0 - "GET /api/status/592f75cf-6087-4ade-8613-ca1ef845b81e HTTP/1.1" 200
+2025-07-18 10:57:20 [INFO] backend_fastapi.middleware.logging_middleware: [IN] GET /api/analysis/592f75cf-6087-4ade-8613-ca1ef845b81e/issues - 127.0.0.1
+2025-07-18 10:57:20 [INFO] api.analysis: 获取任务 592f75cf-6087-4ade-8613-ca1ef845b81e 的问题分析数据
+2025-07-18 10:57:20 [INFO] backend_fastapi.middleware.logging_middleware: [OUT] GET /api/analysis/592f75cf-6087-4ade-8613-ca1ef845b81e/issues - 200 - 0.0385s - 127.0.0.1
+2025-07-18 10:57:20 [INFO] uvicorn.access: 127.0.0.1:51990 - "GET /api/analysis/592f75cf-6087-4ade-8613-ca1ef845b81e/issues HTTP/1.1" 200

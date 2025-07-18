@@ -10,6 +10,11 @@ import json
 import sys
 from pathlib import Path
 from datetime import datetime
+import re
+import io
+import tempfile
+import os
+
 
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
@@ -19,7 +24,14 @@ from utils.task_storage import get_task_storage
 from api.eval_module import (
     hard_eval,
     soft_eval,
-    img_eval
+    img_eval,
+    ref_eval
+)
+from tools.docx_tools.docx_analysis_functions import (
+    get_basic_info as extract_basic_info,
+    get_overall_stats as extract_overall_stats,
+    get_chapter_stats as extract_chapter_stats,
+    get_ref_stats as extract_ref_stats
 )
 
 logger = get_logger(__name__)
@@ -104,29 +116,31 @@ async def get_basic_info(task_id: str):
         if document_info is None:
             raise HTTPException(status_code=404, detail="文档不存在")
 
-        # 从pkl_data中提取基础信息
-        pkl_data = document_info.get('pkl_data', {})
-
-        # 提取标题、作者等信息
-        title = pkl_data.get('title', '未知标题')
-        author = pkl_data.get('author', '未知作者')
-        school = pkl_data.get('school', '未知学院')
-        advisor = pkl_data.get('advisor', '未知导师')
-        keywords = pkl_data.get('keywords', [])
-
-        return {
-            "title": title,
-            "author": author,
-            "school": school,
-            "advisor": advisor,
-            "keywords": keywords
-        }
+        # 获取docx文件数据
+        docx_data = document_info.get('content')
+        if docx_data is None:
+            raise HTTPException(status_code=404, detail="DOCX文件数据不存在")
+        
+        # 将bytes数据写入临时文件
+        with tempfile.NamedTemporaryFile(delete=False, suffix='.docx') as temp_file:
+            temp_file.write(docx_data)
+            temp_file_path = temp_file.name
+        
+        try:
+            # 使用docx_analysis_functions中的函数提取基础信息
+            basic_info = extract_basic_info(temp_file_path)
+        finally:
+            # 清理临时文件
+            os.unlink(temp_file_path)
+        
+        return basic_info
 
     except HTTPException:
         raise
     except Exception as e:
         logger.error(f"获取基础信息失败: {e}")
         raise HTTPException(status_code=500, detail=f"获取基础信息失败: {str(e)}")
+    
 
 # 统计概览接口
 @router.get("/{task_id}/overall-stats")
@@ -151,24 +165,24 @@ async def get_overall_stats(task_id: str):
         if document_info is None:
             raise HTTPException(status_code=404, detail="文档不存在")
 
-        # 从pkl_data中提取统计信息
-        pkl_data = document_info.get('pkl_data', {})
-        chapters = pkl_data.get('chapters', [])
-
-        # 计算统计数据
-        total_words = sum(len(chapter.get('content', '').split()) for chapter in chapters)
-        total_paragraphs = sum(len(chapter.get('content', '').split('\n\n')) for chapter in chapters)
-        total_images = len(document_info.get('images', []))
-        total_tables = sum(chapter.get('table_count', 0) for chapter in chapters)
-        total_equations = sum(chapter.get('equation_count', 0) for chapter in chapters)
-
-        return {
-            "total_words": total_words,
-            "total_equations": total_equations,
-            "total_paragraphs": total_paragraphs,
-            "total_images": total_images,
-            "total_tables": total_tables
-        }
+        # 获取docx文件数据
+        docx_data = document_info.get('content')
+        if docx_data is None:
+            raise HTTPException(status_code=404, detail="DOCX文件数据不存在")
+        
+        # 将bytes数据写入临时文件
+        with tempfile.NamedTemporaryFile(delete=False, suffix='.docx') as temp_file:
+            temp_file.write(docx_data)
+            temp_file_path = temp_file.name
+        
+        try:
+            # 使用docx_analysis_functions中的函数提取统计信息
+            stats = extract_overall_stats(temp_file_path)
+        finally:
+            # 清理临时文件
+            os.unlink(temp_file_path)
+        
+        return stats
 
     except HTTPException:
         raise
@@ -199,35 +213,24 @@ async def get_chapter_stats(task_id: str):
         if document_info is None:
             raise HTTPException(status_code=404, detail="文档不存在")
 
-        # 从pkl_data中提取章节信息
-        pkl_data = document_info.get('pkl_data', {})
-        chapters = pkl_data.get('chapters', [])
-
-        # 构建章节统计数据
-        chapter_names = []
-        word_counts = []
-        equation_counts = []
-        table_counts = []
-        image_counts = []
-        paragraph_counts = []
-
-        for chapter in chapters:
-            chapter_names.append(chapter.get('chapter_name', '未知章节'))
-            content = chapter.get('content', '')
-            word_counts.append(len(content.split()))
-            equation_counts.append(chapter.get('equation_count', 0))
-            table_counts.append(chapter.get('table_count', 0))
-            image_counts.append(len(chapter.get('images', [])))
-            paragraph_counts.append(len(content.split('\n\n')))
-
-        return {
-            "chapters": chapter_names,
-            "word_counts": word_counts,
-            "equation_counts": equation_counts,
-            "table_counts": table_counts,
-            "image_counts": image_counts,
-            "paragraph_counts": paragraph_counts
-        }
+        # 获取docx文件数据
+        docx_data = document_info.get('content')
+        if docx_data is None:
+            raise HTTPException(status_code=404, detail="DOCX文件数据不存在")
+        
+        # 将bytes数据写入临时文件
+        with tempfile.NamedTemporaryFile(delete=False, suffix='.docx') as temp_file:
+            temp_file.write(docx_data)
+            temp_file_path = temp_file.name
+        
+        try:
+            # 使用docx_analysis_functions中的函数提取章节统计信息
+            stats = extract_chapter_stats(temp_file_path)
+        finally:
+            # 清理临时文件
+            os.unlink(temp_file_path)
+        
+        return stats
 
     except HTTPException:
         raise
@@ -257,60 +260,24 @@ async def get_ref_stats(task_id: str):
         if document_info is None:
             raise HTTPException(status_code=404, detail="文档不存在")
 
-        # 获取参考文献
-        references = document_info.get('references', [])
-        total_references = len(references)
-
-        # 分析参考文献类型
-        by_indicator = {
-            "期刊论文[J]": 0,
-            "会议论文[C]": 0,
-            "学位论文[D]": 0,
-            "技术报告[R]": 0,
-            "其他": 0
-        }
-
-        by_lang = {
-            "中文文献": 0,
-            "英文文献": 0
-        }
-
-        recent_3y = 0
-        current_year = datetime.now().year
-
-        for ref in references:
-            # 分析文献类型
-            if '[J]' in ref:
-                by_indicator["期刊论文[J]"] += 1
-            elif '[C]' in ref:
-                by_indicator["会议论文[C]"] += 1
-            elif '[D]' in ref:
-                by_indicator["学位论文[D]"] += 1
-            elif '[R]' in ref:
-                by_indicator["技术报告[R]"] += 1
-            else:
-                by_indicator["其他"] += 1
-
-            # 分析语言（简单判断是否包含中文字符）
-            if any('\u4e00' <= char <= '\u9fff' for char in ref):
-                by_lang["中文文献"] += 1
-            else:
-                by_lang["英文文献"] += 1
-
-            # 分析年份（简单提取4位数字作为年份）
-            import re
-            years = re.findall(r'\b(20\d{2})\b', ref)
-            if years:
-                year = int(years[-1])  # 取最后一个年份
-                if current_year - year <= 3:
-                    recent_3y += 1
-
-        return {
-            "total_references": total_references,
-            "by_indicator": by_indicator,
-            "by_lang": by_lang,
-            "recent_3y": recent_3y
-        }
+        # 获取docx文件数据
+        docx_data = document_info.get('content')
+        if docx_data is None:
+            raise HTTPException(status_code=404, detail="DOCX文件数据不存在")
+        
+        # 将bytes数据写入临时文件
+        with tempfile.NamedTemporaryFile(delete=False, suffix='.docx') as temp_file:
+            temp_file.write(docx_data)
+            temp_file_path = temp_file.name
+        
+        try:
+            # 使用docx_analysis_functions中的函数提取参考文献统计信息
+            stats = extract_ref_stats(temp_file_path)
+        finally:
+            # 清理临时文件
+            os.unlink(temp_file_path)
+        
+        return stats
 
     except HTTPException:
         raise
@@ -399,6 +366,8 @@ async def get_hard_eval(task_id: str):
         hard_result = document_info.get('hard_eval_result')
         img_result = document_info.get('img_eval_result')
 
+        # 需要添加参考文献格式分析：
+
         # 如果没有预计算的结果，检查是否是无模型分析
         if hard_result is None:
             # 检查是否跳过了评估（无模型分析）
@@ -469,3 +438,6 @@ async def get_hard_eval(task_id: str):
 
 # 预览相关接口已移动到preview.py
 # 图片评价接口已整合到issues接口中
+
+
+
