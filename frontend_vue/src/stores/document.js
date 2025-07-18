@@ -81,16 +81,30 @@ export const useDocumentStore = defineStore('document', () => {
   const startStatusPolling = () => {
     if (!currentTask.value) return
 
+    let pollCount = 0
+    const maxPolls = 600 // 最多轮询10分钟（600秒）
+
     const pollInterval = setInterval(async () => {
       try {
+        pollCount++
+
+        // 超过最大轮询次数，停止轮询
+        if (pollCount > maxPolls) {
+          console.log('轮询超时，停止状态检查')
+          clearInterval(pollInterval)
+          return
+        }
+
         const response = await api.getStatus(currentTask.value.task_id)
         processingStatus.value = response.data
 
         if (response.data.status === 'completed') {
+          console.log('文档处理完成，停止状态轮询')
           clearInterval(pollInterval)
           // 直接从状态响应获取结果，不需要额外的API调用
           documentResult.value = response.data.result
         } else if (response.data.status === 'error') {
+          console.log('文档处理失败，停止状态轮询')
           clearInterval(pollInterval)
         }
       } catch (error) {
@@ -98,6 +112,9 @@ export const useDocumentStore = defineStore('document', () => {
         clearInterval(pollInterval)
       }
     }, 1000) // 每秒轮询一次
+
+    // 返回清理函数
+    return () => clearInterval(pollInterval)
   }
 
   const resetState = () => {

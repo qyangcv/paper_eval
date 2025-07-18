@@ -10,6 +10,7 @@ import random
 from datetime import datetime
 from typing import List, Dict, Any, Optional
 from multiprocessing import Pool
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from glob import glob
 import warnings
 from pathlib import Path
@@ -275,6 +276,180 @@ def format_evaluation_result(result: dict) -> dict:
         "dimensions": dimensions
     }
 
+def evaluate_single_metric(args):
+    """
+    评估单个维度的函数，用于多线程处理
+
+    Args:
+        args: 包含评估参数的元组 (metric, paper_data, dimension_mapping, model_name)
+
+    Returns:
+        tuple: (metric, result_data, overall_result_data)
+    """
+    metric, paper_data, dimension_mapping, model_name = args
+
+    try:
+        logger.info(f"开始评估维度: {metric}")
+
+        # 第一阶段: 根据评价维度选择需要评估的章节
+        selection_prompt = generate_selection_prompt(
+            paper_data['toc'],
+            paper_data['abstract'],
+            metric
+        )
+        selected_chapters_result = request_deepseek(selection_prompt, model_name)
+        selected_chapters_result = parse_selected_chapters(selected_chapters_result)
+
+        # 检查API调用是否成功 - 修改为检查解析结果
+        if not selected_chapters_result:
+            logger.error(f"章节选择失败或解析失败: {metric}")
+            return metric, None, None
+
+        # 解析模型返回选择的章节
+        selected_chapter_titles = selected_chapters_result
+
+        if not selected_chapter_titles:
+            logger.warning(f"未能选择到章节，跳过维度 {metric}")
+            return metric, None, None
+
+        # 获取选中章节的内容
+        selected_content = ""
+        for title in selected_chapter_titles:
+            normalized_title = title.strip().lower()
+            matched = False
+
+            # 首先尝试精确匹配
+            for chapter_title, chapter_data in paper_data['chapters'].items():
+                normalized_chapter_title = chapter_title.strip().lower()
+                if normalized_title == normalized_chapter_title:
+                    selected_content += f"\n\n## {chapter_title}\n{chapter_data['content']}"
+                    matched = True
+                    break
+
+            # 如果精确匹配失败，尝试模糊匹配（包含关系）
+            if not matched:
+                for chapter_title, chapter_data in paper_data['chapters'].items():
+                    normalized_chapter_title = chapter_title.strip().lower()
+                    if normalized_title in normalized_chapter_title or normalized_chapter_title in normalized_title:
+                        selected_content += f"\n\n## {chapter_title}\n{chapter_data['content']}"
+                        matched = True
+                        logger.info(f"使用模糊匹配找到章节: '{title}' -> '{chapter_title}'")
+                        break
+
+            # 如果还是没找到，尝试匹配子章节
+            if not matched:
+                for chapter_title, chapter_data in paper_data['chapters'].items():
+                    for sub_title, sub_content in chapter_data.get('subchapters', {}).items():
+                        normalized_sub_title = sub_title.strip().lower()
+                        if normalized_title in normalized_sub_title or normalized_sub_title in normalized_title:
+                            selected_content += f"\n\n## {sub_title}\n{sub_content}"
+                            matched = True
+                            logger.info(f"在子章节中找到匹配: '{title}' -> '{sub_title}'")
+                            break
+                    if matched:
+                        break
+
+            if not matched:
+                logger.warning(f"未找到匹配的章节: '{title}'")
+
+        if not selected_content:
+            logger.warning(f"未找到任何选中章节的内容，跳过维度 {metric}")
+            return metric, None, None
+
+        # 第二阶段：将选择好的章节内容和对应的评价提示词，一起输入给模型提问
+        final_prompt = generate_final_assessment_prompt(selected_content, metric)
+        final_assessment_result = request_deepseek(final_prompt, model_name)
+
+        # 检查API调用是否成功
+        if not final_assessment_result:
+            logger.error(f"最终评估API调用失败或返回空结果: {metric}")
+            return metric, None, None
+
+        # 第三阶段：幻觉检测
+        logger.info(f"开始对维度 {metric} 进行幻觉检测")
+
+        final_assessment = final_assessment_result  # 默认使用原始结果
+        hallucination_info = None
+
+        # 解析幻觉检测结果
+        for i in range(3):
+            hallucination_prompt = generate_hallucination_detection_prompt(
+                dimension=dimension_mapping[metric],
+                abstract=paper_data['abstract'],
+                eval_requirement=final_prompt,
+                eval_result=final_assessment_result
+            )
+            hallucination_result = request_deepseek(hallucination_prompt, model_name)
+            hallucination_data = parse_hallucination_detection_result(hallucination_result)
+
+            if not hallucination_data:
+                logger.warning(f"幻觉检测结果解析失败，使用原始评估结果: {metric}")
+                hallucination_info = {
+                    'detection_status': 'parse_failed',
+                    'raw_response': hallucination_result
+                }
+                break
+            elif 'hallucination_points' in hallucination_data and hallucination_data['hallucination_points']:
+                # 检测到幻觉，使用修正后的结果
+                logger.info(f"检测到 {len(hallucination_data['hallucination_points'])} 个幻觉点，使用修正后的结果: {metric}")
+                final_assessment = json.dumps(hallucination_data['fixed_eval_result'], ensure_ascii=False)
+                hallucination_info = {
+                    'detection_status': 'hallucination_detected',
+                    'hallucination_points': hallucination_data['hallucination_points'],
+                    'original_assessment': final_assessment_result
+                }
+                break
+            else:
+                # 未检测到幻觉，使用原始结果
+                logger.info(f"未检测到幻觉，使用原始评估结果: {metric}")
+                hallucination_info = {
+                    'detection_status': 'no_hallucination',
+                    'verification': hallucination_data.get('verification', '所有陈述均有原文支持')
+                }
+                break
+
+        # 保存结果
+        overall_result_data = {
+            'selected_chapters': selected_chapter_titles,
+            'assessment': final_assessment,
+            'selection_reasoning': selected_chapters_result,
+            'final_prompt_used': final_prompt,
+            'hallucination_detection': hallucination_info
+        }
+
+        # 解析最终评估结果用于标准格式输出
+        try:
+            final_data = json.loads(final_assessment)
+        except json.JSONDecodeError as e:
+            logger.error(f"解析最终评估结果失败: {e}")
+            # 如果解析失败，使用默认值
+            final_data = {
+                'score': 0,
+                'overall_assessment': '评估结果解析失败',
+                'strengths': [],
+                'weaknesses': [],
+                'suggestions': []
+            }
+
+        result_data = {
+            "name": dimension_mapping[metric],
+            "score": final_data.get('score', 0),
+            "full_score": 10,
+            "weight": 1.0,
+            "focus_chapter": selected_chapter_titles,
+            "comment": final_data.get('overall_assessment', ''),
+            "advantages": final_data.get('strengths', []),
+            "weaknesses": final_data.get('weaknesses', []),
+            "suggestions": final_data.get('suggestions', []),
+        }
+
+        logger.info(f"完成维度 {metric} 的评估")
+        return metric, result_data, overall_result_data
+
+    except Exception as e:
+        logger.error(f"评估维度 {metric} 时出错: {e}")
+        return metric, None, None
+
 def eval(
     md_content: str,
     metrics: Optional[List[str]] = None,
@@ -321,169 +496,45 @@ def eval(
         
         overall_result = {}
         result = {}
-        for metric in metrics:
-            # 跳过不支持幻觉检测的维度
-            if metric not in dimension_mapping:
-                logger.warning(f"维度 {metric} 不支持幻觉检测，跳过")
-                continue
-                
-            logger.info(f"开始评估维度: {metric}")
-            
-            # 第一阶段: 根据评价维度选择需要评估的章节
-            selection_prompt = generate_selection_prompt(
-                paper_data['toc'], 
-                paper_data['abstract'], 
-                metric
-            )
-            selected_chapters_result = request_deepseek(selection_prompt, model_name)
-            selected_chapters_result = parse_selected_chapters(selected_chapters_result)
-            
-            # 检查API调用是否成功 - 修改为检查解析结果
-            if not selected_chapters_result:
-                logger.error(f"章节选择失败或解析失败")
-                continue
-                
-            # 解析模型返回选择的章节
-            selected_chapter_titles =selected_chapters_result
-            
-            if not selected_chapter_titles:
-                logger.warning(f"未能选择到章节，跳过维度 {metric}")
-                continue
-            
-            # 获取选中章节的内容
-            selected_content = ""
-            for title in selected_chapter_titles:
-                normalized_title = title.strip().lower()
-                matched = False
-                
-                # 首先尝试精确匹配
-                for chapter_title, chapter_data in paper_data['chapters'].items():
-                    normalized_chapter_title = chapter_title.strip().lower()
-                    if normalized_title == normalized_chapter_title:
-                        selected_content += f"\n\n## {chapter_title}\n{chapter_data['content']}"
-                        matched = True
-                        break
-                
-                # 如果精确匹配失败，尝试模糊匹配（包含关系）
-                if not matched:
-                    for chapter_title, chapter_data in paper_data['chapters'].items():
-                        normalized_chapter_title = chapter_title.strip().lower()
-                        if normalized_title in normalized_chapter_title or normalized_chapter_title in normalized_title:
-                            selected_content += f"\n\n## {chapter_title}\n{chapter_data['content']}"
-                            matched = True
-                            logger.info(f"使用模糊匹配找到章节: '{title}' -> '{chapter_title}'")
-                            break
-                
-                # 如果还是没找到，尝试匹配子章节
-                if not matched:
-                    for chapter_title, chapter_data in paper_data['chapters'].items():
-                        for sub_title, sub_content in chapter_data.get('subchapters', {}).items():
-                            normalized_sub_title = sub_title.strip().lower()
-                            if normalized_title in normalized_sub_title or normalized_sub_title in normalized_title:
-                                selected_content += f"\n\n## {sub_title}\n{sub_content}"
-                                matched = True
-                                logger.info(f"在子章节中找到匹配: '{title}' -> '{sub_title}'")
-                                break
-                        if matched:
-                            break
-                
-                if not matched:
-                    logger.warning(f"未找到匹配的章节: '{title}'")
-            
-            if not selected_content:
-                logger.warning(f"未找到任何选中章节的内容，跳过维度 {metric}")
-                continue
-            
-            # 第二阶段：将选择好的章节内容和对应的评价提示词，一起输入给模型提问
-            final_prompt = generate_final_assessment_prompt(selected_content, metric)
-            final_assessment_result = request_deepseek(final_prompt, model_name)
-            # 注意：request_deepseek 直接返回字符串内容，不需要额外解析
-            
-            # 检查API调用是否成功
-            if not final_assessment_result:
-                logger.error(f"最终评估API调用失败或返回空结果")
-                continue
-            
-            # 第三阶段：幻觉检测
-            logger.info(f"开始对维度 {metric} 进行幻觉检测")
-            
-            final_assessment = final_assessment_result  # 默认使用原始结果
-            hallucination_info = None
-            
-            # 解析幻觉检测结果
-            for i in range(3):
-                hallucination_prompt = generate_hallucination_detection_prompt(
-                    dimension=dimension_mapping[metric],
-                    abstract=paper_data['abstract'],
-                    eval_requirement=final_prompt,
-                    eval_result=final_assessment_result
-                )
-                hallucination_result = request_deepseek(hallucination_prompt, model_name)
-                hallucination_data = parse_hallucination_detection_result(hallucination_result)
-                
-                if not hallucination_data:
-                    logger.warning(f"幻觉检测结果解析失败，使用原始评估结果")
-                    hallucination_info = {
-                        'detection_status': 'parse_failed',
-                        'raw_response': hallucination_result
-                    }
-                    break
-                elif 'hallucination_points' in hallucination_data and hallucination_data['hallucination_points']:
-                    # 检测到幻觉，使用修正后的结果
-                    logger.info(f"检测到 {len(hallucination_data['hallucination_points'])} 个幻觉点，使用修正后的结果")
-                    final_assessment = json.dumps(hallucination_data['fixed_eval_result'], ensure_ascii=False)
-                    hallucination_info = {
-                        'detection_status': 'hallucination_detected',
-                        'hallucination_points': hallucination_data['hallucination_points'],
-                        'original_assessment': final_assessment_result
-                    }
-                    break
-                else:
-                    # 未检测到幻觉，使用原始结果
-                    logger.info(f"未检测到幻觉，使用原始评估结果")
-                    hallucination_info = {
-                        'detection_status': 'no_hallucination',
-                        'verification': hallucination_data.get('verification', '所有陈述均有原文支持')
-                    }
-                    break
-            
-            # 保存结果
-            overall_result[metric] = {
-                'selected_chapters': selected_chapter_titles,
-                'assessment': final_assessment,
-                'selection_reasoning': selected_chapters_result,
-                'final_prompt_used': final_prompt,
-                'hallucination_detection': hallucination_info
+
+        # 过滤支持的维度
+        valid_metrics = [metric for metric in metrics if metric in dimension_mapping]
+        if not valid_metrics:
+            logger.warning("没有有效的评估维度")
+            return format_evaluation_result({})
+
+        # 使用多线程并行处理各个维度
+        logger.info(f"开始并行评估 {len(valid_metrics)} 个维度: {valid_metrics}")
+
+        # 准备参数
+        eval_args = [
+            (metric, paper_data, dimension_mapping, model_name)
+            for metric in valid_metrics
+        ]
+
+        # 使用线程池并行处理
+        with ThreadPoolExecutor(max_workers=min(4, len(valid_metrics))) as executor:
+            # 提交所有任务
+            future_to_metric = {
+                executor.submit(evaluate_single_metric, args): args[0]
+                for args in eval_args
             }
-            
-            # 解析最终评估结果用于标准格式输出
-            try:
-                final_data = json.loads(final_assessment)
-            except json.JSONDecodeError as e:
-                logger.error(f"解析最终评估结果失败: {e}")
-                # 如果解析失败，使用默认值
-                final_data = {
-                    'score': 0,
-                    'overall_assessment': '评估结果解析失败',
-                    'strengths': [],
-                    'weaknesses': [],
-                    'suggestions': []
-                }
-            
-            result[metric] = {
-                "name": dimension_mapping[metric],
-                "score": final_data.get('score', 0),
-                "full_score": 10,
-                "weight": 1.0,
-                "focus_chapter": selected_chapter_titles,
-                "comment": final_data.get('overall_assessment', ''),
-                "advantages": final_data.get('strengths', []),
-                "weaknesses": final_data.get('weaknesses', []),
-                "suggestions": final_data.get('suggestions', []),
-            }
-            logger.info(f"完成维度 {metric} 的评估")
-            
-        logger.info(f"一共完成{len(overall_result)}个维度的评估")
+
+            # 收集结果
+            for future in as_completed(future_to_metric):
+                metric = future_to_metric[future]
+                try:
+                    metric_name, result_data, overall_result_data = future.result()
+                    if result_data is not None and overall_result_data is not None:
+                        result[metric_name] = result_data
+                        overall_result[metric_name] = overall_result_data
+                        logger.info(f"维度 {metric_name} 评估完成")
+                    else:
+                        logger.warning(f"维度 {metric_name} 评估失败")
+                except Exception as exc:
+                    logger.error(f"维度 {metric} 评估时发生异常: {exc}")
+
+        logger.info(f"一共完成 {len(result)} 个维度的评估")
         
         # 转换为标准格式
         standard_result = format_evaluation_result(result)

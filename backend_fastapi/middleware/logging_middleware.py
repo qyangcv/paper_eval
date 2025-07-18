@@ -5,6 +5,7 @@
 
 import time
 import json
+import logging
 from typing import Callable
 from fastapi import Request, Response
 from starlette.middleware.base import BaseHTTPMiddleware
@@ -12,6 +13,46 @@ from starlette.middleware.base import BaseHTTPMiddleware
 from ..tools.logger import get_logger
 
 logger = get_logger(__name__)
+
+
+class StatusRequestFilter(logging.Filter):
+    """
+    状态请求过滤器
+    过滤掉频繁的状态查询请求日志，只保留完成时的特殊日志
+    """
+
+    def filter(self, record):
+        """
+        过滤日志记录
+
+        Args:
+            record: 日志记录对象
+
+        Returns:
+            bool: 是否应该记录这条日志
+        """
+        try:
+            # 检查是否为状态查询请求
+            if hasattr(record, 'getMessage'):
+                message = record.getMessage()
+
+                # 检查是否为状态查询的访问日志
+                if 'GET /api/status/' in message:
+                    # 只允许记录带有 [COMPLETED] 标记的特殊日志
+                    if '[COMPLETED]' in message:
+                        return True
+                    else:
+                        # 过滤掉普通的状态查询日志
+                        return False
+
+                # 其他请求正常记录
+                return True
+
+            return True
+
+        except Exception:
+            # 过滤器出错时，默认记录日志
+            return True
 
 class LoggingMiddleware(BaseHTTPMiddleware):
     """请求日志记录中间件"""
@@ -64,14 +105,17 @@ class LoggingMiddleware(BaseHTTPMiddleware):
     async def _log_request(self, request: Request):
         """
         记录请求日志
-        
+
         Args:
             request: HTTP请求
         """
         try:
+            # 检查是否为状态查询请求
+            is_status_request = self._is_status_request(request)
+
             # 获取客户端IP
             client_ip = self._get_client_ip(request)
-            
+
             # 获取请求体（如果存在且不是文件上传）
             request_body = None
             if request.method in ["POST", "PUT", "PATCH"]:
@@ -87,7 +131,7 @@ class LoggingMiddleware(BaseHTTPMiddleware):
                     request_body = "<文件上传请求>"
                 elif "application/x-www-form-urlencoded" in content_type:
                     request_body = "<表单数据>"
-            
+
             # 记录请求日志
             log_data = {
                 "type": "request",
@@ -100,26 +144,31 @@ class LoggingMiddleware(BaseHTTPMiddleware):
                 "user_agent": request.headers.get("user-agent"),
                 "body": request_body
             }
-            
-            logger.info(f"[IN] {request.method} {request.url.path} - {client_ip}")
-            logger.debug(f"请求详情: {json.dumps(log_data, ensure_ascii=False, indent=2)}")
-            
+
+            # 对于状态查询请求，只在评估完成时记录日志
+            if not is_status_request:
+                logger.info(f"[IN] {request.method} {request.url.path} - {client_ip}")
+                logger.debug(f"请求详情: {json.dumps(log_data, ensure_ascii=False, indent=2)}")
+
         except Exception as e:
             logger.error("记录请求日志失败: %s", str(e))
     
     async def _log_response(self, request: Request, response: Response, process_time: float):
         """
         记录响应日志
-        
+
         Args:
             request: HTTP请求
             response: HTTP响应
             process_time: 处理时间
         """
         try:
+            # 检查是否为状态查询请求
+            is_status_request = self._is_status_request(request)
+
             # 获取客户端IP
             client_ip = self._get_client_ip(request)
-            
+
             # 记录响应日志
             log_data = {
                 "type": "response",
@@ -131,7 +180,12 @@ class LoggingMiddleware(BaseHTTPMiddleware):
                 "process_time": round(process_time, 4),
                 "client_ip": client_ip
             }
-            
+
+            # 对于状态查询请求，暂时跳过日志记录
+            # 完成状态的日志将在状态查询逻辑中单独记录
+            if is_status_request:
+                return
+
             # 根据状态码选择日志级别
             if response.status_code < 400:
                 logger.info(
@@ -148,12 +202,29 @@ class LoggingMiddleware(BaseHTTPMiddleware):
                     f"[ERROR] {request.method} {request.url.path} - "
                     f"{response.status_code} - {process_time:.4f}s - {client_ip}"
                 )
-            
+
             logger.debug(f"响应详情: {json.dumps(log_data, ensure_ascii=False, indent=2)}")
-            
+
         except Exception as e:
             logger.error("记录响应日志失败: %s", str(e))
-    
+
+    def _is_status_request(self, request: Request) -> bool:
+        """
+        判断是否为状态查询请求
+
+        Args:
+            request: HTTP请求
+
+        Returns:
+            bool: 是否为状态查询请求
+        """
+        return (
+            request.method == "GET" and
+            "/api/status/" in request.url.path
+        )
+
+
+
     def _get_client_ip(self, request: Request) -> str:
         """
         获取客户端真实IP地址

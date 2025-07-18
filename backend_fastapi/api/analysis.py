@@ -308,8 +308,8 @@ async def get_soft_eval(task_id: str):
         if document_info is None:
             raise HTTPException(status_code=404, detail="文档不存在")
 
-        # 检查文档是否已处理完成
-        if document_info['status'] != 'processed':
+        # 检查文档是否已完成所有评估
+        if document_info['status'] != 'completed':
             raise HTTPException(status_code=400, detail="文档尚未处理完成")
 
         # 直接调用软指标评估
@@ -346,15 +346,36 @@ async def get_hard_eval(task_id: str):
         if document_info is None:
             raise HTTPException(status_code=404, detail="文档不存在")
 
-        # 检查文档是否已处理完成
-        if document_info['status'] != 'processed':
+        # 检查文档是否已完成所有评估
+        if document_info['status'] != 'completed':
             raise HTTPException(status_code=400, detail="文档尚未处理完成")
 
-        # 直接调用三个评估模块
-        logger.info("开始问题分析评估...")
-        hard_result = await hard_eval(task_id)
-        img_result = await img_eval(task_id)
-        ref_result = await ref_eval(task_id)
+        # 优化：首先检查Redis中是否已有评估结果，避免重复评估
+        logger.info(f"获取任务 {task_id} 的评估结果...")
+
+        # 从Redis中获取已有的评估结果
+        hard_result = document_info.get('hard_eval_result')
+        img_result = document_info.get('img_eval_result')
+        ref_result = document_info.get('ref_eval_result')
+
+        # 只有当结果不存在时才调用评估模块
+        if hard_result is None:
+            logger.info(f"硬指标评估结果不存在，开始评估: {task_id}")
+            hard_result = await hard_eval(task_id)
+        else:
+            logger.info(f"使用已有的硬指标评估结果: {task_id}")
+
+        if img_result is None:
+            logger.info(f"图片评估结果不存在，开始评估: {task_id}")
+            img_result = await img_eval(task_id)
+        else:
+            logger.info(f"使用已有的图片评估结果: {task_id}")
+
+        if ref_result is None:
+            logger.info(f"参考文献评估结果不存在，开始评估: {task_id}")
+            ref_result = await ref_eval(task_id)
+        else:
+            logger.info(f"使用已有的参考文献评估结果: {task_id}")
         
         # 解析结果，添加错误处理
         try:
@@ -520,16 +541,46 @@ async def get_evaluation_status(task_id: str):
             raise HTTPException(status_code=404, detail="文档不存在")
 
         # 获取任务管理器
+        from utils.async_tasks import get_task_manager
         task_manager = await get_task_manager()
 
-        # 检查评估状态（不依赖缓存）
+        # 检查评估状态
+        hard_eval_completed = document_info.get('hard_eval_result') is not None
+        soft_eval_completed = document_info.get('soft_eval_result') is not None
+        img_eval_completed = True  # 图片评估已禁用，视为已完成
+        ref_eval_completed = document_info.get('ref_eval_result') is not None
+
+        has_errors = (
+            document_info.get('hard_eval_error') is not None or
+            document_info.get('soft_eval_error') is not None or
+            document_info.get('img_eval_error') is not None or
+            document_info.get('ref_eval_error') is not None
+        )
+
+        background_task_running = task_manager.is_task_running(task_id)
+
+        # 检查是否所有评估都已完成
+        all_evaluations_completed = hard_eval_completed and soft_eval_completed and img_eval_completed and ref_eval_completed
+
+        # 确定消息
+        if all_evaluations_completed and not background_task_running:
+            message = "所有评估已完成"
+        elif background_task_running:
+            message = "正在进行后台分析评估，预计需要5-7分钟..."
+        elif has_errors:
+            message = "部分评估出现错误，请检查日志"
+        else:
+            message = "评估尚未开始或未完成"
+
         status = {
-            "hard_eval_completed": False,
-            "soft_eval_completed": False,
-            "img_eval_completed": False,
-            "background_task_running": task_manager.is_task_running(task_id),
-            "has_errors": False,
-            "message": "评估需要手动调用相应接口"
+            "hard_eval_completed": hard_eval_completed,
+            "soft_eval_completed": soft_eval_completed,
+            "img_eval_completed": img_eval_completed,
+            "ref_eval_completed": ref_eval_completed,
+            "background_task_running": background_task_running,
+            "has_errors": has_errors,
+            "message": message,
+            "progress": document_info.get('progress', 0.0)
         }
 
         return status

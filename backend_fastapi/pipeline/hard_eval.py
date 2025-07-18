@@ -216,7 +216,7 @@ def eval(md_content):
     prompts = build_prompts(abs, chapters)
     user_prompts, ch_names, sub_ch_names = zip(*prompts)
 
-    # infer
+    # infer - 恢复多进程处理，但不更新外部状态
     logger.info("INFER | 开始并行调用API进行写作质量问题分析...")
     start_time_infer = time.time()
     request_with_format = partial(request_deepseek_md, system_prompt, format="md")
@@ -236,9 +236,9 @@ def eval(md_content):
     logger.info(f"AGGREGATE | Aggregate阶段完成，耗时: {aggregate_duration:.2f} 秒")
 
     # formatting
-    responses = formatting_js(responses, ch_names, sub_ch_names)
+    formatted_result = formatting_js(responses, ch_names, sub_ch_names)
 
-    return responses
+    return formatted_result
 
 
 if __name__ == "__main__":

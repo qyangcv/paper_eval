@@ -253,11 +253,19 @@ async def process_document_api(request: dict):
         document_info['processed_at'] = datetime.now().isoformat()
         await redis_mgr.store_document(task_id, document_info)
 
-        # 评估将通过analysis.py中的专门接口异步处理
-        # 这里只负责文档处理，不直接执行评估
-        logger.info(f"文档处理完成，评估将通过analysis.py接口异步处理: {task_id}")
-        document_info['progress'] = 0.9
-        document_info['message'] = '文档处理完成，可通过analysis接口进行评估...'
+        # 启动后台评估任务
+        logger.info(f"文档处理完成，启动后台评估任务: {task_id}")
+        try:
+            from utils.async_tasks import get_task_manager
+            task_manager = await get_task_manager()
+            await task_manager.start_evaluation_task(task_id, document_info)
+            document_info['progress'] = 0.6
+            document_info['message'] = '文档处理完成，正在进行后台分析评估...'
+        except Exception as e:
+            logger.error(f"启动后台评估任务失败: {task_id}, 错误: {e}")
+            document_info['progress'] = 0.9
+            document_info['message'] = '文档处理完成，可通过analysis接口进行评估...'
+
         await redis_mgr.store_document(task_id, document_info)
 
         # 生成HTML预览文件 - 使用docx2html.py
@@ -575,9 +583,40 @@ async def get_document_status(task_id: str):
                 message = "正在处理文档"
             # 使用存储的进度和消息
         elif status == 'processed':
-            progress = 1.0
-            message = "所有分析完成！"
-            status = 'completed'  # 前端期望的状态名
+            # 检查后台评估任务是否完成
+            from utils.async_tasks import get_task_manager
+            task_manager = await get_task_manager()
+
+            # 使用优化的状态检查
+            task_status_summary = task_manager.get_task_status_summary(task_id)
+            background_task_running = task_status_summary["is_running"]
+
+            if background_task_running:
+                # 后台任务仍在运行，使用缓存的进度信息
+                status = 'processing'
+                cached_progress = task_status_summary["last_known_progress"]
+                cached_message = task_status_summary["last_known_message"]
+
+                # 使用缓存的进度，但确保不超过90%
+                progress = min(max(progress, cached_progress), 0.9)
+                message = cached_message if cached_message else "正在进行后台分析评估，预计需要5-7分钟..."
+            else:
+                # 检查是否所有评估都完成（图片评估已禁用，视为已完成）
+                hard_eval_completed = document_info.get('hard_eval_result') is not None
+                soft_eval_completed = document_info.get('soft_eval_result') is not None
+                img_eval_completed = True  # 图片评估已禁用，视为已完成
+                ref_eval_completed = document_info.get('ref_eval_result') is not None
+
+                if hard_eval_completed and soft_eval_completed and img_eval_completed and ref_eval_completed:
+                    # 所有评估完成
+                    progress = 1.0
+                    message = "所有分析完成！"
+                    status = 'completed'  # 前端期望的状态名
+                else:
+                    # 评估未完成，保持processing状态
+                    status = 'processing'
+                    progress = min(progress, 0.9)
+                    message = "正在进行后台分析评估..."
         elif status == 'failed':
             progress = 0.0
             message = "处理失败"

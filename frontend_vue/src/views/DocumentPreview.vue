@@ -1,5 +1,5 @@
 <template>
-   <div class="document-preview-container" :class="{ 'loaded': isLoaded }">
+  <div class="document-preview-container" :class="{ 'loaded': isLoaded }">
     <!-- 左侧目录导航 -->
     <div class="sidebar-left">
       <div class="sidebar-header">
@@ -150,7 +150,11 @@ export default {
       isAnalyzing: false, // 是否正在分析
       analysisProgress: 0, // 分析进度（0-100）
       analysisMessage: '', // 分析状态消息
-      api // 添加API服务
+      api, // 添加API服务
+      // HTML高亮缓存机制
+      htmlCache: new Map(), // 缓存原始HTML内容，key为元素的唯一标识，value为原始HTML
+      highlightedElements: new Set(), // 记录已高亮的元素
+      currentHighlightId: null // 当前高亮的issue ID
     }
   },
   watch: {
@@ -628,18 +632,28 @@ export default {
 
         console.log(`[${new Date().toISOString()}] 开始加载问题数据，任务ID:`, taskId)
 
-        // 首先检查任务状态
+        // 首先检查任务状态 - 使用API服务而不是直接fetch
         try {
-          const statusResponse = await fetch(`/api/status/${taskId}`)
-          if (statusResponse.ok) {
-            const statusData = await statusResponse.json()
-            console.log('任务状态:', statusData)
+          const statusResponse = await this.api.getStatus(taskId)
+          const statusData = statusResponse.data
+          console.log('任务状态:', statusData)
 
-            // 如果任务还在处理中或失败，不加载问题数据
-            if (statusData.status === 'processing' || statusData.status === 'pending' || statusData.status === 'error') {
-              console.log('任务状态不适合加载问题数据:', statusData.status)
-              this.issueData = { summary: { total_issues: 0, severity_distribution: {} }, by_chapter: {} }
-              return
+          // 如果任务还在处理中或失败，不加载问题数据
+          if (statusData.status === 'processing' || statusData.status === 'pending' || statusData.status === 'error') {
+            console.log('任务状态不适合加载问题数据:', statusData.status)
+            this.issueData = { summary: { total_issues: 0, severity_distribution: {} }, by_chapter: {} }
+            return
+          }
+
+          // 如果任务已完成，停止任何轮询
+          if (statusData.status === 'completed') {
+            console.log('任务已完成，停止轮询')
+            this.isAnalyzing = false
+            this.analysisMessage = ''
+            // 清除任何现有的自动刷新定时器
+            if (this.autoRefreshTimer) {
+              clearTimeout(this.autoRefreshTimer)
+              this.autoRefreshTimer = null
             }
           }
         } catch (statusError) {
@@ -653,8 +667,23 @@ export default {
           const evalStatus = evalStatusResponse.data
           console.log('评估状态:', evalStatus)
 
-          // 如果后台任务正在运行，设置自动刷新
-          if (evalStatus.background_task_running) {
+          // 检查是否所有评估都已完成
+          const allEvaluationsCompleted = evalStatus.hard_eval_completed &&
+                                        evalStatus.soft_eval_completed &&
+                                        evalStatus.img_eval_completed &&
+                                        evalStatus.ref_eval_completed
+
+          // 如果所有评估都已完成，停止轮询
+          if (allEvaluationsCompleted && !evalStatus.background_task_running) {
+            console.log('所有评估已完成，停止轮询')
+            this.isAnalyzing = false
+            this.analysisMessage = ''
+            // 清除任何现有的自动刷新定时器
+            if (this.autoRefreshTimer) {
+              clearTimeout(this.autoRefreshTimer)
+              this.autoRefreshTimer = null
+            }
+          } else if (evalStatus.background_task_running) {
             console.log('后台评估任务正在运行，分析通常需要5-7分钟，将在2分钟后自动刷新')
             this.isAnalyzing = true
             this.analysisMessage = '正在进行深度分析，预计需要5-7分钟...'
@@ -742,8 +771,47 @@ export default {
       }
 
       // 设置新的定时器
-      this.autoRefreshTimer = setTimeout(() => {
+      this.autoRefreshTimer = setTimeout(async () => {
         console.log('自动刷新问题数据...')
+
+        // 在刷新前先检查任务状态和评估状态，避免不必要的刷新
+        try {
+          const taskId = this.$route.params.taskId || this.$route.query.taskId
+          if (taskId) {
+            // 首先检查任务状态
+            const statusResponse = await this.api.getStatus(taskId)
+            const statusData = statusResponse.data
+
+            // 如果任务已完成，停止轮询
+            if (statusData.status === 'completed') {
+              console.log('任务已完成，取消自动刷新')
+              this.isAnalyzing = false
+              this.analysisMessage = ''
+              return
+            }
+
+            // 然后检查评估状态
+            const evalStatusResponse = await this.api.getEvaluationStatus(taskId)
+            const evalStatus = evalStatusResponse.data
+
+            // 如果所有评估都已完成，不再刷新
+            const allEvaluationsCompleted = evalStatus.hard_eval_completed &&
+                                          evalStatus.soft_eval_completed &&
+                                          evalStatus.img_eval_completed &&
+                                          evalStatus.ref_eval_completed
+
+            if (allEvaluationsCompleted && !evalStatus.background_task_running) {
+              console.log('评估已完成，取消自动刷新')
+              this.isAnalyzing = false
+              this.analysisMessage = ''
+              return
+            }
+          }
+        } catch (error) {
+          console.error('检查状态失败:', error)
+        }
+
+        // 如果评估未完成，继续刷新
         this.loadIssueData()
       }, delay)
 
@@ -1091,38 +1159,63 @@ export default {
         console.log('未找到确切原文，尝试模糊匹配...')
         console.log('问题详情:', {
           type: issue.type,
+          chapter: issue.chapter,
+          sub_chapter: issue.sub_chapter,
           detail: issue.detail,
           suggestion: issue.suggestion,
           original_text: issue.original_text
         })
 
         try {
-          const htmlTextContent = documentHtmlContent.textContent || documentHtmlContent.innerText || ''
-          console.log('HTML文本内容长度:', htmlTextContent.length)
+          // 首先尝试在指定章节和小节中搜索
+          let searchScope = this.getSearchScopeByChapter(documentHtmlContent, issue.chapter, issue.sub_chapter)
+          let searchScopeText = ''
 
-          if (htmlTextContent.length > 0) {
+          if (searchScope && searchScope.length > 0) {
+            // 如果找到了指定的章节/小节，在其中搜索
+            searchScopeText = searchScope.map(el => el.textContent || el.innerText || '').join(' ')
+            console.log('在指定章节/小节中搜索，范围长度:', searchScopeText.length)
+            console.log('搜索范围:', issue.chapter, '->', issue.sub_chapter)
+          } else {
+            // 如果没有找到指定章节，回退到全文搜索
+            searchScopeText = documentHtmlContent.textContent || documentHtmlContent.innerText || ''
+            searchScope = [documentHtmlContent]
+            console.log('未找到指定章节，使用全文搜索，长度:', searchScopeText.length)
+          }
+
+          if (searchScopeText.length > 0) {
             const queryText = this.extractQueryFromIssue(issue)
             console.log('提取的查询文本:', queryText)
 
             if (queryText && queryText.length > 3) {
-              const fuzzyResult = this.findBestMatchInHtmlContent(queryText, htmlTextContent, documentHtmlContent)
-              console.log('HTML模糊匹配结果:', fuzzyResult)
+              // 在限定范围内进行模糊匹配
+              const fuzzyResult = this.findBestMatchInScope(queryText, searchScopeText, searchScope)
+              console.log('限定范围模糊匹配结果:', fuzzyResult)
 
               if (fuzzyResult && fuzzyResult.element) {
                 targetElement = fuzzyResult.element
                 originalText = fuzzyResult.actualMatchedText || fuzzyResult.matchedText
-                console.log(`HTML模糊匹配成功，相似度: ${(fuzzyResult.similarity * 100).toFixed(1)}%`)
+                console.log(`限定范围模糊匹配成功，相似度: ${(fuzzyResult.similarity * 100).toFixed(1)}%`)
                 console.log('查询文本:', queryText)
                 console.log('匹配的句子:', fuzzyResult.matchedText)
                 console.log('实际高亮文本:', originalText)
-              } else {
-                console.log('HTML模糊匹配未找到结果，尝试使用问题描述进行匹配...')
-                // 如果模糊匹配失败，尝试使用问题的详细描述进行匹配
+              } else if (searchScope.length === 1 && searchScope[0] === documentHtmlContent) {
+                // 如果已经是全文搜索还没找到，尝试备用匹配
+                console.log('全文模糊匹配未找到结果，尝试使用问题描述进行匹配...')
                 const fallbackResult = this.tryFallbackMatching(issue, documentHtmlContent)
                 if (fallbackResult) {
                   targetElement = fallbackResult.element
                   originalText = fallbackResult.text
                   console.log('备用匹配成功:', fallbackResult)
+                }
+              } else {
+                // 如果在限定范围内没找到，尝试全文搜索
+                console.log('限定范围内未找到，尝试全文搜索...')
+                const fullTextResult = this.findBestMatchInHtmlContent(queryText, documentHtmlContent.textContent || documentHtmlContent.innerText || '', documentHtmlContent)
+                if (fullTextResult && fullTextResult.element) {
+                  targetElement = fullTextResult.element
+                  originalText = fullTextResult.actualMatchedText || fullTextResult.matchedText
+                  console.log('全文搜索成功:', fullTextResult)
                 }
               }
             }
@@ -1172,33 +1265,269 @@ export default {
     },
 
     clearHighlights () {
-      // 清除所有高亮标记
+      // 使用缓存机制清除所有高亮标记
       const preview = this.$refs.htmlPreview
       if (!preview) return
 
       // 记录当前滚动位置，避免清除高亮时影响滚动
       const currentScrollTop = preview.scrollTop
 
-      const highlights = preview.querySelectorAll('.issue-highlight')
-      highlights.forEach(highlight => {
-        const parent = highlight.parentNode
-        if (parent) {
-          // 创建文档片段来批量处理DOM操作，减少重排
-          const fragment = document.createDocumentFragment()
-          fragment.appendChild(document.createTextNode(highlight.textContent))
-          parent.replaceChild(fragment, highlight)
-          parent.normalize()
-        }
-      })
+      // 使用缓存恢复原始HTML内容
+      this.restoreOriginalHtml()
 
       // 清除连接线
       const lines = document.querySelectorAll('.connection-line')
       lines.forEach(line => line.remove())
 
+      // 重置高亮状态
+      this.currentHighlightId = null
+
       // 恢复滚动位置，确保清除高亮不会影响当前视图
       if (preview.scrollTop !== currentScrollTop) {
         preview.scrollTop = currentScrollTop
       }
+    },
+
+    /**
+     * 恢复原始HTML内容
+     */
+    restoreOriginalHtml () {
+      // 遍历所有缓存的元素，恢复其原始HTML内容
+      for (const [elementId, originalHtml] of this.htmlCache.entries()) {
+        const element = document.querySelector(`[data-cache-id="${elementId}"]`)
+        if (element && originalHtml) {
+          element.innerHTML = originalHtml
+          console.log('恢复元素HTML:', elementId)
+        }
+      }
+
+      // 清空缓存和高亮记录
+      this.htmlCache.clear()
+      this.highlightedElements.clear()
+    },
+
+    /**
+     * 缓存元素的原始HTML内容
+     * @param {Element} element 要缓存的元素
+     * @returns {string} 元素的唯一标识ID
+     */
+    cacheElementHtml (element) {
+      if (!element) return null
+
+      // 生成唯一标识ID
+      const elementId = `cache_${Date.now()}_${Math.random().toString(36).substring(2, 11)}`
+
+      // 缓存原始HTML内容
+      this.htmlCache.set(elementId, element.innerHTML)
+
+      // 给元素添加缓存标识
+      element.setAttribute('data-cache-id', elementId)
+
+      // 记录已高亮的元素
+      this.highlightedElements.add(elementId)
+
+      console.log('缓存元素HTML:', elementId, element.innerHTML.substring(0, 100))
+      return elementId
+    },
+
+    /**
+     * 根据章节和小节信息获取搜索范围
+     * @param {Element} documentContent 文档内容元素
+     * @param {string} targetChapter 目标章节
+     * @param {string} targetSubChapter 目标小节
+     * @returns {Array<Element>} 搜索范围元素数组
+     */
+    getSearchScopeByChapter (documentContent, targetChapter, targetSubChapter) {
+      if (!documentContent || !targetChapter) {
+        return []
+      }
+
+      // 查找章节标题元素（通常是h1, h2等）
+      const headings = documentContent.querySelectorAll('h1, h2, h3, h4, h5, h6')
+      let chapterStartElement = null
+      let chapterEndElement = null
+
+      // 寻找匹配的章节标题
+      for (let i = 0; i < headings.length; i++) {
+        const heading = headings[i]
+        const headingText = heading.textContent || heading.innerText || ''
+
+        if (this.isChapterMatch(headingText, targetChapter)) {
+          chapterStartElement = heading
+          // 找到下一个同级或更高级的标题作为结束点
+          const currentLevel = parseInt(heading.tagName.charAt(1))
+          for (let j = i + 1; j < headings.length; j++) {
+            const nextHeading = headings[j]
+            const nextLevel = parseInt(nextHeading.tagName.charAt(1))
+            if (nextLevel <= currentLevel) {
+              chapterEndElement = nextHeading
+              break
+            }
+          }
+          break
+        }
+      }
+
+      if (!chapterStartElement) {
+        console.log('未找到匹配的章节:', targetChapter)
+        return []
+      }
+
+      // 如果指定了小节，进一步缩小范围
+      if (targetSubChapter) {
+        const subChapterElements = this.findSubChapterInRange(chapterStartElement, chapterEndElement, targetSubChapter)
+        if (subChapterElements.length > 0) {
+          console.log('找到匹配的小节:', targetSubChapter)
+          return subChapterElements
+        }
+      }
+
+      // 获取章节范围内的所有元素
+      const chapterElements = this.getElementsInRange(chapterStartElement, chapterEndElement)
+      console.log('章节范围内元素数量:', chapterElements.length)
+      return chapterElements
+    },
+
+    /**
+     * 检查章节名是否匹配
+     */
+    isChapterMatch (headingText, targetChapter) {
+      if (!headingText || !targetChapter) return false
+
+      // 直接匹配
+      if (headingText.includes(targetChapter) || targetChapter.includes(headingText)) return true
+
+      // 去除空格和下划线后匹配
+      const normalizedHeading = headingText.replace(/[\s_]/g, '')
+      const normalizedTarget = targetChapter.replace(/[\s_]/g, '')
+      if (normalizedHeading.includes(normalizedTarget) || normalizedTarget.includes(normalizedHeading)) return true
+
+      return false
+    },
+
+    /**
+     * 在指定范围内查找小节
+     */
+    findSubChapterInRange (startElement, endElement, targetSubChapter) {
+      const elements = this.getElementsInRange(startElement, endElement)
+
+      let subChapterStart = null
+      let subChapterEnd = null
+
+      for (let i = 0; i < elements.length; i++) {
+        const element = elements[i]
+        if (element.tagName && element.tagName.match(/^H[2-6]$/)) {
+          const headingText = element.textContent || element.innerText || ''
+          if (this.isSubChapterMatch(headingText, targetSubChapter)) {
+            subChapterStart = element
+            // 找到下一个同级或更高级的标题
+            const currentLevel = parseInt(element.tagName.charAt(1))
+            for (let j = i + 1; j < elements.length; j++) {
+              const nextElement = elements[j]
+              if (nextElement.tagName && nextElement.tagName.match(/^H[1-6]$/)) {
+                const nextLevel = parseInt(nextElement.tagName.charAt(1))
+                if (nextLevel <= currentLevel) {
+                  subChapterEnd = nextElement
+                  break
+                }
+              }
+            }
+            break
+          }
+        }
+      }
+
+      if (subChapterStart) {
+        return this.getElementsInRange(subChapterStart, subChapterEnd)
+      }
+
+      return []
+    },
+
+    /**
+     * 检查小节名是否匹配
+     */
+    isSubChapterMatch (headingText, targetSubChapter) {
+      if (!headingText || !targetSubChapter) return false
+
+      // 直接匹配
+      if (headingText.includes(targetSubChapter) || targetSubChapter.includes(headingText)) return true
+
+      // 去除空格和下划线后匹配
+      const normalizedHeading = headingText.replace(/[\s_]/g, '')
+      const normalizedTarget = targetSubChapter.replace(/[\s_]/g, '')
+      if (normalizedHeading.includes(normalizedTarget) || normalizedTarget.includes(normalizedHeading)) return true
+
+      return false
+    },
+
+    /**
+     * 获取两个元素之间的所有元素
+     */
+    getElementsInRange (startElement, endElement) {
+      const elements = []
+      let currentElement = startElement
+
+      while (currentElement && currentElement !== endElement) {
+        elements.push(currentElement)
+        currentElement = currentElement.nextElementSibling
+      }
+
+      return elements
+    },
+
+    /**
+     * 在指定范围内进行模糊匹配
+     */
+    findBestMatchInScope (queryText, scopeText, scopeElements) {
+      if (!queryText || !scopeText || !scopeElements || scopeElements.length === 0) {
+        return null
+      }
+
+      // 将范围文本按句子分割
+      const sentences = scopeText.split(/[。！？；\n]/).filter(s => s.trim().length > 5)
+      let bestSimilarity = 0
+      let bestMatch = null
+
+      for (const sentence of sentences) {
+        const trimmedSentence = sentence.trim()
+        const similarity = this.calculateTextSimilarity(queryText, trimmedSentence)
+        if (similarity > bestSimilarity && similarity > 0.2) {
+          bestSimilarity = similarity
+          // 在范围元素中找到包含这个句子的元素
+          const element = this.findElementContainingTextInScope(scopeElements, trimmedSentence)
+          if (element) {
+            const actualMatchedText = this.findActualMatchableText(element, queryText, trimmedSentence)
+            bestMatch = {
+              element,
+              matchedText: trimmedSentence,
+              actualMatchedText: actualMatchedText || trimmedSentence,
+              similarity: bestSimilarity
+            }
+          }
+        }
+      }
+
+      return bestMatch
+    },
+
+    /**
+     * 在指定范围的元素中查找包含文本的元素
+     */
+    findElementContainingTextInScope (scopeElements, searchText) {
+      for (const element of scopeElements) {
+        const elementText = element.textContent || element.innerText || ''
+        if (elementText.includes(searchText)) {
+          return element
+        }
+
+        // 也检查子元素
+        const childElement = this.findTextInDocument(element, searchText)
+        if (childElement) {
+          return childElement
+        }
+      }
+      return null
     },
 
     findTextInDocument (container, searchText) {
@@ -1595,147 +1924,108 @@ export default {
     },
 
     highlightText (element, searchText, issueId) {
-      // 在元素中高亮指定文本，使用更安全的文本节点处理方式
+      // 使用缓存机制进行高亮，避免破坏HTML结构
       console.log('高亮文本:', { element, searchText, issueId })
 
-      const walker = document.createTreeWalker(
-        element,
-        NodeFilter.SHOW_TEXT,
-        null,
-        false
-      )
-
-      const textNodes = []
-      let node
-      let foundExactMatch = false
-
-      // 首先尝试精确匹配
-      // eslint-disable-next-line no-cond-assign
-      while ((node = walker.nextNode())) {
-        if (node.textContent.includes(searchText)) {
-          textNodes.push(node)
-          foundExactMatch = true
-        }
-      }
-
-      // 如果没有找到精确匹配，尝试部分匹配（用于模糊搜索）
-      if (!foundExactMatch && searchText.length > 10) {
-        console.log('精确匹配失败，尝试部分匹配...')
-        const walker2 = document.createTreeWalker(
-          element,
-          NodeFilter.SHOW_TEXT,
-          null,
-          false
-        )
-
-        const words = searchText.split(/\s+/).filter(word => word.length > 2)
-        // eslint-disable-next-line no-cond-assign
-        while ((node = walker2.nextNode())) {
-          const nodeText = node.textContent
-          const matchedWords = words.filter(word => nodeText.includes(word))
-          if (matchedWords.length >= Math.min(2, words.length * 0.5)) {
-            textNodes.push(node)
-            console.log('找到部分匹配的节点:', nodeText.substring(0, 50))
-          }
-        }
-      }
-
-      if (textNodes.length === 0) {
-        console.warn('未找到可高亮的文本节点')
-        // 如果找不到文本节点，直接高亮整个元素
-        element.classList.add('issue-highlight')
-        element.setAttribute('data-issue-id', issueId)
+      // 如果当前已有高亮且是同一个issue，不需要重复高亮
+      if (this.currentHighlightId === issueId) {
+        console.log('相同issue已高亮，跳过')
         return
       }
 
-      // 对每个包含目标文本的文本节点进行高亮处理
-      textNodes.forEach((textNode, index) => {
-        const parent = textNode.parentNode
-        const text = textNode.textContent
-        let highlightText = searchText
-        let textIndex = text.indexOf(searchText)
+      // 清除之前的高亮（如果有）
+      if (this.currentHighlightId) {
+        this.restoreOriginalHtml()
+      }
 
-        // 如果精确匹配失败，尝试找到最佳匹配的部分
-        if (textIndex === -1 && searchText.length > 10) {
-          const words = searchText.split(/\s+/).filter(word => word.length > 2)
-          for (const word of words) {
-            const wordIndex = text.indexOf(word)
-            if (wordIndex !== -1) {
-              // 找到一个匹配的词，扩展到周围的文本
-              const start = Math.max(0, wordIndex - 10)
-              const end = Math.min(text.length, wordIndex + word.length + 10)
-              highlightText = text.substring(start, end).trim()
-              textIndex = text.indexOf(highlightText)
-              break
-            }
-          }
+      // 缓存当前元素的原始HTML
+      const cacheId = this.cacheElementHtml(element)
+      if (!cacheId) {
+        console.warn('无法缓存元素HTML')
+        return
+      }
+
+      // 设置当前高亮ID
+      this.currentHighlightId = issueId
+
+      // 使用innerHTML替换的方式进行高亮，避免复杂的DOM操作
+      const originalHtml = element.innerHTML
+      const highlightedHtml = this.createHighlightedHtml(originalHtml, searchText, issueId)
+
+      if (highlightedHtml !== originalHtml) {
+        element.innerHTML = highlightedHtml
+        console.log('成功应用高亮HTML')
+      } else {
+        console.warn('未找到可高亮的文本内容')
+        // 如果没有找到匹配的文本，尝试高亮整个元素
+        this.highlightEntireElement(element, issueId)
+      }
+    },
+
+    /**
+     * 创建高亮后的HTML内容
+     * @param {string} originalHtml 原始HTML内容
+     * @param {string} searchText 要高亮的文本
+     * @param {string} issueId issue ID
+     * @returns {string} 高亮后的HTML内容
+     */
+    createHighlightedHtml (originalHtml, searchText, issueId) {
+      // 创建高亮样式
+      const highlightStyle = `
+        background: #fbbf24 !important;
+        color: #92400e !important;
+        padding: 2px 4px !important;
+        border-radius: 4px !important;
+        font-weight: 600 !important;
+        box-shadow: 0 2px 4px rgba(251, 191, 36, 0.3) !important;
+        display: inline !important;
+        position: relative !important;
+        z-index: 10 !important;
+      `.replace(/\s+/g, ' ').trim()
+
+      // 创建高亮标签
+      const highlightTag = `<span class="issue-highlight" data-issue-id="${issueId}" style="${highlightStyle}">$&</span>`
+
+      // 首先尝试精确匹配
+      const escapedSearchText = this.escapeRegExp(searchText)
+      let highlightedHtml = originalHtml.replace(new RegExp(escapedSearchText, 'gi'), highlightTag)
+
+      // 如果精确匹配失败，尝试部分匹配
+      if (highlightedHtml === originalHtml && searchText.length > 10) {
+        console.log('精确匹配失败，尝试关键词匹配')
+        const words = searchText.split(/\s+/).filter(word => word.length > 2)
+
+        // 对每个关键词进行高亮
+        for (const word of words) {
+          const escapedWord = this.escapeRegExp(word)
+          const wordRegex = new RegExp(`\\b${escapedWord}\\b`, 'gi')
+          highlightedHtml = highlightedHtml.replace(wordRegex, highlightTag)
         }
+      }
 
-        if (textIndex !== -1) {
-          // 创建高亮元素
-          const highlightSpan = document.createElement('span')
-          highlightSpan.className = 'issue-highlight'
-          highlightSpan.setAttribute('data-issue-id', issueId)
-          highlightSpan.textContent = highlightText
+      return highlightedHtml
+    },
 
-          // 添加内联样式作为备用，确保样式生效
-          highlightSpan.style.cssText = `
-            background: #fbbf24 !important;
-            color: #92400e !important;
-            padding: 2px 4px !important;
-            border-radius: 4px !important;
-            font-weight: 600 !important;
-            box-shadow: 0 2px 4px rgba(251, 191, 36, 0.3) !important;
-            display: inline !important;
-            position: relative !important;
-            z-index: 10 !important;
-          `
-
-          // 分割文本节点
-          const beforeText = text.substring(0, textIndex)
-          const afterText = text.substring(textIndex + highlightText.length)
-
-          // 创建新的文本节点
-          const beforeNode = document.createTextNode(beforeText)
-          const afterNode = document.createTextNode(afterText)
-
-          // 替换原文本节点
-          parent.insertBefore(beforeNode, textNode)
-          parent.insertBefore(highlightSpan, textNode)
-          parent.insertBefore(afterNode, textNode)
-          parent.removeChild(textNode)
-
-          console.log('成功高亮文本:', highlightText)
-          console.log('高亮元素样式:', highlightSpan.style.cssText)
-          console.log('高亮元素类名:', highlightSpan.className)
-        } else if (index === 0) {
-          // 如果是第一个节点且无法精确匹配，高亮整个节点
-          const highlightSpan = document.createElement('span')
-          highlightSpan.className = 'issue-highlight'
-          highlightSpan.setAttribute('data-issue-id', issueId)
-          highlightSpan.textContent = text
-
-          // 添加内联样式作为备用，确保样式生效
-          highlightSpan.style.cssText = `
-            background: #fbbf24 !important;
-            color: #92400e !important;
-            padding: 2px 4px !important;
-            border-radius: 4px !important;
-            font-weight: 600 !important;
-            box-shadow: 0 2px 4px rgba(251, 191, 36, 0.3) !important;
-            display: inline !important;
-            position: relative !important;
-            z-index: 10 !important;
-          `
-
-          const parent = textNode.parentNode
-          parent.insertBefore(highlightSpan, textNode)
-          parent.removeChild(textNode)
-
-          console.log('高亮整个文本节点:', text.substring(0, 50))
-          console.log('高亮元素样式:', highlightSpan.style.cssText)
-        }
-      })
+    /**
+     * 高亮整个元素
+     * @param {Element} element 要高亮的元素
+     * @param {string} issueId issue ID
+     */
+    highlightEntireElement (element, issueId) {
+      element.classList.add('issue-highlight')
+      element.setAttribute('data-issue-id', issueId)
+      element.style.cssText = `
+        background: #fbbf24 !important;
+        color: #92400e !important;
+        padding: 2px 4px !important;
+        border-radius: 4px !important;
+        font-weight: 600 !important;
+        box-shadow: 0 2px 4px rgba(251, 191, 36, 0.3) !important;
+        display: inline !important;
+        position: relative !important;
+        z-index: 10 !important;
+      `
+      console.log('高亮整个元素')
     },
 
     escapeRegExp (string) {

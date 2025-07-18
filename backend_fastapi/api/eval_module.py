@@ -22,7 +22,7 @@ from pipeline.image_eval import eval as image_eval
 logger = get_logger(__name__)
 router = APIRouter()
     
-async def hard_eval(document_id: str):
+async def hard_eval(document_id: str, store_to_redis: bool = True):
     """
     执行硬指标评价
     
@@ -43,21 +43,32 @@ async def hard_eval(document_id: str):
 
         # 获取Redis管理器
         redis_mgr = await get_redis_manager()
-        
-        # 首先检查Redis中是否已有该文档的硬指标评价结果
-        # 使用特定的key格式便于管理和查询
+
+        # 获取文档信息
+        document_info = await redis_mgr.get_document(document_id)
+        if not document_info:
+            raise ValueError("文档不存在")
+
+        # 首先检查文档信息中是否已有硬指标评价结果（优先级最高）
+        existing_result = document_info.get('hard_eval_result')
+        if existing_result is not None:
+            logger.info(f"从文档信息中获取已有的硬指标评价结果: {document_id}")
+            return existing_result
+
+        # 其次检查Redis缓存中是否已有该文档的硬指标评价结果
         key = f"paper_eval:hard:{document_id}"
-        # 临时禁用缓存以强制重新评估
-        # cached_result = await redis_mgr._client.get(key) if redis_mgr._client else None
-        cached_result = None  # 临时强制不使用缓存
-        
+        cached_result = await redis_mgr._client.get(key) if redis_mgr._client else None
+
         if cached_result:
             logger.info(f"从Redis缓存中获取文档 {document_id} 的硬指标评价结果")
             cached_data = json.loads(cached_result)
+            # 将缓存结果也存储到文档信息中，避免下次重复查询
+            document_info['hard_eval_result'] = cached_data
+            await redis_mgr.store_document(document_id, document_info)
             logger.info(f"缓存的硬指标评价结果: {cached_data}")
             return cached_data
 
-        # 如果缓存中没有，则重新计算
+        # 如果都没有缓存，则重新计算
         # 从Redis获取文档的markdown内容
         md_content = await get_document_markdown(document_id)
 
@@ -82,15 +93,17 @@ async def hard_eval(document_id: str):
             
             logger.info(f"硬指标评价解析后结果: {response}")
 
-            # 将结果存储到Redis，设置较长的过期时间
-            # 考虑到分析需要5-7分钟，缓存时间设置为4小时
-            try:
-                response_json = json.dumps(response, ensure_ascii=False, default=str)
-                if redis_mgr._client:
-                    await redis_mgr._client.setex(key, 14400, response_json)  # 4小时过期
-                    logger.info(f"硬指标评价结果已存储到Redis: {document_id}")
-            except Exception as store_error:
-                logger.warning(f"存储硬指标评价结果到Redis失败: {store_error}")
+            # 根据参数决定是否将结果存储到Redis
+            if store_to_redis:
+                try:
+                    response_json = json.dumps(response, ensure_ascii=False, default=str)
+                    if redis_mgr._client:
+                        await redis_mgr._client.setex(key, 14400, response_json)  # 4小时过期
+                        logger.info(f"硬指标评价结果已存储到Redis: {document_id}")
+                except Exception as store_error:
+                    logger.warning(f"存储硬指标评价结果到Redis失败: {store_error}")
+            else:
+                logger.info(f"跳过Redis存储（由AsyncTaskManager统一管理）: {document_id}")
 
             return response
         else:
@@ -101,7 +114,7 @@ async def hard_eval(document_id: str):
         raise HTTPException(status_code=500, detail=f"获取问题分析失败: {str(e)}")
 
 
-async def soft_eval(document_id: str):
+async def soft_eval(document_id: str, store_to_redis: bool = True):
     """
     执行软指标评价
     
@@ -122,17 +135,32 @@ async def soft_eval(document_id: str):
 
         # 获取Redis管理器
         redis_mgr = await get_redis_manager()
-        
-        # 首先检查Redis中是否已有该文档的软指标评价结果
+
+        # 获取文档信息
+        document_info = await redis_mgr.get_document(document_id)
+        if not document_info:
+            raise ValueError("文档不存在")
+
+        # 首先检查文档信息中是否已有软指标评价结果（优先级最高）
+        existing_result = document_info.get('soft_eval_result')
+        if existing_result is not None:
+            logger.info(f"从文档信息中获取已有的软指标评价结果: {document_id}")
+            return existing_result
+
+        # 其次检查Redis缓存中是否已有该文档的软指标评价结果
         # 软指标评价通常较为耗时，缓存尤为重要
         key = f"paper_eval:soft:{document_id}"
         cached_result = await redis_mgr._client.get(key) if redis_mgr._client else None
-        
+
         if cached_result:
             logger.info(f"从Redis缓存中获取文档 {document_id} 的软指标评价结果")
-            return json.loads(cached_result)
+            cached_data = json.loads(cached_result)
+            # 将缓存结果也存储到文档信息中，避免下次重复查询
+            document_info['soft_eval_result'] = cached_data
+            await redis_mgr.store_document(document_id, document_info)
+            return cached_data
 
-        # 如果缓存中没有，则重新计算
+        # 如果都没有缓存，则重新计算
         # 获取文档的markdown内容进行分析
         md_content = await get_document_markdown(document_id)
 
@@ -141,15 +169,17 @@ async def soft_eval(document_id: str):
             # 调用pipeline中的软指标评价函数，通常涉及AI模型调用
             response = soft_criterial_eval(md_content)
             
-            # 将结果存储到Redis，设置较长的过期时间
-            # 软指标评价成本较高，考虑到分析需要5-7分钟，缓存时间设置为4小时
-            try:
-                response_json = json.dumps(response, ensure_ascii=False, default=str)
-                if redis_mgr._client:
-                    await redis_mgr._client.setex(key, 14400, response_json)  # 4小时过期
-                    logger.info(f"软指标评价结果已存储到Redis: {document_id}")
-            except Exception as store_error:
-                logger.warning(f"存储软指标评价结果到Redis失败: {store_error}")
+            # 根据参数决定是否将结果存储到Redis
+            if store_to_redis:
+                try:
+                    response_json = json.dumps(response, ensure_ascii=False, default=str)
+                    if redis_mgr._client:
+                        await redis_mgr._client.setex(key, 14400, response_json)  # 4小时过期
+                        logger.info(f"软指标评价结果已存储到Redis: {document_id}")
+                except Exception as store_error:
+                    logger.warning(f"存储软指标评价结果到Redis失败: {store_error}")
+            else:
+                logger.info(f"跳过Redis存储（由AsyncTaskManager统一管理）: {document_id}")
             
             return response
         else:
@@ -160,7 +190,7 @@ async def soft_eval(document_id: str):
         raise HTTPException(status_code=500, detail=f"获取软指标评价失败: {str(e)}")
     
 
-async def ref_eval(document_id: str):
+async def ref_eval(document_id: str, store_to_redis: bool = True):
     """
     执行参考文献评价
     
@@ -181,19 +211,29 @@ async def ref_eval(document_id: str):
 
         # 获取Redis管理器
         redis_mgr = await get_redis_manager()
-        
-        # 首先检查Redis中是否已有该文档的参考文献评价结果
-        key = f"paper_eval:ref:{document_id}"
-        cached_result = await redis_mgr._client.get(key) if redis_mgr._client else None
-        
-        if cached_result:
-            logger.info(f"从Redis缓存中获取文档 {document_id} 的参考文献评价结果")
-            return json.loads(cached_result)
 
-        # 获取文档信息，提取参考文献
+        # 获取文档信息
         document_info = await redis_mgr.get_document(document_id)
         if not document_info:
             raise ValueError("文档不存在")
+
+        # 首先检查文档信息中是否已有参考文献评价结果（优先级最高）
+        existing_result = document_info.get('ref_eval_result')
+        if existing_result is not None:
+            logger.info(f"从文档信息中获取已有的参考文献评价结果: {document_id}")
+            return existing_result
+
+        # 其次检查Redis缓存中是否已有该文档的参考文献评价结果
+        key = f"paper_eval:ref:{document_id}"
+        cached_result = await redis_mgr._client.get(key) if redis_mgr._client else None
+
+        if cached_result:
+            logger.info(f"从Redis缓存中获取文档 {document_id} 的参考文献评价结果")
+            cached_data = json.loads(cached_result)
+            # 将缓存结果也存储到文档信息中，避免下次重复查询
+            document_info['ref_eval_result'] = cached_data
+            await redis_mgr.store_document(document_id, document_info)
+            return cached_data
         
         # 从Redis中获取参考文献列表
         # 参考文献在文档处理时已经提取并存储
@@ -216,15 +256,17 @@ async def ref_eval(document_id: str):
             # 使用AI模型检查引用格式的规范性
             response = reference_eval(references)
             
-            # 将结果存储到Redis，设置较长的过期时间
-            # 考虑到分析需要5-7分钟，缓存时间设置为4小时
-            try:
-                response_json = json.dumps(response, ensure_ascii=False, default=str)
-                if redis_mgr._client:
-                    await redis_mgr._client.setex(key, 14400, response_json)  # 4小时过期
-                    logger.info(f"参考文献评价结果已存储到Redis: {document_id}")
-            except Exception as store_error:
-                logger.warning(f"存储参考文献评价结果到Redis失败: {store_error}")
+            # 根据参数决定是否将结果存储到Redis
+            if store_to_redis:
+                try:
+                    response_json = json.dumps(response, ensure_ascii=False, default=str)
+                    if redis_mgr._client:
+                        await redis_mgr._client.setex(key, 14400, response_json)  # 4小时过期
+                        logger.info(f"参考文献评价结果已存储到Redis: {document_id}")
+                except Exception as store_error:
+                    logger.warning(f"存储参考文献评价结果到Redis失败: {store_error}")
+            else:
+                logger.info(f"跳过Redis存储（由AsyncTaskManager统一管理）: {document_id}")
             
             return response
         else:
@@ -242,41 +284,53 @@ async def ref_eval(document_id: str):
         logger.error("文档参考文献评价失败: %s", str(e))
         raise HTTPException(status_code=500, detail=f"获取参考文献评价失败: {str(e)}")
     
-async def img_eval(document_id: str):
+async def img_eval(document_id: str, store_to_redis: bool = True):
     """
-    执行图片重复检测评价
-    
-    对指定文档中的图片进行重复使用检测，通过图像相似度算法和网络搜索
+    执行图片重复检测评价 - 暂时禁用功能
+
+    图片评估功能已暂时禁用，直接返回默认结果表示没有发现重复图片。
+    原功能：对指定文档中的图片进行重复使用检测，通过图像相似度算法和网络搜索
     来判断图片是否可能来源于网络或其他文献，帮助检测学术不端行为。
-    
+
     Args:
         document_id (str): 文档唯一标识符
-        
+        store_to_redis (bool): 是否存储到Redis
+
     Returns:
-        str: JSON格式的图片重复检测结果，包含每张图片的相似度分析和可能的原始来源
-        
+        dict: 默认的图片评估结果，表示没有发现重复图片
+
     Raises:
-        HTTPException: 当文档不存在或检测过程出错时抛出
+        HTTPException: 当文档不存在时抛出
     """
     try:
-        logger.info(f"对文档 {document_id} 进行图片重复检测")
+        logger.info(f"图片评估功能已禁用，为文档 {document_id} 返回默认结果")
 
         # 获取Redis管理器
         redis_mgr = await get_redis_manager()
-        
-        # 首先检查Redis中是否已有该文档的图片评价结果
-        # 图片检测涉及网络搜索和算法计算，缓存可以大幅提升效率
-        key = f"paper_eval:img:{document_id}"
-        cached_result = await redis_mgr._client.get(key) if redis_mgr._client else None
-        
-        if cached_result:
-            logger.info(f"从Redis缓存中获取文档 {document_id} 的图片评价结果")
-            return json.loads(cached_result)
 
-        # 获取文档信息，提取图片信息
+        # 获取文档信息
         document_info = await redis_mgr.get_document(document_id)
         if not document_info:
             raise ValueError("文档不存在")
+
+        # 首先检查文档信息中是否已有图片评价结果（优先级最高）
+        existing_result = document_info.get('img_eval_result')
+        if existing_result is not None:
+            logger.info(f"从文档信息中获取已有的图片评价结果: {document_id}")
+            return existing_result
+
+        # 其次检查Redis缓存中是否已有该文档的图片评价结果
+        # 图片检测涉及网络搜索和算法计算，缓存可以大幅提升效率
+        key = f"paper_eval:img:{document_id}"
+        cached_result = await redis_mgr._client.get(key) if redis_mgr._client else None
+
+        if cached_result:
+            logger.info(f"从Redis缓存中获取文档 {document_id} 的图片评价结果")
+            cached_data = json.loads(cached_result)
+            # 将缓存结果也存储到文档信息中，避免下次重复查询
+            document_info['img_eval_result'] = cached_data
+            await redis_mgr.store_document(document_id, document_info)
+            return cached_data
         
         # 从Redis中获取图片列表
         # 图片信息在文档处理时已经提取，包含base64编码的图片数据和标题
@@ -292,29 +346,32 @@ async def img_eval(document_id: str):
             }
             return response
 
-        logger.info(f"文档 {document_id} 中找到 {len(images)} 张图片，开始检测重复使用")
-        
-        # 执行图片重复检测
-        # 使用计算机视觉算法和网络搜索来检测图片的重复使用情况
-        # 包括ORB特征匹配、Bing图片搜索等技术
-        response = await image_eval(images)
-        
-        # 将结果存储到Redis，设置1小时过期时间
-        # 图片检测是计算密集型任务，缓存结果非常重要
-        try:
-            if redis_mgr._client:
-                response_json = json.dumps(response, ensure_ascii=False, default=str) if isinstance(response, dict) else response
-                await redis_mgr._client.setex(key, 3600, response_json)  # 1小时过期
-                logger.info(f"图片评价结果已存储到Redis: {document_id}")
-        except Exception as store_error:
-            logger.warning(f"存储图片评价结果到Redis失败: {store_error}")
+        # 图片评估功能已暂时禁用，直接返回默认结果
+        logger.info(f"图片评估功能已禁用，为文档 {document_id} 返回默认结果（发现 {len(images)} 张图片）")
 
-        # 确保返回的是字典格式
-        if isinstance(response, str):
+        # 返回默认的图片评估结果（表示没有发现重复图片）
+        response = {
+            "total_reused": 0,
+            "detail": [],
+            "message": "图片评估功能已暂时禁用"
+        }
+
+        # 根据参数决定是否将结果存储到Redis
+        if store_to_redis:
             try:
-                return json.loads(response)
-            except:
-                return {"total_reused": 0, "detail": [], "message": "解析响应失败"}
+                if redis_mgr._client:
+                    response_json = json.dumps(response, ensure_ascii=False, default=str)
+                    await redis_mgr._client.setex(key, 3600, response_json)  # 1小时过期
+                    logger.info(f"默认图片评价结果已存储到Redis: {document_id}")
+            except Exception as store_error:
+                logger.warning(f"存储默认图片评价结果到Redis失败: {store_error}")
+        else:
+            logger.info(f"跳过Redis存储（由AsyncTaskManager统一管理）: {document_id}")
+
+        # 将结果存储到文档信息中
+        document_info['img_eval_result'] = response
+        await redis_mgr.store_document(document_id, document_info)
+
         return response
             
     except Exception as e:

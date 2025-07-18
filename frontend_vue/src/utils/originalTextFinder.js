@@ -276,9 +276,25 @@ function findOriginalTextForIssue (issue, documentData, options = {}) {
     return null
   }
 
+  // 获取issue的章节和小节信息
+  const issueChapter = issue.chapter || null
+  const issueSubChapter = issue.sub_chapter || null
+
+  console.log('Issue章节信息:', { chapter: issueChapter, sub_chapter: issueSubChapter })
+
+  // 创建限制搜索范围的文档数据
+  const limitedDocumentData = createLimitedDocumentData(documentData, issueChapter, issueSubChapter)
+
+  // 如果限制搜索后没有内容，回退到全文搜索
+  const searchDocumentData = Object.keys(limitedDocumentData.chapters || {}).length > 0
+    ? limitedDocumentData
+    : documentData
+
+  console.log('搜索范围:', Object.keys(searchDocumentData.chapters || {}))
+
   // 如果已经有原文且质量较好，先尝试验证原文是否在文档中存在
   if (issue.original_text && issue.original_text.trim().length > 10) {
-    const originalTextResult = findOriginalTextFuzzy(issue.original_text, documentData, {
+    const originalTextResult = findOriginalTextFuzzy(issue.original_text, searchDocumentData, {
       ...options,
       minSimilarity: 0.8 // 对原文使用较高的相似度要求
     })
@@ -287,23 +303,34 @@ function findOriginalTextForIssue (issue, documentData, options = {}) {
       return {
         originalText: issue.original_text,
         similarity: 1.0,
-        chapterName: issue.sub_chapter || originalTextResult.chapterName || '未知章节',
+        chapterName: issueSubChapter || originalTextResult.chapterName || '未知章节',
         isExisting: true
       }
     }
   }
 
-  // 进行模糊匹配
-  const fuzzyResult = findOriginalTextFuzzy(queryText, documentData, options)
+  // 进行模糊匹配（在限制范围内）
+  const fuzzyResult = findOriginalTextFuzzy(queryText, searchDocumentData, options)
 
   if (fuzzyResult) {
     console.log('模糊匹配成功:', fuzzyResult)
     return fuzzyResult
   }
 
+  // 如果在限制范围内匹配失败，且使用了限制范围，尝试全文搜索
+  if (searchDocumentData !== documentData) {
+    console.log('限制范围内匹配失败，尝试全文搜索...')
+    const fullTextResult = findOriginalTextFuzzy(queryText, documentData, options)
+
+    if (fullTextResult) {
+      console.log('全文搜索成功:', fullTextResult)
+      return fullTextResult
+    }
+  }
+
   // 如果主查询失败，尝试使用更宽松的条件
   console.log('主查询失败，尝试宽松匹配...')
-  const relaxedResult = findOriginalTextFuzzy(queryText, documentData, {
+  const relaxedResult = findOriginalTextFuzzy(queryText, searchDocumentData, {
     ...options,
     minSimilarity: Math.max(0.15, (options.minSimilarity || 0.3) - 0.15)
   })
@@ -311,6 +338,20 @@ function findOriginalTextForIssue (issue, documentData, options = {}) {
   if (relaxedResult) {
     console.log('宽松匹配成功:', relaxedResult)
     return relaxedResult
+  }
+
+  // 最后尝试全文宽松匹配
+  if (searchDocumentData !== documentData) {
+    console.log('尝试全文宽松匹配...')
+    const fullTextRelaxedResult = findOriginalTextFuzzy(queryText, documentData, {
+      ...options,
+      minSimilarity: Math.max(0.15, (options.minSimilarity || 0.3) - 0.15)
+    })
+
+    if (fullTextRelaxedResult) {
+      console.log('全文宽松匹配成功:', fullTextRelaxedResult)
+      return fullTextRelaxedResult
+    }
   }
 
   console.log('所有匹配尝试都失败了')
@@ -343,6 +384,103 @@ function formatMatchResult (matchResult, options = {}) {
   }
 
   return result
+}
+
+/**
+ * 根据章节和小节信息创建限制搜索范围的文档数据
+ * @param {Object} documentData 原始文档数据
+ * @param {string} targetChapter 目标章节
+ * @param {string} targetSubChapter 目标小节
+ * @returns {Object} 限制范围的文档数据
+ */
+function createLimitedDocumentData (documentData, targetChapter, targetSubChapter) {
+  const limitedData = {
+    chapters: {},
+    abstract: documentData.abstract // 保留摘要
+  }
+
+  if (!documentData.chapters) {
+    return limitedData
+  }
+
+  // 如果没有指定章节，返回空的限制数据
+  if (!targetChapter) {
+    return limitedData
+  }
+
+  // 查找匹配的章节
+  Object.entries(documentData.chapters).forEach(([chapterName, chapterInfo]) => {
+    // 章节名匹配（支持模糊匹配）
+    if (isChapterMatch(chapterName, targetChapter)) {
+      if (targetSubChapter && chapterInfo.subchapters) {
+        // 如果指定了小节，只包含匹配的小节
+        const matchingSubchapters = {}
+        Object.entries(chapterInfo.subchapters).forEach(([subChapterName, subChapterContent]) => {
+          if (isSubChapterMatch(subChapterName, targetSubChapter)) {
+            matchingSubchapters[subChapterName] = subChapterContent
+          }
+        })
+
+        if (Object.keys(matchingSubchapters).length > 0) {
+          limitedData.chapters[chapterName] = {
+            ...chapterInfo,
+            subchapters: matchingSubchapters
+          }
+        }
+      } else {
+        // 没有指定小节，包含整个章节
+        limitedData.chapters[chapterName] = chapterInfo
+      }
+    }
+  })
+
+  return limitedData
+}
+
+/**
+ * 检查章节名是否匹配
+ * @param {string} chapterName 文档中的章节名
+ * @param {string} targetChapter 目标章节名
+ * @returns {boolean} 是否匹配
+ */
+function isChapterMatch (chapterName, targetChapter) {
+  if (!chapterName || !targetChapter) return false
+
+  // 直接匹配
+  if (chapterName === targetChapter) return true
+
+  // 去除空格和下划线后匹配
+  const normalizedChapter = chapterName.replace(/[\s_]/g, '')
+  const normalizedTarget = targetChapter.replace(/[\s_]/g, '')
+  if (normalizedChapter === normalizedTarget) return true
+
+  // 包含匹配
+  if (chapterName.includes(targetChapter) || targetChapter.includes(chapterName)) return true
+
+  return false
+}
+
+/**
+ * 检查小节名是否匹配
+ * @param {string} subChapterName 文档中的小节名
+ * @param {string} targetSubChapter 目标小节名
+ * @returns {boolean} 是否匹配
+ */
+function isSubChapterMatch (subChapterName, targetSubChapter) {
+  if (!subChapterName || !targetSubChapter) return false
+
+  // 直接匹配
+  if (subChapterName === targetSubChapter) return true
+
+  // 去除空格和下划线后匹配
+  const normalizedSubChapter = subChapterName.replace(/[\s_]/g, '')
+  const normalizedTarget = targetSubChapter.replace(/[\s_]/g, '')
+  if (normalizedSubChapter === normalizedTarget) return true
+
+  // 包含匹配
+  if (subChapterName.includes(targetSubChapter) || targetSubChapter.includes(subChapterName)) return true
+
+  return false
 }
 
 /**
@@ -382,5 +520,8 @@ export {
   findOriginalTextFuzzy,
   findOriginalTextForIssue,
   formatMatchResult,
-  enhanceIssuesWithOriginalText
+  enhanceIssuesWithOriginalText,
+  createLimitedDocumentData,
+  isChapterMatch,
+  isSubChapterMatch
 }

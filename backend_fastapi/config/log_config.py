@@ -65,11 +65,14 @@ class ColoredFormatter(logging.Formatter):
                 pass
 
             # 检查是否在支持颜色的终端中运行
+            # 对于 Windows PowerShell 和 VSCode 终端，默认启用颜色
             return (
-                hasattr(sys.stderr, "isatty") and sys.stderr.isatty() and
-                (os.environ.get('TERM') != 'dumb') and
-                (os.environ.get('COLORTERM') is not None or
-                 os.environ.get('TERM_PROGRAM') in ['vscode', 'hyper', 'iterm'])
+                (hasattr(sys.stderr, "isatty") and sys.stderr.isatty()) or
+                os.environ.get('COLORTERM') is not None or
+                os.environ.get('TERM_PROGRAM') in ['vscode', 'hyper', 'iterm'] or
+                'powershell' in os.environ.get('PSModulePath', '').lower() or
+                'WindowsPowerShell' in os.environ.get('PSModulePath', '') or
+                True  # 在 Windows 上默认启用颜色
             )
 
         # Unix系统检查
@@ -192,46 +195,46 @@ LOG_CONFIG = {
     'loggers': {
         # 根日志记录器配置（空字符串表示根记录器）
         '': {
-            'handlers': ['console', 'file', 'error_file'],
+            'handlers': ['console'],  # 只使用控制台输出，不生成文件
             'level': 'INFO',
             'propagate': False
         },
         # FastAPI相关日志
         'uvicorn': {
-            'handlers': ['console', 'file'],
+            'handlers': ['console'],  # 只使用控制台输出
             'level': get_env_log_level('UVICORN_LOG_LEVEL', 'INFO'),
             'propagate': False
         },
         'uvicorn.access': {
-            'handlers': ['console', 'file'],  # 也输出到控制台以显示颜色
+            'handlers': ['console'],  # 只使用控制台输出
             'level': get_env_log_level('UVICORN_LOG_LEVEL', 'INFO'),
             'propagate': False
         },
         'uvicorn.error': {
-            'handlers': ['console', 'file'],
+            'handlers': ['console'],  # 只使用控制台输出
             'level': get_env_log_level('UVICORN_LOG_LEVEL', 'INFO'),
             'propagate': False
         },
         # 模型API调用日志
         'models': {
-            'handlers': ['console', 'api_file'],
+            'handlers': ['console'],  # 只使用控制台输出
             'level': 'INFO',
             'propagate': False
         },
         # 文档处理日志
         'pipeline': {
-            'handlers': ['console', 'file'],
+            'handlers': ['console'],  # 只使用控制台输出
             'level': 'INFO',
             'propagate': False
         },
         # HTTP客户端日志
         'httpx': {
-            'handlers': ['console', 'file'],
+            'handlers': ['console'],  # 只使用控制台输出
             'level': 'INFO',
             'propagate': False
         },
         'httpcore': {
-            'handlers': ['console', 'file'],
+            'handlers': ['console'],  # 只使用控制台输出
             'level': 'INFO',
             'propagate': False
         },
@@ -272,8 +275,9 @@ DEV_LOG_CONFIG = {
     'loggers': {
         **LOG_CONFIG['loggers'],
         '': {
-            **LOG_CONFIG['loggers'][''],
-            'level': 'DEBUG'
+            'handlers': ['console'],  # 只使用控制台输出
+            'level': 'DEBUG',
+            'propagate': False
         }
     }
 }
@@ -287,6 +291,14 @@ PROD_LOG_CONFIG = {
             **LOG_CONFIG['handlers']['console'],
             'level': 'WARNING',
             'formatter': 'standard'  # 生产环境使用标准格式（无颜色）
+        }
+    },
+    'loggers': {
+        **LOG_CONFIG['loggers'],
+        '': {
+            'handlers': ['console'],  # 只使用控制台输出
+            'level': 'WARNING',
+            'propagate': False
         }
     }
 }

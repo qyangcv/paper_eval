@@ -29,10 +29,11 @@ def _init_colored_logging():
     try:
         from config.log_config import ColoredFormatter
 
-        # 创建彩色格式化器
+        # 创建彩色格式化器，强制启用颜色
         colored_formatter = ColoredFormatter(
             fmt='%(asctime)s [%(levelname)s] %(name)s: %(message)s',
-            datefmt='%Y-%m-%d %H:%M:%S'
+            datefmt='%Y-%m-%d %H:%M:%S',
+            use_colors=True  # 强制启用颜色
         )
 
         # 完全重置日志系统
@@ -242,6 +243,7 @@ else:
     _get_logger().warning("API路由未注册，使用原有路由")
 
 # 日志系统已在初始化时配置完成
+logger = logging.getLogger(__name__)
 
 # 全局存储处理任务状态
 processing_tasks: Dict[str, Dict[str, Any]] = {}
@@ -296,18 +298,119 @@ async def get_processing_status(task_id: str):
     """
     获取文档处理状态
     """
-    if task_id not in processing_tasks:
-        raise HTTPException(status_code=404, detail="任务不存在")
-    
-    task = processing_tasks[task_id]
-    return ProcessingStatus(
-        task_id=task["task_id"],
-        status=task["status"],
-        progress=task["progress"],
-        message=task["message"],
-        result=task.get("result"),
-        error=task.get("error")
-    )
+    try:
+        # 优先从Redis获取状态（新系统）
+        from utils.redis_client import get_redis_manager
+        redis_mgr = await get_redis_manager()
+        document_info = await redis_mgr.get_document(task_id)
+
+        if document_info is not None:
+            # 使用Redis中的状态
+            status = document_info['status']
+            progress = document_info.get('progress', 0.0)
+            message = document_info.get('message', "等待处理")
+
+            # 状态映射：将Redis状态映射为前端期望的状态
+            if status == 'uploaded':
+                if progress == 0.0:
+                    progress = 0.1
+                    message = "文档已上传"
+            elif status == 'processing':
+                if progress == 0.0:
+                    progress = 0.2
+                    message = "正在处理文档"
+                # 使用存储的进度和消息
+            elif status == 'processed':
+                # 检查后台评估任务是否完成
+                from utils.async_tasks import get_task_manager
+                task_manager = await get_task_manager()
+
+                # 使用优化的状态检查
+                task_status_summary = task_manager.get_task_status_summary(task_id)
+                background_task_running = task_manager.is_task_running(task_id)
+
+                if background_task_running:
+                    # 后台任务仍在运行，使用缓存的进度信息
+                    status = 'processing'
+                    cached_progress = task_status_summary["last_known_progress"]
+                    cached_message = task_status_summary["last_known_message"]
+
+                    # 使用缓存的进度，但确保不超过90%
+                    progress = min(max(progress, cached_progress), 0.9)
+                    message = cached_message if cached_message else "正在进行后台分析评估，预计需要5-7分钟..."
+                else:
+                    # 检查是否所有评估都完成（图片评估已禁用，视为已完成）
+                    hard_eval_completed = document_info.get('hard_eval_result') is not None
+                    soft_eval_completed = document_info.get('soft_eval_result') is not None
+                    img_eval_completed = True  # 图片评估已禁用，视为已完成
+                    ref_eval_completed = document_info.get('ref_eval_result') is not None
+
+                    if hard_eval_completed and soft_eval_completed and img_eval_completed and ref_eval_completed:
+                        # 所有评估完成
+                        progress = 1.0
+                        message = "所有分析完成！"
+                        status = 'completed'  # 前端期望的状态名
+
+                        # 检查是否是第一次完成，如果是则记录特殊日志
+                        if document_info.get('first_completion_logged') != True:
+                            from tools.logger import get_logger
+                            status_logger = get_logger("backend_fastapi.middleware.logging_middleware")
+                            status_logger.info(f"[COMPLETED] GET /api/status/{task_id} - 127.0.0.1 - 评估任务完成")
+
+                            # 标记已记录完成日志，避免重复记录
+                            document_info['first_completion_logged'] = True
+                            await redis_mgr.store_document(task_id, document_info)
+                    else:
+                        # 评估未完成，保持processing状态
+                        status = 'processing'
+                        progress = min(progress, 0.9)
+                        message = "正在进行后台分析评估..."
+
+            elif status == 'failed':
+                progress = 0.0
+                message = "处理失败"
+                status = 'error'  # 前端期望的状态名
+
+            result_data = {
+                "task_id": task_id,
+                "status": status,
+                "progress": progress,
+                "message": message,
+                "error": document_info.get('error')
+            }
+
+            # 如果处理完成，添加结果信息
+            if status == 'completed':
+                result_data["result"] = {
+                    "filename": document_info['filename'],
+                    "size": document_info['size'],
+                    "has_markdown": 'md_content' in document_info,
+                    "has_pkl_data": 'pkl_data' in document_info,
+                    "image_count": len(document_info.get('images', [])),
+                    "chapter_count": len(document_info.get('pkl_data', {}).get('chapters', []))
+                }
+
+            return ProcessingStatus(**result_data)
+
+        # 如果Redis中没有，回退到旧系统
+        if task_id not in processing_tasks:
+            raise HTTPException(status_code=404, detail="任务不存在")
+
+        task = processing_tasks[task_id]
+        return ProcessingStatus(
+            task_id=task["task_id"],
+            status=task["status"],
+            progress=task["progress"],
+            message=task["message"],
+            result=task.get("result"),
+            error=task.get("error")
+        )
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"获取任务状态失败: {e}")
+        raise HTTPException(status_code=500, detail=f"获取任务状态失败: {str(e)}")
 
 # 开始文档处理
 @app.post("/api/process")

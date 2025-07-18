@@ -183,13 +183,14 @@ def save_formatted_results(results, output_path):
     
     return formatted_output_path
 
-def eval(references_list):
+def eval(references_list, progress_callback=None):
     """
-    评估参考文献格式（8并行处理）
-    
+    评估参考文献格式（多线程处理，但不更新状态）
+
     Args:
         references_list (list): 参考文献列表
-        
+        progress_callback (callable, optional): 进度回调函数
+
     Returns:
         dict: 评估结果，包含格式化的问题详情
     """
@@ -200,19 +201,19 @@ def eval(references_list):
             "detail": [],
             "message": "没有参考文献需要检查"
         }
-    
-    print(f"开始并行检查 {len(references_list)} 条参考文献（8线程）...")
+
+    print(f"开始多线程检查 {len(references_list)} 条参考文献（8线程）...")
     results = [{}] * len(references_list)  # 预分配结果数组
     completed_count = 0
-    
-    # 使用8个线程并行处理
+
+    # 使用8个线程并行处理，但不更新外部状态
     with ThreadPoolExecutor(max_workers=8) as executor:
         # 提交所有任务
         future_to_index = {
-            executor.submit(check_reference_format, ref): idx 
+            executor.submit(check_reference_format, ref): idx
             for idx, ref in enumerate(references_list)
         }
-        
+
         # 处理完成的任务
         for future in as_completed(future_to_index):
             idx = future_to_index[future]
@@ -221,6 +222,11 @@ def eval(references_list):
                 results[idx] = result
                 completed_count += 1
                 print(f"已完成 {completed_count}/{len(references_list)} 条参考文献检查")
+
+                # 调用进度回调（如果提供）
+                if progress_callback:
+                    progress_callback(f"参考文献检查进度: {completed_count}/{len(references_list)}")
+
             except Exception as exc:
                 print(f"参考文献 {idx+1} 检查失败: {exc}")
                 results[idx] = {

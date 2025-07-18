@@ -292,14 +292,14 @@ async def eval(images_info: List[Dict[str, Any]], threshold: float = DEFAULT_THR
             return str(result)
         
         logger.info(f"开始评估 {len(images_info)} 张图片的重复使用情况")
-        
-        # 并发处理所有图片（但限制并发数以避免过多请求）
+
+        # 恢复并发处理，但不更新外部状态（限制并发数以避免过多请求）
         semaphore = asyncio.Semaphore(8)  # 最多同时处理8张图片
 
         async def process_with_semaphore(image_info):
             async with semaphore:
                 return await process_single_image(image_info, threshold)
-        
+
         # 处理所有图片
         tasks = [process_with_semaphore(img_info) for img_info in images_info]
         results = await asyncio.gather(*tasks, return_exceptions=True)

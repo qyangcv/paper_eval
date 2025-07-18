@@ -85,19 +85,11 @@ def create_log_file_path(base_dir: str = "logs", prefix: str = "app") -> str:
     filename = f"{prefix}_{timestamp}.log"
     return os.path.join(base_dir, filename)
 
-# 默认设置日志配置
+# 默认设置日志配置 - 已禁用，避免生成过多日志文件
 def init_default_logging():
-    """初始化默认日志配置"""
-    log_dir = "logs"
-    os.makedirs(log_dir, exist_ok=True)
-    
-    log_file = create_log_file_path(log_dir, "backend_fastapi")
-    
-    setup_logging(
-        log_level="INFO",
-        log_file=log_file,
-        log_format='%(asctime)s - %(name)s - %(levelname)s - %(funcName)s:%(lineno)d - %(message)s'
-    )
+    """初始化默认日志配置 - 已禁用"""
+    # 不再创建日志文件，只使用控制台输出
+    pass
 
 # 不在模块导入时自动初始化，避免与main.py中的日志配置冲突
 # init_default_logging()

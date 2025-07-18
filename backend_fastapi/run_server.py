@@ -182,6 +182,11 @@ def run_server(
                     "datefmt": "%Y-%m-%d %H:%M:%S",
                 },
             },
+            "filters": {
+                "status_filter": {
+                    "()": "backend_fastapi.middleware.logging_middleware.StatusRequestFilter",
+                },
+            },
             "handlers": {
                 "default": {
                     "formatter": "default",
@@ -192,6 +197,7 @@ def run_server(
                     "formatter": "access",
                     "class": "logging.StreamHandler",
                     "stream": "ext://sys.stdout",
+                    "filters": ["status_filter"],  # 添加状态请求过滤器
                 },
             },
             "loggers": {
