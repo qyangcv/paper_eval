@@ -24,6 +24,8 @@ from utils.task_storage import get_task_storage
 from utils.async_tasks import get_task_manager
 from api.eval_module import (
     soft_eval,
+    hard_eval,
+    img_eval,
     ref_eval
 )
 from tools.docx_tools.docx_analysis_functions import (
@@ -310,22 +312,9 @@ async def get_soft_eval(task_id: str):
         if document_info['status'] != 'processed':
             raise HTTPException(status_code=400, detail="文档尚未处理完成")
 
-        # 从Redis中获取已经计算好的结果
-        soft_result = document_info.get('soft_eval_result')
-
-        # 如果没有预计算的结果，检查是否是无模型分析
-        if soft_result is None:
-            # 检查是否跳过了评估（无模型分析）
-            if document_info.get('soft_eval_error') or 'hard_eval_result' not in document_info:
-                logger.info("无模型分析，返回空的软指标结果")
-                return {
-                    "dimensions": [],
-                    "overall_score": 0,
-                    "summary": "无模型分析，未进行软指标评估"
-                }
-
-            logger.info("未找到预计算的软指标结果，重新计算...")
-            soft_result = await soft_eval(task_id)
+        # 直接调用软指标评估
+        logger.info("开始软指标评估...")
+        soft_result = await soft_eval(task_id)
 
         return soft_result
 
@@ -344,7 +333,7 @@ async def get_hard_eval(task_id: str):
         task_id: 任务ID
 
     Returns:
-        dict: 问题分析数据，包含图片查重问题
+        dict: 问题分析数据，合并hard_eval、img_eval、ref_eval三个模块的结果
     """
     try:
         logger.info(f"获取任务 {task_id} 的问题分析数据")
@@ -361,52 +350,12 @@ async def get_hard_eval(task_id: str):
         if document_info['status'] != 'processed':
             raise HTTPException(status_code=400, detail="文档尚未处理完成")
 
-        # 从Redis中获取已经计算好的结果
-        hard_result = document_info.get('hard_eval_result')
-        img_result = document_info.get('img_eval_result')
-
-        # 需要添加参考文献格式分析：
-
-        # 如果没有预计算的结果，检查是否是无模型分析
-        if hard_result is None:
-            # 检查是否跳过了评估（无模型分析）
-            if document_info.get('hard_eval_error') or 'soft_eval_result' not in document_info:
-                logger.info("无模型分析，返回空的硬指标结果")
-                hard_result = {
-                    "summary": {
-                        "total_issues": 0,
-                        "issue_types": [],
-                        "severity_distribution": {"高": 0, "中": 0, "低": 0}
-                    },
-                    "by_chapter": {}
-                }
-            else:
-                logger.info("未找到预计算的硬指标结果，启动后台任务并返回默认结果")
-
-                # 启动后台评估任务
-                task_manager = await get_task_manager()
-                if not task_manager.is_task_running(task_id):
-                    await task_manager.start_evaluation_task(task_id, document_info)
-
-                # 返回默认结果，避免前端超时
-                hard_result = {
-                    "summary": {
-                        "total_issues": 0,
-                        "issue_types": [],
-                        "severity_distribution": {"高": 0, "中": 0, "低": 0},
-                        "message": "问题分析数据正在生成中，请稍后刷新页面查看"
-                    },
-                    "by_chapter": {}
-                }
-
-        if img_result is None:
-            logger.info("未找到预计算的图片分析结果，使用默认结果...")
-            img_result = {
-                "total_reused": 0,
-                "detail": [],
-                "message": "图片查重分析已跳过"
-            }
-
+        # 直接调用三个评估模块
+        logger.info("开始问题分析评估...")
+        hard_result = await hard_eval(task_id)
+        img_result = await img_eval(task_id)
+        ref_result = await ref_eval(task_id)
+        
         # 解析结果，添加错误处理
         try:
             if isinstance(hard_result, str):
@@ -433,41 +382,113 @@ async def get_hard_eval(task_id: str):
             logger.error(f"解析图片分析结果失败: {e}")
             img_data = {
                 "total_reused": 0,
-                "detail": [],
-                "message": "图片查重分析已跳过"
+                "detail": []
             }
 
-        # 将图片查重问题添加到issues中
+        try:
+            if isinstance(ref_result, str):
+                ref_data = json.loads(ref_result)
+            else:
+                ref_data = ref_result
+        except (json.JSONDecodeError, TypeError) as e:
+            logger.error(f"解析参考文献结果失败: {e}")
+            ref_data = {
+                "total_issues": 0,
+                "detail": []
+            }
+
+        # 开始合并结果
+        merged_result = {
+            "summary": hard_data.get("summary", {
+                "total_issues": 0,
+                "issue_types": [],
+                "severity_distribution": {"高": 0, "中": 0, "低": 0}
+            }),
+            "by_chapter": hard_data.get("by_chapter", {}).copy()
+        }
+
+        # 计算当前最大ID
+        current_max_id = 0
+        for chapter_issues in merged_result["by_chapter"].values():
+            for issue in chapter_issues:
+                try:
+                    issue_id = int(issue.get("id", 0))
+                    current_max_id = max(current_max_id, issue_id)
+                except (ValueError, TypeError):
+                    pass
+
+        # 添加图片问题
         if img_data.get('total_reused', 0) > 0:
-            # 为每个重复图片创建一个问题
+            if "图片" not in merged_result["by_chapter"]:
+                merged_result["by_chapter"]["图片"] = []
+            
             for img_detail in img_data.get('detail', []):
-                # 添加到by_chapter中的适当位置
-                chapter_name = "图片查重"  # 可以根据实际需要调整
-                if chapter_name not in hard_data.get('by_chapter', {}):
-                    hard_data['by_chapter'][chapter_name] = []
-
-                # 创建图片查重问题
+                # 检查是否有实际的重用链接和相似度
+                reused_links = img_detail.get('reused_link', [])
+                reused_sims = img_detail.get('reused_sim', [])
+                
+                # 如果没有重用链接或相似度，跳过这一项
+                if not reused_links or not reused_sims:
+                    continue
+                
+                current_max_id += 1
+                
+                # 构建相似度描述
+                similarity_desc = []
+                for i, link in enumerate(reused_links):
+                    sim = reused_sims[i] if i < len(reused_sims) else "未知"
+                    similarity_desc.append(f"与 '{link}' 相似度为 '{sim}'")
+                
+                detail_text = f"{img_detail.get('image_title', '')} 存在复用问题：{', '.join(similarity_desc)}"
+                
                 img_issue = {
-                    "id": f"img_{img_detail.get('image_id', 'unknown')}",
-                    "type": "图片查重",
-                    "severity": "高" if len(img_detail.get('reused_link', [])) > 0 else "中",
-                    "sub_chapter": "图片使用",
+                    "id": current_max_id,
+                    "type": "",
+                    "severity": "",
+                    "sub_chapter": "",
                     "original_text": img_detail.get('image_title', ''),
-                    "detail": f"图片可能存在重复使用，相似度: {', '.join(img_detail.get('reused_sim', []))}",
-                    "suggestion": f"请检查图片来源: {', '.join(img_detail.get('reused_link', []))}"
+                    "detail": detail_text,
+                    "suggestion": "请避免直接使用论文、博客或其他出版物中的图片"
                 }
-                hard_data['by_chapter'][chapter_name].append(img_issue)
+                merged_result["by_chapter"]["图片"].append(img_issue)
 
-            # 更新总问题数和类型
-            hard_data['summary']['total_issues'] += img_data.get('total_reused', 0)
-            if "图片查重" not in hard_data['summary']['issue_types']:
-                hard_data['summary']['issue_types'].append("图片查重")
+        # 添加参考文献问题
+        # 始终创建参考文献字段，即使没有问题
+        if "参考文献" not in merged_result["by_chapter"]:
+            merged_result["by_chapter"]["参考文献"] = []
+        
+        if ref_data.get('total_issues', 0) > 0:
+            for ref_detail in ref_data.get('detail', []):
+                current_max_id += 1
+                
+                # 合并建议
+                suggestions = ref_detail.get('suggestions', [])
+                suggestion_text = " | ".join(suggestions) if suggestions else ""
+                
+                ref_issue = {
+                    "id": current_max_id,
+                    "type": "",
+                    "severity": "",
+                    "sub_chapter": "",
+                    "original_text": ref_detail.get('original_text', ''),
+                    "detail": "",
+                    "suggestion": suggestion_text
+                }
+                merged_result["by_chapter"]["参考文献"].append(ref_issue)
 
-            # 更新严重程度分布
-            severity_dist = hard_data['summary'].get('severity_distribution', {})
-            severity_dist['高'] = severity_dist.get('高', 0) + img_data.get('total_reused', 0)
+        # 更新总问题数
+        hard_issues = hard_data.get("summary", {}).get("total_issues", 0)
+        ref_issues = ref_data.get("total_issues", 0)
+        
+        # 计算实际添加的图片问题数
+        actual_img_issues = 0
+        if "图片" in merged_result["by_chapter"]:
+            actual_img_issues = len(merged_result["by_chapter"]["图片"])
+        
+        total_issues = hard_issues + actual_img_issues + ref_issues
+        merged_result["summary"]["total_issues"] = total_issues
 
-        return hard_data
+        return merged_result
 
     except Exception as e:
         logger.error(f"获取问题分析失败: {e}")
@@ -501,17 +522,14 @@ async def get_evaluation_status(task_id: str):
         # 获取任务管理器
         task_manager = await get_task_manager()
 
-        # 检查各项评估状态
+        # 检查评估状态（不依赖缓存）
         status = {
-            "hard_eval_completed": document_info.get('hard_eval_result') is not None,
-            "soft_eval_completed": document_info.get('soft_eval_result') is not None,
-            "img_eval_completed": document_info.get('img_eval_result') is not None,
+            "hard_eval_completed": False,
+            "soft_eval_completed": False,
+            "img_eval_completed": False,
             "background_task_running": task_manager.is_task_running(task_id),
-            "has_errors": bool(document_info.get('hard_eval_error') or document_info.get('soft_eval_error')),
-            "message": "评估完成" if all([
-                document_info.get('hard_eval_result') is not None,
-                document_info.get('img_eval_result') is not None
-            ]) else "评估进行中"
+            "has_errors": False,
+            "message": "评估需要手动调用相应接口"
         }
 
         return status

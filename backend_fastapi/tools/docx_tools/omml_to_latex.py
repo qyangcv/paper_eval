@@ -519,8 +519,9 @@ class OmmlToLatexConverter:
                 clean_value = '-\\infty'
 
             cases_content.append(f"{clean_value}, & {clean_condition}")
-
-        return f"\\begin{{cases}} {' \\\\\\\\ '.join(cases_content)} \\end{{cases}}"
+            
+        separator = ' \\\\\\\\ '
+        return f"\\begin{{cases}} {separator.join(cases_content)} \\end{{cases}}"
 
     def convert_matrix(self, element):
         """Convert matrix element."""

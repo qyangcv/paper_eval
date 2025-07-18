@@ -253,49 +253,12 @@ async def process_document_api(request: dict):
         document_info['processed_at'] = datetime.now().isoformat()
         await redis_mgr.store_document(task_id, document_info)
 
-        # 检查是否配置了模型，决定是否执行评估
-        model_name = model_config.get('model_name', 'none')
-
-        if model_name != 'none':
-            # 执行硬指标评估
-            logger.info(f"执行硬指标评估: {task_id}")
-            try:
-                from .eval_module import hard_eval
-                hard_eval_result = await hard_eval(task_id)
-                document_info['hard_eval_result'] = hard_eval_result
-                document_info['progress'] = 0.7
-                document_info['message'] = '硬指标评估完成，开始软指标评估...'
-                await redis_mgr.store_document(task_id, document_info)
-            except Exception as e:
-                logger.warning(f"硬指标评估失败: {e}")
-                document_info['hard_eval_error'] = str(e)
-
-            # 执行软指标评估
-            logger.info(f"执行软指标评估: {task_id}")
-            try:
-                from .eval_module import soft_eval
-                soft_eval_result = await soft_eval(task_id)
-                document_info['soft_eval_result'] = soft_eval_result
-                document_info['progress'] = 0.9
-                document_info['message'] = '软指标评估完成，生成最终报告...'
-                await redis_mgr.store_document(task_id, document_info)
-            except Exception as e:
-                logger.warning(f"软指标评估失败: {e}")
-                document_info['soft_eval_error'] = str(e)
-        else:
-            # 无模型分析，跳过所有评估
-            logger.info("选择无模型分析，跳过硬指标和软指标评估")
-            document_info['progress'] = 0.9
-            document_info['message'] = '跳过质量评估，直接生成文档预览...'
-            await redis_mgr.store_document(task_id, document_info)
-
-        # 暂时跳过图片查重分析
-        logger.info(f"跳过图片查重分析: {task_id}")
-        document_info['img_eval_result'] = {
-            "total_reused": 0,
-            "detail": [],
-            "message": "图片查重分析已跳过"
-        }
+        # 评估将通过analysis.py中的专门接口异步处理
+        # 这里只负责文档处理，不直接执行评估
+        logger.info(f"文档处理完成，评估将通过analysis.py接口异步处理: {task_id}")
+        document_info['progress'] = 0.9
+        document_info['message'] = '文档处理完成，可通过analysis接口进行评估...'
+        await redis_mgr.store_document(task_id, document_info)
 
         # 生成HTML预览文件 - 使用docx2html.py
         logger.info(f"生成HTML预览文件: {task_id}")
@@ -777,23 +740,67 @@ def extract_references_from_markdown(md_content: str) -> List[str]:
     # 多种参考文献条目模式
     ref_item_patterns = [
         r'\[(\d+)\]\s*(.+?)(?=\n\[\d+\]|\n#+|\Z)',  # [1] 格式
-        r'(\d+)\.\s*(.+?)(?=\n\d+\.|\n#+|\Z)',      # 1. 格式
-        r'(\d+)\)\s*(.+?)(?=\n\d+\)|\n#+|\Z)',      # 1) 格式
+        r'^\[(\d+)\]\s*(.+?)(?=\n\[\d+\]|\n#+|\Z)',  # 行首[1] 格式
+        r'^\s*(\d+)\.\s*(.+?)(?=\n\s*\d+\.|\n#+|\Z)',  # 行首1. 格式
+        r'^\s*(\d+)\)\s*(.+?)(?=\n\s*\d+\)|\n#+|\Z)',  # 行首1) 格式
     ]
 
+    # 先尝试带编号的格式
+    found_numbered_refs = False
     for pattern in ref_item_patterns:
-        ref_matches = re.findall(pattern, ref_content, re.DOTALL)
+        ref_matches = re.findall(pattern, ref_content, re.DOTALL | re.MULTILINE)
         if ref_matches:
-            logger.info(f"使用模式提取参考文献: {pattern}")
+            # 过滤掉年份等错误匹配（真正的参考文献编号应该是1, 2, 3...这样的小数字）
+            valid_refs = []
             for ref_num, ref_text in ref_matches:
-                # 删除换行符和多余的空白字符
-                clean_ref = re.sub(r'\s+', ' ', ref_text.strip())
-                if clean_ref and len(clean_ref) > 10:  # 过滤太短的条目
-                    if pattern.startswith(r'\['):
+                # 参考文献编号应该是合理的范围（1-1000），不是年份
+                if int(ref_num) <= 1000:
+                    clean_ref = re.sub(r'\s+', ' ', ref_text.strip())
+                    if clean_ref and len(clean_ref) > 10:  # 过滤太短的条目
+                        valid_refs.append((ref_num, clean_ref))
+            
+            if valid_refs:
+                logger.info(f"使用带编号模式提取参考文献: {pattern}")
+                for ref_num, clean_ref in valid_refs:
+                    if pattern.startswith(r'\[') or r'\[' in pattern:
                         references.append(f"[{ref_num}] {clean_ref}")
                     else:
                         references.append(f"{ref_num}. {clean_ref}")
-            break
+                found_numbered_refs = True
+                break
+    
+    # 如果没有找到带编号的格式，尝试无编号格式（每行一个条目）
+    if not found_numbered_refs:
+        logger.info("未找到带编号的参考文献，尝试无编号格式")
+        
+        # 按行分割，过滤空行
+        lines = ref_content.split('\n')
+        non_empty_lines = [line.strip() for line in lines if line.strip()]
+        
+        # 检查是否是参考文献格式（包含作者名、期刊等特征）
+        ref_patterns_check = [
+            r'et al\.',  # 等人
+            r'\[J\]',    # 期刊
+            r'\[C\]',    # 会议
+            r'arXiv',    # arXiv预印本
+            r'Proceedings',  # 会议论文集
+            r'\..*\d{4}',    # 包含年份
+        ]
+        
+        for line in non_empty_lines:
+            # 检查是否包含参考文献的特征
+            is_reference = any(re.search(pattern, line, re.IGNORECASE) for pattern in ref_patterns_check)
+            # 或者检查是否包含常见的作者名格式（大写字母开头，包含逗号分隔）
+            is_author_format = re.search(r'^[A-Z][a-z]+\s+[A-Z]', line)
+            
+            if is_reference or is_author_format:
+                # 删除多余的空白字符，但保留基本格式
+                clean_ref = re.sub(r'\s+', ' ', line.strip())
+                if clean_ref and len(clean_ref) > 20:  # 参考文献通常比较长
+                    references.append(clean_ref)
+        
+        if references:
+            logger.info(f"使用无编号格式提取到 {len(references)} 条参考文献")
 
     logger.info(f"提取到 {len(references)} 条参考文献")
     return references

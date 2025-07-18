@@ -2,6 +2,7 @@ import os
 from openai import OpenAI  # 修改导入方式
 from dotenv import load_dotenv
 import argparse
+from concurrent.futures import ThreadPoolExecutor, as_completed
 # 加载环境变量
 load_dotenv()
 
@@ -184,7 +185,7 @@ def save_formatted_results(results, output_path):
 
 def eval(references_list):
     """
-    评估参考文献格式
+    评估参考文献格式（8并行处理）
     
     Args:
         references_list (list): 参考文献列表
@@ -200,13 +201,34 @@ def eval(references_list):
             "message": "没有参考文献需要检查"
         }
     
-    print(f"开始检查 {len(references_list)} 条参考文献...")
-    results = []
+    print(f"开始并行检查 {len(references_list)} 条参考文献（8线程）...")
+    results = [{}] * len(references_list)  # 预分配结果数组
+    completed_count = 0
     
-    for idx, ref in enumerate(references_list, 1):
-        print(f"正在检查第 {idx}/{len(references_list)} 条参考文献...")
-        result = check_reference_format(ref)
-        results.append(result)
+    # 使用8个线程并行处理
+    with ThreadPoolExecutor(max_workers=8) as executor:
+        # 提交所有任务
+        future_to_index = {
+            executor.submit(check_reference_format, ref): idx 
+            for idx, ref in enumerate(references_list)
+        }
+        
+        # 处理完成的任务
+        for future in as_completed(future_to_index):
+            idx = future_to_index[future]
+            try:
+                result = future.result()
+                results[idx] = result
+                completed_count += 1
+                print(f"已完成 {completed_count}/{len(references_list)} 条参考文献检查")
+            except Exception as exc:
+                print(f"参考文献 {idx+1} 检查失败: {exc}")
+                results[idx] = {
+                    "status": "failed",
+                    "reference_text": references_list[idx],
+                    "error": str(exc)
+                }
+                completed_count += 1
     
     # 格式化结果，只保留有问题的参考文献
     formatted_result = format_incorrect_references(results)

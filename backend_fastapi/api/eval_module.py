@@ -47,20 +47,27 @@ async def hard_eval(document_id: str):
         # 首先检查Redis中是否已有该文档的硬指标评价结果
         # 使用特定的key格式便于管理和查询
         key = f"paper_eval:hard:{document_id}"
-        cached_result = await redis_mgr._client.get(key) if redis_mgr._client else None
+        # 临时禁用缓存以强制重新评估
+        # cached_result = await redis_mgr._client.get(key) if redis_mgr._client else None
+        cached_result = None  # 临时强制不使用缓存
         
         if cached_result:
             logger.info(f"从Redis缓存中获取文档 {document_id} 的硬指标评价结果")
-            return json.loads(cached_result)
+            cached_data = json.loads(cached_result)
+            logger.info(f"缓存的硬指标评价结果: {cached_data}")
+            return cached_data
 
         # 如果缓存中没有，则重新计算
         # 从Redis获取文档的markdown内容
         md_content = await get_document_markdown(document_id)
 
         if md_content:
+            logger.info(f"获取到markdown内容，长度: {len(md_content)}")
+            
             # 执行硬指标分析
             # 调用pipeline中的硬指标评价函数
             response = hard_criterial_eval(md_content)
+            logger.info(f"硬指标评价原始响应: {response}")
 
             # 如果response是JSON字符串，需要解析为字典
             if isinstance(response, str):
@@ -72,6 +79,8 @@ async def hard_eval(document_id: str):
                         "summary": {"total_issues": 0, "issue_types": [], "severity_distribution": {"高": 0, "中": 0, "低": 0}},
                         "by_chapter": {}
                     }
+            
+            logger.info(f"硬指标评价解析后结果: {response}")
 
             # 将结果存储到Redis，设置较长的过期时间
             # 考虑到分析需要5-7分钟，缓存时间设置为4小时
