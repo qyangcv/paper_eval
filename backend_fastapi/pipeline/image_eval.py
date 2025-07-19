@@ -2,7 +2,7 @@ import os
 import cv2
 import base64
 import tempfile
-import requests
+import httpx
 import asyncio
 import numpy as np
 from pathlib import Path
@@ -148,7 +148,7 @@ async def search_similar_images(image_bytes: bytes) -> List[Dict[str, Any]]:
         logger.error(f"搜索相似图片失败: {e}")
         return []
 
-def download_image(url: str, timeout: int = 10) -> bytes:
+async def download_image(url: str, timeout: int = 10) -> bytes:
     """
     下载网络图片
     
@@ -160,11 +160,12 @@ def download_image(url: str, timeout: int = 10) -> bytes:
         bytes: 图片字节数据
     """
     try:
-        response = requests.get(url, timeout=timeout, headers={
-            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
-        })
-        response.raise_for_status()
-        return response.content
+        async with httpx.AsyncClient() as client:
+            response = await client.get(url, timeout=timeout, headers={
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
+            })
+            response.raise_for_status()
+            return response.content
     except Exception as e:
         logger.warning(f"下载图片失败 {url}: {e}")
         return b''
@@ -201,7 +202,7 @@ async def process_single_image(image_info: Dict[str, Any], threshold: float = DE
             }
             
         try:
-            original_image_bytes = base64.b64decode(image_data_base64)
+            original_image_bytes = await asyncio.to_thread(base64.b64decode, image_data_base64)
         except Exception as e:
             logger.error(f"解码图片 {image_id} 失败: {e}")
             return {
@@ -234,12 +235,12 @@ async def process_single_image(image_info: Dict[str, Any], threshold: float = DE
         for result in search_results:
             try:
                 # 下载网络图片
-                web_image_bytes = download_image(result['image_url'])
+                web_image_bytes = await download_image(result['image_url'])
                 if not web_image_bytes:
                     continue
                     
                 # 计算相似度
-                is_similar, similarity_score = calculate_orb_similarity(
+                is_similar, similarity_score = await asyncio.to_thread(calculate_orb_similarity,
                     original_image_bytes, web_image_bytes, threshold
                 )
                 
@@ -338,8 +339,7 @@ async def eval(images_info: List[Dict[str, Any]], threshold: float = DEFAULT_THR
         
         logger.info(f"图片重复评估完成: 总共检测 {len(images_info)} 张图片，发现 {total_reused} 张重复使用")
         
-        import json
-        return json.dumps(final_result, ensure_ascii=False, indent=2)
+        return final_result
         
     except Exception as e:
         logger.error(f"图片重复评估失败: {e}")
@@ -349,8 +349,7 @@ async def eval(images_info: List[Dict[str, Any]], threshold: float = DEFAULT_THR
             "detail": [],
             "error": str(e)
         }
-        import json
-        return json.dumps(error_result, ensure_ascii=False, indent=2)
+        return error_result
 
 if __name__ == "__main__":
     # 测试代码

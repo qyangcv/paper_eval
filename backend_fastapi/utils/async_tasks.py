@@ -6,9 +6,17 @@
 import asyncio
 import json
 import time
+import tempfile
+import os
 from typing import Dict, Any
 from tools.logger import get_logger
 from utils.redis_client import get_redis_manager
+from tools.docx_tools.docx_analysis_functions import (
+    get_basic_info as extract_basic_info,
+    get_overall_stats as extract_overall_stats,
+    get_chapter_stats as extract_chapter_stats,
+    get_ref_stats as extract_ref_stats
+)
 
 logger = get_logger(__name__)
 
@@ -110,18 +118,27 @@ class AsyncTaskManager:
             if document_info.get('soft_eval_result') is None:
                 evaluation_tasks.append(('软指标评估', self._run_soft_eval))
 
-            # 暂时禁用图片评估功能
-            # if document_info.get('img_eval_result') is None:
-            #     evaluation_tasks.append(('图片评估', self._run_img_eval))
+            if document_info.get('img_eval_result') is None:
+                evaluation_tasks.append(('图片评估', self._run_img_eval))
 
             if document_info.get('ref_eval_result') is None:
                 evaluation_tasks.append(('参考文献评估', self._run_ref_eval))
+            
+            # 新增：文档分析任务
+            if document_info.get('basic_info_result') is None:
+                evaluation_tasks.append(('基础信息提取', self._run_basic_info_extraction))
+            if document_info.get('overall_stats_result') is None:
+                evaluation_tasks.append(('整体统计提取', self._run_overall_stats_extraction))
+            if document_info.get('chapter_stats_result') is None:
+                evaluation_tasks.append(('章节统计提取', self._run_chapter_stats_extraction))
+            if document_info.get('ref_stats_result') is None:
+                evaluation_tasks.append(('参考文献统计提取', self._run_ref_stats_extraction))
 
             if not evaluation_tasks:
                 logger.info(f"所有评估任务已完成: {task_id}")
                 return
 
-            logger.info(f"开始同步执行 {len(evaluation_tasks)} 个评估任务: {', '.join([name for name, _ in evaluation_tasks])}")
+            logger.info(f"开始同步执行 {len(evaluation_tasks)} 个评估任务: { ', '.join([name for name, _ in evaluation_tasks])}")
 
             # 收集所有结果
             evaluation_results = {}
@@ -132,13 +149,19 @@ class AsyncTaskManager:
             for i, (task_name, task_func) in enumerate(evaluation_tasks):
                 try:
                     # 更新进度状态
-                    progress = 0.6 + (i / total_tasks) * 0.3  # 60%-90%的进度用于评估
+                    # 总共有8个任务：hard, soft, img, ref, basic, overall, chapter, ref_stats
+                    progress = 0.6 + (i / 8) * 0.4  # 60%-100%的进度用于评估
                     self._update_status_cache(task_id, progress, f"正在执行{task_name}...")
 
                     logger.info(f"开始执行{task_name}: {task_id}")
 
                     # 执行单个评估任务（内部可能包含多线程处理）
-                    result = await task_func(task_id)
+                    if task_name in ['硬指标评估', '软指标评估', '图片评估', '参考文献评估']:
+                        result = await task_func(task_id)
+                    elif task_name in ['基础信息提取', '整体统计提取', '章节统计提取', '参考文献统计提取']:
+                        result = await task_func(task_id, document_info['content']) # 传递docx_data
+                    else:
+                        result = None # Should not happen
 
                     logger.info(f"{task_name}完成: {task_id}")
 
@@ -151,10 +174,33 @@ class AsyncTaskManager:
                         evaluation_results['img_eval_result'] = result
                     elif task_name == '参考文献评估':
                         evaluation_results['ref_eval_result'] = result
+                    elif task_name == '基础信息提取':
+                        evaluation_results['basic_info_result'] = result
+                    elif task_name == '整体统计提取':
+                        evaluation_results['overall_stats_result'] = result
+                    elif task_name == '章节统计提取':
+                        evaluation_results['chapter_stats_result'] = result
+                    elif task_name == '参考文献统计提取':
+                        evaluation_results['ref_stats_result'] = result
 
                 except Exception as e:
                     logger.error(f"{task_name}失败: {task_id}, 错误: {e}")
-                    evaluation_errors[f"{task_name.split('评估')[0]}_eval_error"] = str(e)
+                    if task_name == '硬指标评估':
+                        evaluation_errors['hard_eval_error'] = str(e)
+                    elif task_name == '软指标评估':
+                        evaluation_errors['soft_eval_error'] = str(e)
+                    elif task_name == '图片评估':
+                        evaluation_errors['img_eval_error'] = str(e)
+                    elif task_name == '参考文献评估':
+                        evaluation_errors['ref_eval_error'] = str(e)
+                    elif task_name == '基础信息提取':
+                        evaluation_errors['basic_info_error'] = str(e)
+                    elif task_name == '整体统计提取':
+                        evaluation_errors['overall_stats_error'] = str(e)
+                    elif task_name == '章节统计提取':
+                        evaluation_errors['chapter_stats_error'] = str(e)
+                    elif task_name == '参考文献统计提取':
+                        evaluation_errors['ref_stats_error'] = str(e)
 
             # 统一更新文档状态 - 只进行一次Redis写入
             try:
@@ -164,13 +210,18 @@ class AsyncTaskManager:
                     current_doc_info.update(evaluation_results)
                     current_doc_info.update(evaluation_errors)
 
-                    # 检查是否所有评估都完成（图片评估已禁用）
+                    # 检查是否所有评估都完成
                     hard_completed = current_doc_info.get('hard_eval_result') is not None
                     soft_completed = current_doc_info.get('soft_eval_result') is not None
-                    img_completed = True  # 图片评估已禁用，视为已完成
+                    img_completed = current_doc_info.get('img_eval_result') is not None
                     ref_completed = current_doc_info.get('ref_eval_result') is not None
+                    basic_info_completed = current_doc_info.get('basic_info_result') is not None
+                    overall_stats_completed = current_doc_info.get('overall_stats_result') is not None
+                    chapter_stats_completed = current_doc_info.get('chapter_stats_result') is not None
+                    ref_stats_completed = current_doc_info.get('ref_stats_result') is not None
 
-                    if hard_completed and soft_completed and img_completed and ref_completed:
+                    if (hard_completed and soft_completed and img_completed and ref_completed and
+                        basic_info_completed and overall_stats_completed and chapter_stats_completed and ref_stats_completed):
                         current_doc_info['progress'] = 1.0
                         current_doc_info['message'] = '所有分析评估已完成'
                         current_doc_info['status'] = 'completed'
@@ -179,12 +230,14 @@ class AsyncTaskManager:
 
 
                         # 记录评估完成的特殊日志
-                        logger.info(f"=== 评估任务完成 === {task_id} - 硬指标、软指标、参考文献评估全部完成")
+                        logger.info(f"=== 评估任务完成 === {task_id} - 硬指标、软指标、图片、参考文献、基础信息、整体统计、章节统计、参考文献统计评估全部完成")
                     else:
-                        # 计算进度（图片评估已禁用，总共3个任务）
-                        completed_count = sum([hard_completed, soft_completed, ref_completed])
-                        progress = 0.6 + (completed_count / 3) * 0.4  # 从60%开始到100%
-                        message = f'评估进行中... ({completed_count}/3 完成)'
+                        # 计算进度（总共8个任务）
+                        completed_count = sum([hard_completed, soft_completed, img_completed, ref_completed,
+                                               basic_info_completed, overall_stats_completed,
+                                               chapter_stats_completed, ref_stats_completed])
+                        progress = 0.6 + (completed_count / 8) * 0.4  # 从60%开始到100%
+                        message = f'评估进行中... ({completed_count}/8 完成)'
                         current_doc_info['progress'] = progress
                         current_doc_info['message'] = message
                         self._update_status_cache(task_id, progress, message)
@@ -205,6 +258,7 @@ class AsyncTaskManager:
                 redis_mgr = await get_redis_manager()
                 current_doc_info = await redis_mgr.get_document(task_id)
                 if current_doc_info:
+                    current_doc_info['status'] = 'failed'  # 将文档状态设置为失败
                     current_doc_info['message'] = f'评估任务失败: {str(e)}'
                     current_doc_info['evaluation_error'] = str(e)
                     await redis_mgr.store_document(task_id, current_doc_info)
@@ -251,6 +305,70 @@ class AsyncTaskManager:
 
         logger.info(f"参考文献评估完成: {task_id}")
         return result
+
+    async def _run_basic_info_extraction(self, task_id: str, docx_data: bytes):
+        """执行基础信息提取 - 不更新Redis状态"""
+        logger.info(f"开始提取基础信息: {task_id}")
+        temp_file_path = None
+        try:
+            with tempfile.NamedTemporaryFile(delete=False, suffix='.docx') as temp_file:
+                await asyncio.to_thread(temp_file.write, docx_data)
+                temp_file_path = temp_file.name
+            
+            basic_info = await asyncio.to_thread(extract_basic_info, temp_file_path)
+            logger.info(f"基础信息提取完成: {task_id}")
+            return basic_info
+        finally:
+            if temp_file_path and await asyncio.to_thread(os.path.exists, temp_file_path):
+                await asyncio.to_thread(os.unlink, temp_file_path)
+
+    async def _run_overall_stats_extraction(self, task_id: str, docx_data: bytes):
+        """执行整体统计提取 - 不更新Redis状态"""
+        logger.info(f"开始提取整体统计: {task_id}")
+        temp_file_path = None
+        try:
+            with tempfile.NamedTemporaryFile(delete=False, suffix='.docx') as temp_file:
+                await asyncio.to_thread(temp_file.write, docx_data)
+                temp_file_path = temp_file.name
+            
+            overall_stats = await asyncio.to_thread(extract_overall_stats, temp_file_path)
+            logger.info(f"整体统计提取完成: {task_id}")
+            return overall_stats
+        finally:
+            if temp_file_path and await asyncio.to_thread(os.path.exists, temp_file_path):
+                await asyncio.to_thread(os.unlink, temp_file_path)
+
+    async def _run_chapter_stats_extraction(self, task_id: str, docx_data: bytes):
+        """执行章节统计提取 - 不更新Redis状态"""
+        logger.info(f"开始提取章节统计: {task_id}")
+        temp_file_path = None
+        try:
+            with tempfile.NamedTemporaryFile(delete=False, suffix='.docx') as temp_file:
+                await asyncio.to_thread(temp_file.write, docx_data)
+                temp_file_path = temp_file.name
+            
+            chapter_stats = await asyncio.to_thread(extract_chapter_stats, temp_file_path)
+            logger.info(f"章节统计提取完成: {task_id}")
+            return chapter_stats
+        finally:
+            if temp_file_path and await asyncio.to_thread(os.path.exists, temp_file_path):
+                await asyncio.to_thread(os.unlink, temp_file_path)
+
+    async def _run_ref_stats_extraction(self, task_id: str, docx_data: bytes):
+        """执行参考文献统计提取 - 不更新Redis状态"""
+        logger.info(f"开始提取参考文献统计: {task_id}")
+        temp_file_path = None
+        try:
+            with tempfile.NamedTemporaryFile(delete=False, suffix='.docx') as temp_file:
+                await asyncio.to_thread(temp_file.write, docx_data)
+                temp_file_path = temp_file.name
+            
+            ref_stats = await asyncio.to_thread(extract_ref_stats, temp_file_path)
+            logger.info(f"参考文献统计提取完成: {task_id}")
+            return ref_stats
+        finally:
+            if temp_file_path and await asyncio.to_thread(os.path.exists, temp_file_path):
+                await asyncio.to_thread(os.unlink, temp_file_path)
 
     
     def is_task_running(self, task_id: str) -> bool:

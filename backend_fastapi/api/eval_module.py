@@ -3,6 +3,7 @@
 """
 
 from fastapi import APIRouter, HTTPException
+import asyncio
 import json
 import sys
 from pathlib import Path
@@ -77,7 +78,7 @@ async def hard_eval(document_id: str, store_to_redis: bool = True):
             
             # 执行硬指标分析
             # 调用pipeline中的硬指标评价函数
-            response = hard_criterial_eval(md_content)
+            response = await hard_criterial_eval(md_content)
             logger.info(f"硬指标评价原始响应: {response}")
 
             # 如果response是JSON字符串，需要解析为字典
@@ -167,7 +168,7 @@ async def soft_eval(document_id: str, store_to_redis: bool = True):
         if md_content:
             # 执行软指标分析
             # 调用pipeline中的软指标评价函数，通常涉及AI模型调用
-            response = soft_criterial_eval(md_content)
+            response = await soft_criterial_eval(md_content)
             
             # 根据参数决定是否将结果存储到Redis
             if store_to_redis:
@@ -244,7 +245,7 @@ async def ref_eval(document_id: str, store_to_redis: bool = True):
             # 这是一个fallback机制，确保系统的鲁棒性
             md_content = document_info.get('md_content', '')
             if md_content:
-                references = extract_references_from_markdown(md_content)
+                references = await asyncio.to_thread(extract_references_from_markdown, md_content)
                 # 更新文档信息中的参考文献，避免下次重复提取
                 document_info['references'] = references
                 await redis_mgr.store_document(document_id, document_info)
@@ -254,7 +255,7 @@ async def ref_eval(document_id: str, store_to_redis: bool = True):
         if references:
             # 执行参考文献格式评价
             # 使用AI模型检查引用格式的规范性
-            response = reference_eval(references)
+            response = await reference_eval(references)
             
             # 根据参数决定是否将结果存储到Redis
             if store_to_redis:
@@ -350,11 +351,7 @@ async def img_eval(document_id: str, store_to_redis: bool = True):
         logger.info(f"图片评估功能已禁用，为文档 {document_id} 返回默认结果（发现 {len(images)} 张图片）")
 
         # 返回默认的图片评估结果（表示没有发现重复图片）
-        response = {
-            "total_reused": 0,
-            "detail": [],
-            "message": "图片评估功能已暂时禁用"
-        }
+        response = await image_eval(images)
 
         # 根据参数决定是否将结果存储到Redis
         if store_to_redis:

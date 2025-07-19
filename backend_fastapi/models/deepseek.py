@@ -4,7 +4,7 @@ DeepSeek模型接口
 """
 
 import os
-from openai import OpenAI
+from openai import OpenAI, AsyncOpenAI
 from typing import Dict, Any, List
 import logging
 
@@ -158,4 +158,51 @@ def request_deepseek_md(prompt: str, system_prompt: str = "You are a helpful ass
         if "api_key" in error_msg.lower() or "apikey" in error_msg.lower() or "unauthorized" in error_msg.lower():
             raise ValueError(f"API密钥错误或无效: {error_msg}")
         print(f"Error requesting deepseek ({model}): {e}")
+        return '{"error": "Request failed"}'
+
+async def request_deepseek_md_async(system_prompt: str, prompt: str, model: str = "deepseek-chat", format: str = "md") -> str:
+    """
+    向Deepseek模型发送异步请求
+    
+    Args:
+        system_prompt (str): 系统提示词
+        prompt (str): 用户提示词
+        model (str): 使用的Deepseek模型名称
+        format (str): 返回格式，"json"或"md"
+        
+    Returns:
+        str: 模型响应的JSON字符串或Markdown内容
+    """
+    api_key = os.getenv("DEEPSEEK_API_KEY") or os.getenv("OPENAI_API_KEY")
+    if not api_key:
+        raise ValueError("缺少API密钥: 请设置DEEPSEEK_API_KEY或OPENAI_API_KEY环境变量")
+    
+    try:
+        client = AsyncOpenAI(
+            api_key=api_key,
+            base_url="https://api.deepseek.com"
+        )
+        response = await client.chat.completions.create(
+            model=model,
+            messages=[
+                {"role": "system", "content": system_prompt},
+                {"role": "user", "content": prompt},
+            ],
+            stream=False
+        )
+        if format == "json":
+            return response.model_dump_json()
+        elif format == "md":
+            content = response.choices[0].message.content
+            if content is not None:
+                return content
+            else:
+                raise ValueError("模型响应内容为空")
+        else:
+            raise TypeError('format must be "json" or "md"')
+    except Exception as e:
+        error_msg = str(e)
+        if "api_key" in error_msg.lower() or "apikey" in error_msg.lower() or "unauthorized" in error_msg.lower():
+            raise ValueError(f"API密钥错误或无效: {error_msg}")
+        logger.error(f"Error requesting deepseek ({model}) asynchronously: {e}")
         return '{"error": "Request failed"}'

@@ -195,46 +195,46 @@ LOG_CONFIG = {
     'loggers': {
         # 根日志记录器配置（空字符串表示根记录器）
         '': {
-            'handlers': ['console'],  # 只使用控制台输出，不生成文件
+            'handlers': ['console', 'file', 'error_file'],  # 添加文件和错误文件处理器
             'level': 'INFO',
             'propagate': False
         },
         # FastAPI相关日志
         'uvicorn': {
-            'handlers': ['console'],  # 只使用控制台输出
+            'handlers': ['console', 'file', 'error_file'],  # 添加文件和错误文件处理器
             'level': get_env_log_level('UVICORN_LOG_LEVEL', 'INFO'),
             'propagate': False
         },
         'uvicorn.access': {
-            'handlers': ['console'],  # 只使用控制台输出
+            'handlers': ['console', 'file', 'error_file'],  # 添加文件和错误文件处理器
             'level': get_env_log_level('UVICORN_LOG_LEVEL', 'INFO'),
             'propagate': False
         },
         'uvicorn.error': {
-            'handlers': ['console'],  # 只使用控制台输出
+            'handlers': ['console', 'file', 'error_file'],  # 添加文件和错误文件处理器
             'level': get_env_log_level('UVICORN_LOG_LEVEL', 'INFO'),
             'propagate': False
         },
         # 模型API调用日志
         'models': {
-            'handlers': ['console'],  # 只使用控制台输出
+            'handlers': ['console', 'file', 'error_file'],  # 添加文件和错误文件处理器
             'level': 'INFO',
             'propagate': False
         },
         # 文档处理日志
         'pipeline': {
-            'handlers': ['console'],  # 只使用控制台输出
+            'handlers': ['console', 'file', 'error_file'],  # 添加文件和错误文件处理器
             'level': 'INFO',
             'propagate': False
         },
         # HTTP客户端日志
         'httpx': {
-            'handlers': ['console'],  # 只使用控制台输出
+            'handlers': ['console', 'file', 'error_file'],  # 添加文件和错误文件处理器
             'level': 'INFO',
             'propagate': False
         },
         'httpcore': {
-            'handlers': ['console'],  # 只使用控制台输出
+            'handlers': ['console', 'file', 'error_file'],  # 添加文件和错误文件处理器
             'level': 'INFO',
             'propagate': False
         },
@@ -275,10 +275,49 @@ DEV_LOG_CONFIG = {
     'loggers': {
         **LOG_CONFIG['loggers'],
         '': {
-            'handlers': ['console'],  # 只使用控制台输出
-            'level': 'DEBUG',
+            'handlers': ['console', 'file', 'error_file'],  # 添加文件和错误文件处理器
+            'level': 'INFO',
             'propagate': False
-        }
+        },
+        # FastAPI相关日志
+        'uvicorn': {
+            'handlers': ['console', 'file', 'error_file'],  # 添加文件和错误文件处理器
+            'level': get_env_log_level('UVICORN_LOG_LEVEL', 'INFO'),
+            'propagate': False
+        },
+        'uvicorn.access': {
+            'handlers': ['console', 'file', 'error_file'],  # 添加文件和错误文件处理器
+            'level': get_env_log_level('UVICORN_LOG_LEVEL', 'INFO'),
+            'propagate': False
+        },
+        'uvicorn.error': {
+            'handlers': ['console', 'file', 'error_file'],  # 添加文件和错误文件处理器
+            'level': get_env_log_level('UVICORN_LOG_LEVEL', 'INFO'),
+            'propagate': False
+        },
+        # 模型API调用日志
+        'models': {
+            'handlers': ['console', 'file', 'error_file'],  # 添加文件和错误文件处理器
+            'level': 'INFO',
+            'propagate': False
+        },
+        # 文档处理日志
+        'pipeline': {
+            'handlers': ['console', 'file', 'error_file'],  # 添加文件和错误文件处理器
+            'level': 'INFO',
+            'propagate': False
+        },
+        # HTTP客户端日志
+        'httpx': {
+            'handlers': ['console', 'file', 'error_file'],  # 添加文件和错误文件处理器
+            'level': 'INFO',
+            'propagate': False
+        },
+        'httpcore': {
+            'handlers': ['console', 'file', 'error_file'],  # 添加文件和错误文件处理器
+            'level': 'INFO',
+            'propagate': False
+        },
     }
 }
 

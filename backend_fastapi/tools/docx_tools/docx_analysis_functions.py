@@ -77,16 +77,32 @@ def _count_display_equations(docx_path: str) -> int:
 
 
 def _count_equations_in_text(docx_path: str, text: str, full_text: str) -> int:
-    """Count display equations in given text using LaTeX conversion"""
-    # For chapter-level counting, we need to approximate since we can't easily
-    # convert partial text to LaTeX. We'll use a simpler approach for now.
+    """Count display equations in given text using improved estimation"""
+    # First try to count equations directly in the text
+    # Look for equation-like patterns in the text
+    equation_patterns = [
+        r'\$[^$]+\$',  # Inline equations
+        r'\$\$[^$]+\$\$',  # Display equations
+        r'\\begin\{equation\}.*?\\end\{equation\}',  # LaTeX equation environment
+        r'\\begin\{align\}.*?\\end\{align\}',  # LaTeX align environment
+        r'\\[.*?\\]',  # LaTeX display math
+        r'\([0-9]+\.[0-9]+\)',  # Numbered equations like (1.1)
+    ]
+    
+    direct_count = 0
+    for pattern in equation_patterns:
+        matches = re.findall(pattern, text, re.DOTALL)
+        direct_count += len(matches)
+    
+    # If direct counting finds equations, use that
+    if direct_count > 0:
+        return direct_count
+    
+    # Otherwise, use the original proportional method as fallback
     latex_content = _get_latex_content(docx_path)
     if not latex_content:
         return 0
     
-    # This is a simplified approach - in a real implementation,
-    # you might want to track equation positions in the original document
-    # For now, we'll distribute equations proportionally based on text length
     total_text_length = len(full_text)
     if total_text_length == 0:
         return 0
@@ -94,7 +110,7 @@ def _count_equations_in_text(docx_path: str, text: str, full_text: str) -> int:
     total_equations = _count_display_equations(docx_path)
     text_proportion = len(text) / total_text_length
     
-    return round(total_equations * text_proportion)
+    return max(0, round(total_equations * text_proportion))
 
 
 def get_basic_info(docx_path: str) -> Dict[str, Any]:
@@ -227,12 +243,19 @@ def get_chapter_stats(docx_path: str) -> Dict[str, Any]:
     image_counts = []
     paragraph_counts = []
     
-    # Common chapter patterns - more specific to avoid TOC interference
+    # Common chapter patterns - support both Chinese and Arabic numbers
     chapter_patterns = [
         (r'^(摘\s*要)$', '摘要'),
         (r'^(ABSTRACT)$', 'Abstract'),
+        # Chinese numbers
         (r'^第(一|二|三|四|五|六|七|八|九|十)章\s+(.+)', lambda m: f'第{m.group(1)}章 {m.group(2)}'),
         (r'^第(一|二|三|四|五|六|七|八|九|十)章$', lambda m: f'第{m.group(1)}章'),
+        # Arabic numbers
+        (r'^第(\d+)章\s+(.+)', lambda m: f'第{m.group(1)}章 {m.group(2)}'),
+        (r'^第(\d+)章$', lambda m: f'第{m.group(1)}章'),
+        # Simple number patterns (for titles like "1 绪论", "1.1 研究背景")
+        (r'^(\d+)\s+([^.\d].+)', lambda m: f'第{m.group(1)}章 {m.group(2)}'),
+        (r'^(\d+)\.(\d+)?\s+(.+)', lambda m: f'第{m.group(1)}章 {m.group(3)}'),
         (r'^(参考文献)$', '参考文献'),
     ]
     
@@ -256,8 +279,11 @@ def get_chapter_stats(docx_path: str) -> Dict[str, Any]:
         if not text:
             continue
             
-        # Skip TOC entries (containing tabs and page numbers)
-        if '\t' in text and re.search(r'\d+$', text):
+        # Skip TOC entries (more precise filtering)
+        # TOC entries usually have: title + tabs/dots + page number
+        if (('\t' in text and re.search(r'\d+$', text)) or 
+            (re.search(r'\.{3,}', text) and re.search(r'\d+$', text)) or
+            (len(text) < 20 and re.search(r'^\d+\s*$', text))):  # Pure page numbers
             continue
             
         # Check if this is a chapter heading
@@ -310,20 +336,37 @@ def get_chapter_stats(docx_path: str) -> Dict[str, Any]:
         paragraph_counts.append(current_paragraph_count)
         chapter_paragraphs.append(current_paragraph_count)
     
-    # Distribute tables and images across chapters based on paragraph counts
-    total_chapter_paragraphs = sum(chapter_paragraphs) if chapter_paragraphs else 1
+    # Distribute tables and images across chapters more intelligently
+    # Try to count actual tables and images per chapter first
+    chapter_table_counts = []
+    chapter_image_counts = []
     
-    for para_count in chapter_paragraphs:
-        if total_chapter_paragraphs > 0:
-            # Distribute proportionally based on paragraph count
-            table_portion = round(total_tables * para_count / total_chapter_paragraphs)
-            image_portion = round(total_images * para_count / total_chapter_paragraphs)
-        else:
-            table_portion = 0
-            image_portion = 0
+    # Initialize with zeros
+    for _ in chapters:
+        chapter_table_counts.append(0)
+        chapter_image_counts.append(0)
+    
+    # Try to assign tables to chapters based on proximity
+    # This is a simplified approach - ideally we'd track exact positions
+    if chapters:
+        tables_per_chapter = max(1, total_tables // len(chapters))
+        images_per_chapter = max(1, total_images // len(chapters))
         
-        table_counts.append(table_portion)
-        image_counts.append(image_portion)
+        # Distribute evenly with remainder going to first chapters
+        for i in range(len(chapters)):
+            if i < total_tables % len(chapters):
+                chapter_table_counts[i] = tables_per_chapter + 1
+            else:
+                chapter_table_counts[i] = tables_per_chapter
+                
+            if i < total_images % len(chapters):
+                chapter_image_counts[i] = images_per_chapter + 1
+            else:
+                chapter_image_counts[i] = images_per_chapter
+    
+    # Use the calculated counts
+    table_counts = chapter_table_counts
+    image_counts = chapter_image_counts
     
     return {
         "chapters": chapters,

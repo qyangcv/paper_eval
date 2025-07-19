@@ -23,7 +23,7 @@ import sys
 project_root = Path(__file__).parent.parent
 sys.path.insert(0, str(project_root))
 
-from config.redis_config import REDIS_CONFIG, REDIS_POOL_CONFIG, DOCUMENT_REDIS_CONFIG
+from config.redis_config import REDIS_CONFIG, REDIS_POOL_CONFIG, DOCUMENT_REDIS_CONFIG, LOCK_REDIS_CONFIG
 
 logger = logging.getLogger(__name__)
 
@@ -33,7 +33,71 @@ class RedisManager:
     def __init__(self):
         self._client: Optional[AsyncRedis] = None
         self._connected = False
-    
+
+    def _get_lock_key(self, resource_id: str) -> str:
+        """生成锁在Redis中的键名"""
+        return f"{LOCK_REDIS_CONFIG['key_prefix']}{resource_id}"
+
+    async def acquire_lock(self, resource_id: str, timeout: int = LOCK_REDIS_CONFIG['expire_time']) -> bool:
+        """
+        尝试获取分布式锁
+
+        Args:
+            resource_id: 锁定的资源ID
+            timeout: 锁的过期时间（秒），防止死锁
+
+        Returns:
+            bool: 是否成功获取锁
+        """
+        if not self._connected or not self._client:
+            logger.warning("Redis未连接，无法获取锁")
+            return False
+        
+        lock_key = self._get_lock_key(resource_id)
+        # 使用SETNX命令尝试获取锁，并设置过期时间
+        # value可以是任意值，这里使用1
+        try:
+            # setnx 返回1表示设置成功（获取到锁），返回0表示设置失败（未获取到锁）
+            # ex 参数设置过期时间
+            result = await self._client.set(lock_key, 1, nx=True, ex=timeout)
+            if result:
+                logger.info(f"成功获取锁: {lock_key}")
+                return True
+            else:
+                logger.warning(f"未能获取锁: {lock_key} (已被占用)")
+                return False
+        except Exception as e:
+            logger.error(f"获取锁失败: {lock_key}, 错误: {e}")
+            return False
+
+    async def release_lock(self, resource_id: str) -> bool:
+        """
+        释放分布式锁
+
+        Args:
+            resource_id: 锁定的资源ID
+
+        Returns:
+            bool: 是否成功释放锁
+        """
+        if not self._connected or not self._client:
+            logger.warning("Redis未连接，无法释放锁")
+            return False
+
+        lock_key = self._get_lock_key(resource_id)
+        try:
+            # 删除锁键
+            result = await self._client.delete(lock_key)
+            if result > 0:
+                logger.info(f"成功释放锁: {lock_key}")
+                return True
+            else:
+                logger.warning(f"锁不存在或已被释放: {lock_key}")
+                return False
+        except Exception as e:
+            logger.error(f"释放锁失败: {lock_key}, 错误: {e}")
+            return False
+
     async def connect(self) -> bool:
         """连接到Redis服务器"""
         try:
@@ -172,7 +236,15 @@ class RedisManager:
             return None
     
     async def delete_document(self, document_id: str) -> bool:
-        """删除Redis中的文档"""
+        """
+        删除Redis中的文档
+        
+        Args:
+            document_id: 文档ID
+            
+        Returns:
+            bool: 删除是否成功
+        """
         if not self._connected or not self._client:
             logger.warning("Redis未连接，无法删除缓存文档")
             return False
@@ -193,7 +265,15 @@ class RedisManager:
             return False
     
     async def document_exists(self, document_id: str) -> bool:
-        """检查文档是否存在"""
+        """
+        检查文档是否存在
+        
+        Args:
+            document_id: 文档ID
+            
+        Returns:
+            bool: 文档是否存在
+        """
         if not self._connected or not self._client:
             return False
         

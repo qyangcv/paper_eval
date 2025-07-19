@@ -5,19 +5,19 @@
 - 评价标准: prompts/hard_criteria.py
 """
 
-import os
-import sys
+import asyncio
 import json
 import re
 import time
 from collections import defaultdict
-from multiprocessing import Pool
 from functools import partial
+import sys
+import os
 
 # 添加父路径到python路径
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from models.deepseek import request_deepseek_md
+from models.deepseek import request_deepseek_md_async
 # from config.data_config import FILE_CONFIG
 from tools.logger import get_logger
 from tools.hard_criteria.extract_md import (
@@ -147,7 +147,7 @@ def formatting_js(responses, ch_names, sub_ch_names):
         for issue in chapter_issues:
             # 为每个问题重新分配ID
             issue_with_id = {
-                "id": current_id,
+                "id": str(current_id),
                 **issue
             }
             ordered_by_chapter[chapter].append(issue_with_id)
@@ -190,12 +190,12 @@ def _scan_colloquial_words(chapters):
     return out
 
 
-def eval(md_content):
+async def eval(md_content):
     # 提取目录、摘要、章节内容、参考文献
-    toc = extract_toc(md_content)
-    abs = extract_abstract(md_content)
-    chapters = extract_chapters(md_content)
-    references = extract_references(md_content)
+    toc = await asyncio.to_thread(extract_toc, md_content)
+    abs = await asyncio.to_thread(extract_abstract, md_content)
+    chapters = await asyncio.to_thread(extract_chapters, md_content)
+    references = await asyncio.to_thread(extract_references, md_content)
     
     if not toc or not abs or not chapters:
         logger.error("Markdown格式不符合要求，无法提取目录、摘要或正文内容")
@@ -210,7 +210,7 @@ def eval(md_content):
         }
 
     # 检查正文中的主观用词：“我们”“我”
-    colloquial_cases = _scan_colloquial_words(chapters)
+    colloquial_cases = await asyncio.to_thread(_scan_colloquial_words, chapters)
 
     # 构建提示词
     prompts = build_prompts(abs, chapters)
@@ -219,9 +219,8 @@ def eval(md_content):
     # infer - 恢复多进程处理，但不更新外部状态
     logger.info("INFER | 开始并行调用API进行写作质量问题分析...")
     start_time_infer = time.time()
-    request_with_format = partial(request_deepseek_md, system_prompt, format="md")
-    with Pool(processes=16) as pool:
-        responses = pool.map(request_with_format, user_prompts)
+    # 使用 asyncio.gather 并行调用异步函数
+    responses = await asyncio.gather(*[request_deepseek_md_async(system_prompt, prompt, format="md") for prompt in user_prompts])
     end_time_infer = time.time()
     infer_duration = end_time_infer - start_time_infer
     logger.info(f"INFER | Infer阶段完成，耗时: {infer_duration:.2f} 秒")
@@ -230,7 +229,7 @@ def eval(md_content):
     logger.info("AGGREGATE | 开始调用API对结果进行优化...")
     start_time_aggregate = time.time()
     agg_prompt = aggregate_prompt.format(context_1='\n'.join(responses), context_2='\n'.join(colloquial_cases), ch_names=ch_names, sub_ch_names=sub_ch_names)
-    responses = request_deepseek_md(agg_prompt, system_prompt, format='md')
+    responses = await request_deepseek_md_async(agg_prompt, system_prompt, format='md')
     end_time_aggregate = time.time()
     aggregate_duration = end_time_aggregate - start_time_aggregate
     logger.info(f"AGGREGATE | Aggregate阶段完成，耗时: {aggregate_duration:.2f} 秒")

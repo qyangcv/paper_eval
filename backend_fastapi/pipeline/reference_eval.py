@@ -1,5 +1,6 @@
 import os
-from openai import OpenAI  # 修改导入方式
+import asyncio
+from openai import AsyncOpenAI # 修改导入方式
 from dotenv import load_dotenv
 import argparse
 from concurrent.futures import ThreadPoolExecutor, as_completed
@@ -7,7 +8,7 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 load_dotenv()
 
 # 初始化DeepSeek客户端
-client = OpenAI(
+client = AsyncOpenAI(
     api_key=os.getenv("DEEPSEEK_API_KEY"),  # 使用DeepSeek API密钥
     base_url="https://api.deepseek.com"  # DeepSeek API基础地址
 )
@@ -17,12 +18,12 @@ def load_prompt(prompt_path):
     with open(prompt_path, 'r', encoding='utf-8') as f:
         return f.read().strip()
 
-def check_reference_format(reference_text):
+async def check_reference_format(reference_text):
     """检查参考文献格式是否正确"""
     # 加载提示词
     prompt_dir = os.path.join(os.path.dirname(__file__), '..', 'prompts')
     prompt_path = os.path.join(prompt_dir, 'reference_criteria.txt')
-    system_prompt = load_prompt(prompt_path)
+    system_prompt = await asyncio.to_thread(load_prompt, prompt_path)
 
     # 构建消息
     messages = [
@@ -32,7 +33,7 @@ def check_reference_format(reference_text):
 
     # 调用DeepSeek API
     try:
-        response = client.chat.completions.create(
+        response = await client.chat.completions.create(
             model="deepseek-chat",  # 使用DeepSeek模型
             messages=messages,
             temperature=0.3,
@@ -142,7 +143,7 @@ def format_incorrect_references(results):
                                     suggestions.append(cleaned_line)
                 
                 incorrect_items.append({
-                    "id": issue_id,
+                    "id": str(issue_id),
                     "original_text": result.get("reference_text", ""),
                     "suggestions": suggestions
                 })
@@ -183,7 +184,7 @@ def save_formatted_results(results, output_path):
     
     return formatted_output_path
 
-def eval(references_list, progress_callback=None):
+async def eval(references_list, progress_callback=None):
     """
     评估参考文献格式（多线程处理，但不更新状态）
 
@@ -202,42 +203,13 @@ def eval(references_list, progress_callback=None):
             "message": "没有参考文献需要检查"
         }
 
-    print(f"开始多线程检查 {len(references_list)} 条参考文献（8线程）...")
-    results = [{}] * len(references_list)  # 预分配结果数组
-    completed_count = 0
-
-    # 使用8个线程并行处理，但不更新外部状态
-    with ThreadPoolExecutor(max_workers=8) as executor:
-        # 提交所有任务
-        future_to_index = {
-            executor.submit(check_reference_format, ref): idx
-            for idx, ref in enumerate(references_list)
-        }
-
-        # 处理完成的任务
-        for future in as_completed(future_to_index):
-            idx = future_to_index[future]
-            try:
-                result = future.result()
-                results[idx] = result
-                completed_count += 1
-                print(f"已完成 {completed_count}/{len(references_list)} 条参考文献检查")
-
-                # 调用进度回调（如果提供）
-                if progress_callback:
-                    progress_callback(f"参考文献检查进度: {completed_count}/{len(references_list)}")
-
-            except Exception as exc:
-                print(f"参考文献 {idx+1} 检查失败: {exc}")
-                results[idx] = {
-                    "status": "failed",
-                    "reference_text": references_list[idx],
-                    "error": str(exc)
-                }
-                completed_count += 1
+    print(f"开始异步检查 {len(references_list)} 条参考文献...")
     
+    tasks = [check_reference_format(ref) for ref in references_list]
+    results = await asyncio.gather(*tasks, return_exceptions=True)
+
     # 格式化结果，只保留有问题的参考文献
-    formatted_result = format_incorrect_references(results)
+    formatted_result = await asyncio.to_thread(format_incorrect_references, results)
     
     # 添加状态信息
     formatted_result["status"] = "success"

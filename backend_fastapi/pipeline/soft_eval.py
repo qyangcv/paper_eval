@@ -2,6 +2,7 @@
 论文整体评估模块
 将整篇论文内容作为整体进行评估
 """
+import asyncio
 import os
 import sys
 import json
@@ -9,8 +10,7 @@ import re
 import random
 from datetime import datetime
 from typing import List, Dict, Any, Optional
-from multiprocessing import Pool
-from concurrent.futures import ThreadPoolExecutor, as_completed
+# from concurrent.futures import ThreadPoolExecutor, as_completed  # 不再需要
 from glob import glob
 import warnings
 from pathlib import Path
@@ -34,7 +34,7 @@ from prompts.soft_criteria import (
 
 logger = get_logger(__name__)
 
-def extract_toc_and_chapters(md_content: str) -> dict:
+async def extract_toc_and_chapters(md_content: str) -> dict:
     """
     从Markdown文件中提取目录、摘要和章节内容
     Args:
@@ -42,6 +42,9 @@ def extract_toc_and_chapters(md_content: str) -> dict:
     Returns:
         包含目录和章节内容的字典
     """
+    return await asyncio.to_thread(_extract_toc_and_chapters_sync, md_content)
+
+def _extract_toc_and_chapters_sync(md_content: str) -> dict:
     content = md_content
     
     # 提取目录部分
@@ -450,7 +453,7 @@ def evaluate_single_metric(args):
         logger.error(f"评估维度 {metric} 时出错: {e}")
         return metric, None, None
 
-def eval(
+async def eval(
     md_content: str,
     metrics: Optional[List[str]] = None,
     num_processes: int = 1,
@@ -472,10 +475,10 @@ def eval(
     """
     try:
         if save_dir:
-            os.makedirs(save_dir, exist_ok=True)
+            await asyncio.to_thread(os.makedirs, save_dir, exist_ok=True)
         
         # 提取论文目录和章节内容
-        paper_data = extract_toc_and_chapters(md_content)
+        paper_data = await extract_toc_and_chapters(md_content)
         
         # 设置默认评估指标
         if metrics is None:
@@ -512,27 +515,31 @@ def eval(
             for metric in valid_metrics
         ]
 
-        # 使用线程池并行处理
-        with ThreadPoolExecutor(max_workers=min(4, len(valid_metrics))) as executor:
-            # 提交所有任务
-            future_to_metric = {
-                executor.submit(evaluate_single_metric, args): args[0]
-                for args in eval_args
-            }
+        # 使用 asyncio.gather 并行处理异步任务
+        async def eval_single_wrapper(args):
+            return await asyncio.to_thread(evaluate_single_metric, args)
 
-            # 收集结果
-            for future in as_completed(future_to_metric):
-                metric = future_to_metric[future]
-                try:
-                    metric_name, result_data, overall_result_data = future.result()
-                    if result_data is not None and overall_result_data is not None:
-                        result[metric_name] = result_data
-                        overall_result[metric_name] = overall_result_data
-                        logger.info(f"维度 {metric_name} 评估完成")
-                    else:
-                        logger.warning(f"维度 {metric_name} 评估失败")
-                except Exception as exc:
-                    logger.error(f"维度 {metric} 评估时发生异常: {exc}")
+        # 并行执行所有评估任务
+        eval_tasks = [eval_single_wrapper(args) for args in eval_args]
+        eval_results = await asyncio.gather(*eval_tasks, return_exceptions=True)
+
+        # 收集结果
+        for i, eval_result in enumerate(eval_results):
+            metric = valid_metrics[i]
+            try:
+                if isinstance(eval_result, Exception):
+                    logger.error(f"维度 {metric} 评估时发生异常: {eval_result}")
+                    continue
+                
+                metric_name, result_data, overall_result_data = eval_result
+                if result_data is not None and overall_result_data is not None:
+                    result[metric_name] = result_data
+                    overall_result[metric_name] = overall_result_data
+                    logger.info(f"维度 {metric_name} 评估完成")
+                else:
+                    logger.warning(f"维度 {metric_name} 评估失败")
+            except Exception as exc:
+                logger.error(f"处理维度 {metric} 结果时发生异常: {exc}")
 
         logger.info(f"一共完成 {len(result)} 个维度的评估")
         
